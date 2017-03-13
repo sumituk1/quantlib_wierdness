@@ -1,2 +1,4 @@
 target
 .idea
+com/__pycache__/
+com/mosaic/__pycache__/
