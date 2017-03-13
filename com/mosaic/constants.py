@@ -1,6 +1,6 @@
 # This has the list of day counts and the related convention
 # from workalendar.usa import *
-import QuantLib as ql
+
 
 class BootStrapMethod:
     PiecewiseLogCubicDiscount = "PicewiseLogCubicDiscount"
@@ -44,64 +44,6 @@ class DayCountConv:
             dcf = DayCountConv.Thirty360_US
         return	dcf
 
-class Frequency:
-    MONTHLY = "M"
-    DAILY = "D"
-    WEEKLY = "W"
-    SEMI = "S"
-    QUARTERLY = "Q"
-    ANNUAL = "A"
-
-    @staticmethod
-    def convertFrequencyStr(freqStr):
-        freq = Frequency.SEMI
-        if freqStr == "M":
-            freq = Frequency.MONTHLY
-        elif freqStr == "D":
-            freq = Frequency.DAILY
-        elif freqStr == "W":
-            freq = Frequency.WEEKLY
-        elif freqStr == "S":
-            freq = Frequency.SEMI
-        elif freqStr == "Q":
-            freq = Frequency.QUARTERLY
-        elif freqStr == "A":
-            freq = Frequency.ANNUAL
-        return freq
-
-    @staticmethod
-    def getFrequencyNumber(freqStr):
-        freqNumberOut = 1 #<-- default to annual
-        if freqStr == Frequency.MONTHLY:
-            freqNumberOut = 12
-        elif freqStr == Frequency.DAILY:
-            freqNumberOut = 365
-        elif freqStr == Frequency.WEEKLY:
-            freqNumberOut = 52
-        elif freqStr == Frequency.SEMI:
-            freqNumberOut = 2
-        elif freqStr == Frequency.QUARTERLY:
-            freqNumberOut = 4
-        elif freqStr == Frequency.ANNUAL:
-            freqNumberOut = 1
-        return freqNumberOut
-
-    @staticmethod
-    def getQLFrequency(freqStr):
-        freqStrOut = ql.Semiannual
-        if freqStr == Frequency.MONTHLY:
-            freqStrOut = ql.Monthly
-        elif freqStr == Frequency.DAILY:
-            freqStrOut = ql.Daily
-        elif freqStr == Frequency.WEEKLY:
-            freqStrOut = ql.Weekly
-        elif freqStr == Frequency.SEMI:
-            freqStrOut = ql.Semiannual
-        elif freqStr == Frequency.QUARTERLY:
-            freqStrOut = ql.Quarterly
-        elif freqStr == Frequency.ANNUAL:
-            freqStrOut = ql.Annual
-        return freqStrOut
 
 class CalendarFactory:
     def __init__(self):
@@ -144,3 +86,65 @@ class Currency:
 class TradeSide:
     Bid = "B"
     Ask = "A"
+
+class Frequency:
+    MONTHLY = "M"
+    DAILY = "D"
+    WEEKLY = "W"
+    SEMI = "S"
+    QUARTERLY = "Q"
+    ANNUAL = "A"
+
+    @staticmethod
+    def convertFrequencyStr(freqStr):
+        freq = Frequency.SEMI
+        if freqStr == "M":
+            freq = Frequency.MONTHLY
+        elif freqStr == "D":
+            freq = Frequency.DAILY
+        elif freqStr == "W":
+            freq = Frequency.WEEKLY
+        elif freqStr == "S":
+            freq = Frequency.SEMI
+        elif freqStr == "Q":
+            freq = Frequency.QUARTERLY
+        elif freqStr == "A":
+            freq = Frequency.ANNUAL
+        return freq
+
+    @staticmethod
+    def getFrequencyNumber(freqStr):
+        freqNumberOut = 1 #<-- default to annual
+        if freqStr == Frequency.MONTHLY:
+            freqNumberOut = 12
+        elif freqStr == Frequency.DAILY:
+            freqNumberOut = 365
+        elif freqStr == Frequency.WEEKLY:
+            freqNumberOut = 52
+        elif freqStr == Frequency.SEMI:
+            freqNumberOut = 2
+        elif freqStr == Frequency.QUARTERLY:
+            freqNumberOut = 4
+        elif freqStr == Frequency.ANNUAL:
+            freqNumberOut = 1
+        return freqNumberOut
+    try:
+        import QuantLib as ql
+        @staticmethod
+        def getQLFrequency(freqStr):
+            freqStrOut = ql.Semiannual
+            if freqStr == Frequency.MONTHLY:
+                freqStrOut = ql.Monthly
+            elif freqStr == Frequency.DAILY:
+                freqStrOut = ql.Daily
+            elif freqStr == Frequency.WEEKLY:
+                freqStrOut = ql.Weekly
+            elif freqStr == Frequency.SEMI:
+                freqStrOut = ql.Semiannual
+            elif freqStr == Frequency.QUARTERLY:
+                freqStrOut = ql.Quarterly
+            elif freqStr == Frequency.ANNUAL:
+                freqStrOut = ql.Annual
+            return freqStrOut
+    except:
+        print("Didn't find Quantlib, so can't define Frequency.getQLFrequency")
