@@ -1,7 +1,9 @@
 import datetime as dt
-from com.mosaic.constants import *
 import math
+
 import numpy as np
+
+from core.constants import *
 
 
 class Quote:

@@ -1,15 +1,17 @@
-import time, random
-from com.mosaic.trade import *
 import datetime as dt
+
 import numpy as np
-from constants import *
-import math
+from core.trade import *
+
+from common.read_config import *
+from core.constants import *
 
 
 class Hedge:
     # MinHedgeDV01 = float(get_data_given_section_and_key("Rates-RiskPath", "MinHedgeDV01"))
     IsFutures = False
     Beta = 0.0
+    MinHedgeDV01 = float(config['Rates-RiskPath']['MinHedgeDV01'])
 
     def __init__(self, *varargin):
 
@@ -45,23 +47,23 @@ class Hedge:
                 self.HedgeNotional = 1
             self.HedgeCost = 0
             self.Beta = 1.0
-            self.Side = TradeSide.Ask # default to Ask
+            self.Side = TradeSide.Ask  # default to Ask
 
     def __calculate_hedge_contracts(self):
-        if self.TradeObj.Side == TradeSide.Ask:
+        if self.TradeObj.side == TradeSide.Ask:
             self.Side = TradeSide.Bid
         else:
             self.Side = TradeSide.Ask
 
         if self.TradeObj.DV01 > self.MinHedgeDV01:
             if self.IsFutures:
-                self.HedgeContracts = np.round(self.Beta * self.TradeObj.DV01 / self.DV01,0)
+                self.HedgeContracts = np.round(self.Beta * self.TradeObj.DV01 / self.DV01, 0)
             else:
                 self.HedgeContracts = self.Beta * self.TradeObj.DV01 / self.DV01
         else:
             self.HedgeContracts = 0.0
 
-    def calculate_initial_hedge_cost(self, contracts = None):
+    def calculate_initial_hedge_cost(self, contracts=None):
         if contracts is None:
             self.__calculate_hedge_contracts()
         else:
@@ -76,23 +78,23 @@ class Hedge:
         else:
             self.HedgeCost = 0.0
 
-    # def __str__(self):
-    #     return "Hedge: Sym = %s, MidPx = %s, Beta = %s, DV01 = %s, HedgeContracts = %s, HedgeCost = %s" % \
-    #            (self.Sym, self.MidPx, self.Beta, self.DV01, self.HedgeContracts, self.HedgeCost)
+            # def __str__(self):
+            #     return "Hedge: Sym = %s, MidPx = %s, Beta = %s, DV01 = %s, HedgeContracts = %s, HedgeCost = %s" % \
+            #            (self.Sym, self.MidPx, self.Beta, self.DV01, self.HedgeContracts, self.HedgeCost)
 
 
 if __name__ == '__main__':
     tr = trade.Trade()
     tr.TradeId = '111'
     tr.Sym = '9128235'
-    tr.Notional = 10*1e6
+    tr.Notional = 10 * 1e6
     tr.Side = TradeSide.Bid
     tr.TradedPx = 96.916
     tr.MidPx = 96.928
     tr.ClientSysKey = 111
     tr.Duration = 18.67
     tr.ONRepo = 0.02
-    tr.TradeDate = dt.datetime(2017,2,14)
+    tr.TradeDate = dt.datetime(2017, 2, 14)
     tr.Ccy = 'EUR'
     tr.calculate_trade_dv01()
     # arg = ['GT30', 'GT30', 99, 99, 99, 1.0, 21, 1000, False, 1.0, 1, [99, 99.01, 99.02, 99.03, 99.05], False]

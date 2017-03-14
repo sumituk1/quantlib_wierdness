@@ -1,18 +1,10 @@
 # from __future__ import print_function
-from common.read_config import *
-from common.constants import *
-import numpy as np
-import datetime as dt
-import time
-import math
 import unittest
-from unittest import TestCase
-import time
-from com.mosaic.riskpath import *
-from com.mosaic.trade import *
-from com.mosaic.hedge import *
-import com.mosaic.riskpath_status as riskpath_status
-import pickle
+
+from com.mosaic.core.hedge import *
+from com.mosaic.core.trade import *
+
+from core.riskpath import *
 
 
 class RiskPathTest(unittest.TestCase):
@@ -218,7 +210,7 @@ class RiskPathTest(unittest.TestCase):
 
         # % % Trade 3: Create a 3rd trade. This is a risk redn trade
         time_0 = dt.time(14, 23)  # .strftime("%H:%M:%S")
-        tr = Trade()
+        tr = FixedIncomeTrade()
         tr.trade_id = '333'
         tr.sym = '9128235'
         tr.notional = 3.5 * 1e6
@@ -253,7 +245,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Open,
                              msg=None)  # riskpath status should be ForceClose
-        self.assertLessEqual(riskPathArr[0].notional - 13.5 * 1e6, tolerance_dollar, msg=None)  # riskpath notional = 0
+        self.assertLessEqual(riskPathArr[0].Notional - 13.5 * 1e6, tolerance_dollar, msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1260), tolerance_dollar,
                              msg=None)  # check UPnl for ClientPnl_1
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[1].UPnl - 1900), tolerance_dollar,
@@ -370,7 +362,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Open,
                              msg=None)  # riskpath status should be ForceClose
-        self.assertLessEqual(riskPathArr[0].notional - 13.5 * 1e6, tolerance_dollar,
+        self.assertLessEqual(riskPathArr[0].Notional - 13.5 * 1e6, tolerance_dollar,
                              msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1225), tolerance_dollar,
                              msg=None)  # check UPnl for ClientPnl_1
@@ -488,7 +480,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Open,
                              msg=None)  # riskpath status should be ForceClose
-        self.assertLessEqual(riskPathArr[0].notional - 9.0 * 1e6, tolerance_dollar,
+        self.assertLessEqual(riskPathArr[0].Notional - 9.0 * 1e6, tolerance_dollar,
                              msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1120), tolerance_dollar,
                              msg=None)  # check UPnl for ClientPnl_1
@@ -637,7 +629,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status,
                              RiskPathStatus.Open,msg=None)  # riskpath status should be ForceClose
-        self.assertLessEqual(riskPathArr[0].notional - 9.0 * 1e6,
+        self.assertLessEqual(riskPathArr[0].Notional - 9.0 * 1e6,
                              tolerance_dollar,msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1120),
                              tolerance_dollar,msg=None)  # check UPnl for ClientPnl_1
@@ -756,9 +748,9 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 2, msg=None)  # 2 riskpaths
         self.assertLessEqual(riskPathArr[0].Status,
                              RiskPathStatus.Close,msg=None)  # riskpath status should be ForceClose
-        self.assertLessEqual(riskPathArr[0].notional - 0,
+        self.assertLessEqual(riskPathArr[0].Notional - 0,
                              tolerance_dollar, msg=None)  # riskpath notional = 0
-        self.assertLessEqual(riskPathArr[1].notional - 8000000,
+        self.assertLessEqual(riskPathArr[1].Notional - 8000000,
                              tolerance_dollar, msg=None)  # 2nd riskpath notional = 8 mil
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1190),
                              tolerance_dollar,msg=None)  # check UPnl for ClientPnl_1
@@ -879,7 +871,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Close,
                              msg=None)  # riskpath status should be ForceClose
-        self.assertLessEqual(riskPathArr[0].notional - 0, tolerance_dollar,
+        self.assertLessEqual(riskPathArr[0].Notional - 0, tolerance_dollar,
                              msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1118), tolerance_dollar,
                              msg=None)  # check UPnl for ClientPnl_1
@@ -1060,8 +1052,8 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 2, msg=None)  # 2 riskpaths
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Close,
                              msg=None)  # riskpath status should be ForceClose
-        self.assertLessEqual(riskPathArr[0].notional - 0, tolerance_dollar, msg=None)  # riskpath notional = 0
-        self.assertLessEqual(riskPathArr[1].notional - 0, tolerance_dollar,msg=None)  # 2nd riskpath forceclosed
+        self.assertLessEqual(riskPathArr[0].Notional - 0, tolerance_dollar, msg=None)  # riskpath notional = 0
+        self.assertLessEqual(riskPathArr[1].Notional - 0, tolerance_dollar,msg=None)  # 2nd riskpath forceclosed
         self.assertLessEqual(np.abs(riskPathArr[1].ClientPnlArr[0].UPnl - (-590)), tolerance_dollar,
                              msg=None)  # check UPnl for ClientPnl_1
         self.assertLessEqual(np.abs(riskPathArr[1].ClientPnlArr[1].UPnl - 65),
@@ -1098,11 +1090,11 @@ class RiskPathTest(unittest.TestCase):
         tr.trade_date = date_0
         tr.ccy = 'EUR'
         # Instrument static
-        tr.Coupon=0.02
-        tr.CouponFrequency = Frequency.ANNUAL
-        tr.IssueDate = dt.datetime(2010,6,1)
-        tr.MaturityDate = dt.datetime(2020, 6, 1)
-        tr.DayCount = DayCountConv.ACT_360
+        tr.coupon=0.02
+        tr.coupon_frequency = Frequency.ANNUAL
+        tr.issue_date = dt.datetime(2010,6,1)
+        tr.maturity_date = dt.datetime(2020, 6, 1)
+        tr.day_count = DayCountConv.ACT_360
         tr.calculate_trade_dv01()
 
         # % 2. Create a hedge
@@ -1128,11 +1120,11 @@ class RiskPathTest(unittest.TestCase):
         tr.trade_date = date_0
         tr.ccy = 'EUR'
         # Instrument static
-        tr.Coupon = 0.02
-        tr.CouponFrequency = Frequency.ANNUAL
-        tr.IssueDate = dt.datetime(2010, 6, 1)
-        tr.MaturityDate = dt.datetime(2020, 6, 1)
-        tr.DayCount = DayCountConv.ACT_360
+        tr.coupon = 0.02
+        tr.coupon_frequency = Frequency.ANNUAL
+        tr.issue_date = dt.datetime(2010, 6, 1)
+        tr.maturity_date = dt.datetime(2020, 6, 1)
+        tr.day_count = DayCountConv.ACT_360
         tr.calculate_trade_dv01()
 
         riskPathArr = RiskPath.createOrUpdateRiskPath(dt.datetime.combine(date_0, time_0), riskPathArr,
@@ -1176,7 +1168,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Open,
                              msg=None)  # riskpath status should be "ForceClose"
-        self.assertLessEqual(riskPathArr[0].notional - 17*1e6, tolerance_dollar, msg=None)  # riskpath notional = 0
+        self.assertLessEqual(riskPathArr[0].Notional - 17*1e6, tolerance_dollar, msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1606), tolerance_dollar,
                              msg=None)  # check UPnl for ClientPnl_1
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[1].UPnl - 2294), tolerance_dollar,
@@ -1205,11 +1197,11 @@ class RiskPathTest(unittest.TestCase):
         tr.trade_date = date_0
         tr.ccy = 'EUR'
         # Instrument static
-        tr.Coupon = 0.02
-        tr.CouponFrequency = Frequency.ANNUAL
-        tr.IssueDate = dt.datetime(2010, 2, 1)
-        tr.MaturityDate = dt.datetime(2020, 1, 2)
-        tr.DayCount = DayCountConv.ACT_360
+        tr.coupon = 0.02
+        tr.coupon_frequency = Frequency.ANNUAL
+        tr.issue_date = dt.datetime(2010, 2, 1)
+        tr.maturity_date = dt.datetime(2020, 1, 2)
+        tr.day_count = DayCountConv.ACT_360
         tr.calculate_trade_dv01()
 
         # % 2. Create a hedge
@@ -1235,11 +1227,11 @@ class RiskPathTest(unittest.TestCase):
         tr.trade_date = date_0
         tr.ccy = 'EUR'
         # Instrument static
-        tr.Coupon = 0.02
-        tr.CouponFrequency = Frequency.ANNUAL
-        tr.IssueDate = dt.datetime(2010, 1, 2)
-        tr.MaturityDate = dt.datetime(2020, 1, 2)
-        tr.DayCount = DayCountConv.ACT_360
+        tr.coupon = 0.02
+        tr.coupon_frequency = Frequency.ANNUAL
+        tr.issue_date = dt.datetime(2010, 1, 2)
+        tr.maturity_date = dt.datetime(2020, 1, 2)
+        tr.day_count = DayCountConv.ACT_360
         tr.calculate_trade_dv01()
 
         riskPathArr = RiskPath.createOrUpdateRiskPath(dt.datetime.combine(date_0, time_0), riskPathArr,
@@ -1301,7 +1293,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Open,
                              msg=None)  # riskpath status should be "ForceClose"
-        self.assertLessEqual(riskPathArr[0].notional - 17 * 1e6, tolerance_dollar,
+        self.assertLessEqual(riskPathArr[0].Notional - 17 * 1e6, tolerance_dollar,
                              msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 2032)/2032, 0.02,
                              msg=None)  # check UPnl for ClientPnl_1
@@ -1331,11 +1323,11 @@ class RiskPathTest(unittest.TestCase):
         tr.trade_date = date_0
         tr.ccy = 'EUR'
         # Instrument static
-        tr.Coupon = 0.02
-        tr.CouponFrequency = Frequency.SEMI
-        tr.IssueDate = dt.datetime(2010, 6, 2)
-        tr.MaturityDate = dt.datetime(2020, 6, 2)
-        tr.DayCount = DayCountConv.ACT_360
+        tr.coupon = 0.02
+        tr.coupon_frequency = Frequency.SEMI
+        tr.issue_date = dt.datetime(2010, 6, 2)
+        tr.maturity_date = dt.datetime(2020, 6, 2)
+        tr.day_count = DayCountConv.ACT_360
         tr.calculate_trade_dv01()
 
         # % 2. Create a hedge
@@ -1361,11 +1353,11 @@ class RiskPathTest(unittest.TestCase):
         tr.trade_date = date_0
         tr.ccy = 'EUR'
         # Instrument static
-        tr.Coupon = 0.02
-        tr.CouponFrequency = Frequency.SEMI
-        tr.IssueDate = dt.datetime(2010, 6, 2)
-        tr.MaturityDate = dt.datetime(2020, 6, 2)
-        tr.DayCount = DayCountConv.ACT_360
+        tr.coupon = 0.02
+        tr.coupon_frequency = Frequency.SEMI
+        tr.issue_date = dt.datetime(2010, 6, 2)
+        tr.maturity_date = dt.datetime(2020, 6, 2)
+        tr.day_count = DayCountConv.ACT_360
         tr.calculate_trade_dv01()
 
         riskPathArr = RiskPath.createOrUpdateRiskPath(dt.datetime.combine(date_0, time_0), riskPathArr,
@@ -1409,7 +1401,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Open,
                              msg=None)  # riskpath status should be "ForceClose"
-        self.assertLessEqual(riskPathArr[0].notional - 17 * 1e6, tolerance_dollar,
+        self.assertLessEqual(riskPathArr[0].Notional - 17 * 1e6, tolerance_dollar,
                              msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1574), tolerance_dollar,
                              msg=None)  # check UPnl for ClientPnl_1
@@ -1441,11 +1433,11 @@ class RiskPathTest(unittest.TestCase):
         tr.trade_date = date_0
         tr.ccy = 'EUR'
         # Instrument static
-        tr.Coupon = 0.02
-        tr.CouponFrequency = Frequency.SEMI
-        tr.IssueDate = dt.datetime(2010, 1, 2)
-        tr.MaturityDate = dt.datetime(2020, 1, 2)
-        tr.DayCount = DayCountConv.ACT_360
+        tr.coupon = 0.02
+        tr.coupon_frequency = Frequency.SEMI
+        tr.issue_date = dt.datetime(2010, 1, 2)
+        tr.maturity_date = dt.datetime(2020, 1, 2)
+        tr.day_count = DayCountConv.ACT_360
         tr.calculate_trade_dv01()
 
         # % 2. Create a hedge
@@ -1471,11 +1463,11 @@ class RiskPathTest(unittest.TestCase):
         tr.trade_date = date_0
         tr.ccy = 'EUR'
         # Instrument static
-        tr.Coupon = 0.02
-        tr.CouponFrequency = Frequency.SEMI
-        tr.IssueDate = dt.datetime(2010, 1, 2)
-        tr.MaturityDate = dt.datetime(2020, 1, 2)
-        tr.DayCount = DayCountConv.ACT_360
+        tr.coupon = 0.02
+        tr.coupon_frequency = Frequency.SEMI
+        tr.issue_date = dt.datetime(2010, 1, 2)
+        tr.maturity_date = dt.datetime(2020, 1, 2)
+        tr.day_count = DayCountConv.ACT_360
         tr.calculate_trade_dv01()
 
         riskPathArr = RiskPath.createOrUpdateRiskPath(dt.datetime.combine(date_0, time_0), riskPathArr,
@@ -1558,7 +1550,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Open,
                              msg=None)  # riskpath status should be "ForceClose"
-        self.assertLessEqual(riskPathArr[0].notional - 17 * 1e6, tolerance_dollar,
+        self.assertLessEqual(riskPathArr[0].Notional - 17 * 1e6, tolerance_dollar,
                              msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 2204)/2204, tolerance_dollar,
                              msg=None)  # check UPnl for ClientPnl_1
@@ -1601,7 +1593,7 @@ class RiskPathTest(unittest.TestCase):
         h1.TradeObj = tr
         h1.sym = tr.sym
         h1.Beta = 0.56
-        h1.Hedgenotional = 100000
+        h1.HedgeNotional = 100000
         h1.calculate_initial_hedge_cost()
         hedgeArr.append(h1)
 
@@ -1615,7 +1607,7 @@ class RiskPathTest(unittest.TestCase):
         h2.TradeObj = tr
         h2.sym = tr.sym
         h2.Beta = 0.85
-        h2.Hedgenotional = 100000
+        h2.HedgeNotional = 100000
         h2.calculate_initial_hedge_cost()
         hedgeArr.append(h2)
 
@@ -1652,7 +1644,7 @@ class RiskPathTest(unittest.TestCase):
         h3.TradeObj = tr
         h3.sym = tr.sym
         h3.Beta = 0.56
-        h3.Hedgenotional = 100000
+        h3.HedgeNotional = 100000
         h3.calculate_initial_hedge_cost()
         hedgeArr.append(h3)
 
@@ -1666,7 +1658,7 @@ class RiskPathTest(unittest.TestCase):
         h4.TradeObj = tr
         h4.sym = tr.sym
         h4.Beta = 0.85
-        h4.Hedgenotional = 100000
+        h4.HedgeNotional = 100000
         h4.calculate_initial_hedge_cost()
         hedgeArr.append(h4)
 
@@ -1734,7 +1726,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Open,
                              msg=None)  # riskpath status should be "ForceClose"
-        self.assertLessEqual(riskPathArr[0].notional - 17000000, tolerance_dollar, msg=None)  # riskpath notional = 0
+        self.assertLessEqual(riskPathArr[0].Notional - 17000000, tolerance_dollar, msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1330), tolerance_dollar,
                              msg=None)  # check UPnl for ClientPnl_1
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[1].UPnl - 1900), tolerance_dollar,
@@ -1781,7 +1773,7 @@ class RiskPathTest(unittest.TestCase):
         h1.TradeObj = tr
         h1.sym = tr.sym
         h1.Beta = 0.56
-        h1.Hedgenotional = 100000
+        h1.HedgeNotional = 100000
         h1.calculate_initial_hedge_cost()
         hedgeArr.append(h1)
 
@@ -1795,7 +1787,7 @@ class RiskPathTest(unittest.TestCase):
         h2.TradeObj = tr
         h2.sym = tr.sym
         h2.Beta = 0.85
-        h2.Hedgenotional = 100000
+        h2.HedgeNotional = 100000
         h2.calculate_initial_hedge_cost()
         hedgeArr.append(h2)
 
@@ -1832,7 +1824,7 @@ class RiskPathTest(unittest.TestCase):
         h3.TradeObj = tr
         h3.sym = tr.sym
         h3.Beta = 0.56
-        h3.Hedgenotional = 100000
+        h3.HedgeNotional = 100000
         h3.calculate_initial_hedge_cost()
         hedgeArr.append(h3)
 
@@ -1846,7 +1838,7 @@ class RiskPathTest(unittest.TestCase):
         h4.TradeObj = tr
         h4.sym = tr.sym
         h4.Beta = 0.85
-        h4.Hedgenotional = 100000
+        h4.HedgeNotional = 100000
         h4.calculate_initial_hedge_cost()
         hedgeArr.append(h4)
 
@@ -1940,7 +1932,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Open,
                              msg=None)  # riskpath status should be "ForceClose"
-        self.assertLessEqual(riskPathArr[0].notional - 17000000, tolerance_dollar, msg=None)  # riskpath notional = 0
+        self.assertLessEqual(riskPathArr[0].Notional - 17000000, tolerance_dollar, msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1260), tolerance_dollar,
                              msg=None)  # check UPnl for ClientPnl_1
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[1].UPnl - 1800), tolerance_dollar,
@@ -1985,7 +1977,7 @@ class RiskPathTest(unittest.TestCase):
         h1.TradeObj = tr
         h1.sym = tr.sym
         h1.Beta = 0.56
-        h1.Hedgenotional = 100000
+        h1.HedgeNotional = 100000
         h1.calculate_initial_hedge_cost()
         hedgeArr.append(h1)
 
@@ -1999,7 +1991,7 @@ class RiskPathTest(unittest.TestCase):
         h2.TradeObj = tr
         h2.sym = tr.sym
         h2.Beta = 0.85
-        h2.Hedgenotional = 100000
+        h2.HedgeNotional = 100000
         h2.calculate_initial_hedge_cost()
         hedgeArr.append(h2)
 
@@ -2036,7 +2028,7 @@ class RiskPathTest(unittest.TestCase):
         h3.TradeObj = tr
         h3.sym = tr.sym
         h3.Beta = 0.56
-        h3.Hedgenotional = 100000
+        h3.HedgeNotional = 100000
         h3.calculate_initial_hedge_cost()
         hedgeArr.append(h3)
 
@@ -2050,7 +2042,7 @@ class RiskPathTest(unittest.TestCase):
         h4.TradeObj = tr
         h4.sym = tr.sym
         h4.Beta = 0.85
-        h4.Hedgenotional = 100000
+        h4.HedgeNotional = 100000
         h4.calculate_initial_hedge_cost()
         hedgeArr.append(h4)
 
@@ -2170,7 +2162,7 @@ class RiskPathTest(unittest.TestCase):
                              msg=None)  # second trade was a RR trade
         self.assertLessEqual(len(riskPathArr[0].ClientPnlArr[2].HedgeArr), 0,
                              msg=None)  # second trade was a RR trade. So no hedges
-        self.assertLessEqual(riskPathArr[0].notional - 0, tolerance_percent, msg=None)  # riskpath notional = 0
+        self.assertLessEqual(riskPathArr[0].Notional - 0, tolerance_percent, msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1155)/1155, tolerance_percent,
                              msg=None)  # check UPnl for ClientPnl_1
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[1].UPnl - 1748)/1748, tolerance_percent,
@@ -2215,7 +2207,7 @@ class RiskPathTest(unittest.TestCase):
         h1.TradeObj = tr
         h1.sym = tr.sym
         h1.Beta = 0.56
-        h1.Hedgenotional = 100000
+        h1.HedgeNotional = 100000
         h1.calculate_initial_hedge_cost()
         hedgeArr.append(h1)
 
@@ -2229,7 +2221,7 @@ class RiskPathTest(unittest.TestCase):
         h2.TradeObj = tr
         h2.sym = tr.sym
         h2.Beta = 0.85
-        h2.Hedgenotional = 100000
+        h2.HedgeNotional = 100000
         h2.calculate_initial_hedge_cost()
         hedgeArr.append(h2)
 
@@ -2266,7 +2258,7 @@ class RiskPathTest(unittest.TestCase):
         h3.TradeObj = tr
         h3.sym = tr.sym
         h3.Beta = 0.56
-        h3.Hedgenotional = 100000
+        h3.HedgeNotional = 100000
         h3.calculate_initial_hedge_cost()
         hedgeArr.append(h3)
 
@@ -2280,7 +2272,7 @@ class RiskPathTest(unittest.TestCase):
         h4.TradeObj = tr
         h4.sym = tr.sym
         h4.Beta = 0.85
-        h4.Hedgenotional = 100000
+        h4.HedgeNotional = 100000
         h4.calculate_initial_hedge_cost()
         hedgeArr.append(h4)
 
@@ -2376,8 +2368,8 @@ class RiskPathTest(unittest.TestCase):
                              msg=None)  # second trade was a RR trade
         self.assertLessEqual(len(riskPathArr[0].ClientPnlArr[2].HedgeArr), 0,
                              msg=None)  # second trade was a RR trade. So no hedges
-        self.assertLessEqual(riskPathArr[0].notional - 0, tolerance_percent, msg=None)  # riskpath notional = 0
-        self.assertLessEqual(riskPathArr[1].notional - 3000000, tolerance_percent, msg=None)  # riskpath notional = 0
+        self.assertLessEqual(riskPathArr[0].Notional - 0, tolerance_percent, msg=None)  # riskpath notional = 0
+        self.assertLessEqual(riskPathArr[1].Notional - 3000000, tolerance_percent, msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1155) / 1155, tolerance_percent,
                              msg=None)  # check UPnl for ClientPnl_1
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].HPnl - (-2039)) / abs(-2039), tolerance_percent,
@@ -2426,7 +2418,7 @@ class RiskPathTest(unittest.TestCase):
         h1.TradeObj = tr
         h1.sym = tr.sym
         h1.Beta = 0.56
-        h1.Hedgenotional = 100000
+        h1.HedgeNotional = 100000
         h1.calculate_initial_hedge_cost()
         hedgeArr.append(h1)
 
@@ -2477,7 +2469,7 @@ class RiskPathTest(unittest.TestCase):
         h3.TradeObj = tr
         h3.sym = tr.sym
         h3.Beta = 0.56
-        h3.Hedgenotional = 100000
+        h3.HedgeNotional = 100000
         h3.calculate_initial_hedge_cost()
         hedgeArr.append(h3)
 
@@ -2560,7 +2552,7 @@ class RiskPathTest(unittest.TestCase):
         self.assertLessEqual(len(riskPathArr), 1, msg=None)  # only 1 riskpath
         self.assertLessEqual(riskPathArr[0].Status, RiskPathStatus.Open,
                              msg=None)  # riskpath status should be "ForceClose"
-        self.assertLessEqual(riskPathArr[0].notional - 17000000, tolerance_dollar,
+        self.assertLessEqual(riskPathArr[0].Notional - 17000000, tolerance_dollar,
                              msg=None)  # riskpath notional = 0
         self.assertLessEqual(np.abs(riskPathArr[0].ClientPnlArr[0].UPnl - 1330), tolerance_dollar,
                              msg=None)  # check UPnl for ClientPnl_1

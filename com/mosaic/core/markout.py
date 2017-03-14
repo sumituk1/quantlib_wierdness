@@ -1,4 +1,4 @@
-from com.mosaic.trade import Trade,Quote
+from core.trade import Trade,Quote
 
 class MarkoutCalculator:
     '''

@@ -1,16 +1,11 @@
-from com.mosaic.hedge import *
 import random
-from com.mosaic.trade import *
-from common.read_config import *
+
+from core.hedge import *
+from core.trade import *
+
 # from markout import *
-from common.constants import *
-import numpy as np
-import matplotlib.pyplot as plt
-import datetime as dt
-import time
-from com.mosaic.riskpath import *
-from com.mosaic.riskpath_status import *
-import math
+from core.riskpath import *
+from core.riskpath_status import *
 
 
 class ClientPnl:
@@ -82,7 +77,7 @@ class ClientPnl:
 
         # % First add the hedge to the HedgeArray
         if not h_arr is None:
-            if not self.TradeObj.IsBenchmark:
+            if not self.TradeObj.is_benchmark:
                 for i in range(len(h_arr)):
                     # % 1.Add this NEW hedge to the clientPnlArr
                     self.addHedgeToArr(h_arr[i])

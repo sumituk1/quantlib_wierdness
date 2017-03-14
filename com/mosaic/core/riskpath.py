@@ -1,12 +1,12 @@
-from common.read_config import *
-from com.mosaic.client_pnl import *
-from com.mosaic.trade import *
-from com.mosaic.quantlib.bond.fixed_bond import *
-import datetime as dt
 import copy
-from common.isda_daycounters import (actual360, actual365,
-                                     actualactual, thirty360)
-from com.mosaic.riskpath_status import *
+import datetime as dt
+
+from core.client_pnl import *
+from core.trade import *
+
+from quantlib.bond.fixed_bond import *
+from common.read_config import *
+from core.riskpath_status import *
 
 
 def str2bool(v):
@@ -228,10 +228,10 @@ class RiskPath:
                 # Split the trade and start a new RP
                 bSplitRRTrade = True
                 tr_new_RP = copy.deepcopy(trade)  # do a deep copy of the existing trade object
-                tr_new_RP.Notional = trade.Notional - self.Notional  # Reset the newly created TradeNotional
+                tr_new_RP.notional = trade.notional - self.Notional  # Reset the newly created TradeNotional
                 tr_new_RP.calculate_trade_dv01()
                 tr_add_to_RP = copy.deepcopy(trade)
-                tr_add_to_RP.Notional = self.Notional  # Reset the newly created TradeNotional
+                tr_add_to_RP.notional = self.Notional  # Reset the newly created TradeNotional
                 return True, tr_new_RP, tr_add_to_RP,bSplitRRTrade
 
         return False, None, trade,bSplitRRTrade
