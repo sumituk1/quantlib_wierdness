@@ -1,5 +1,5 @@
 import datetime as dt
-from .constants import *
+from com.mosaic.constants import *
 import math
 import numpy as np
 
@@ -64,7 +64,7 @@ class FixedIncomeTrade(Trade):
     on_repo = None
     duration = None
     trade_added_to_rp = False
-
+    is_d2d_force_close = False
     # Instrument Static
     coupon = 0.02
     coupon_frequency = Frequency.SEMI
@@ -113,7 +113,7 @@ class FixedIncomeTrade(Trade):
             self.on_repo = math.nan
 
     def calculate_trade_dv01(self):
-        self.DV01 = self.Duration * self.Notional * 0.0001
+        self.DV01 = self.duration * self.notional * 0.0001
         # return tradeDV01
 
     def __str__(self):
