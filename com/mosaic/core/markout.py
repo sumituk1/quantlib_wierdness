@@ -1,4 +1,6 @@
 from core.trade import Trade, Quote
+from com.mosaic.common.constants import *
+from common.read_config import *
 import datetime as dt
 
 
@@ -23,8 +25,10 @@ class MarkoutCalculator:
         else:
             for mk in self.lags_list:
                 mkmsg = {'trade': msg,
-                         'trade id': msg.trade_id,
-                         'initial_price': self.last_price,
+                         'trade_id': msg.trade_id,
+                         'notional': msg.notional,
+                         'side': msg.side,
+                         'initial_price': msg.traded_px, # self.last_price,
                          'next_timestamp': msg.timestamp + dt.timedelta(0, mk),  # mk in secs.
                          'dt': mk  # mk in secs
                          }
@@ -36,7 +40,7 @@ class MarkoutCalculator:
 
         if isinstance(msg, Trade):
             self.generate_markout_requests(msg)
-        # elif isinstance(msg, Quote) or hasattr(msg, 'mid'):
+            # elif isinstance(msg, Quote) or hasattr(msg, 'mid'):
             # self.last_price = msg.mid()
         elif not isinstance(msg, Quote):
             print(msg)
@@ -49,6 +53,48 @@ class MarkoutCalculator:
         for x in completed:
             x['final_price'] = self.last_price
             x['markout'] = x['final_price'] - x['initial_price']
+
+        if isinstance(msg, Quote) or hasattr(msg, 'mid'):
+            self.last_price = msg.mid()
+
+        return completed
+
+
+class GovtBondMarkoutCalculator(MarkoutCalculator):
+    # Constructor
+    def __init__(self, lags_list=None):
+        if lags_list is None:
+            # get the lags_list from config file
+            lags_list_str = get_data_given_section_and_key("GovtBond_Markout", "lags_list")
+            lags_list = [float(x) for x in lags_list_str.split(',')]
+        else:
+            lags_list = lags_list
+
+        self.notional = 0
+        # all properties that any trade can have belong in the superclass
+        MarkoutCalculator.__init__(self, lags_list=lags_list)
+
+    def __call__(self, msg):
+        self.last_timestamp = msg.timestamp
+
+        if isinstance(msg, Trade):
+            self.generate_markout_requests(msg)
+            # elif isinstance(msg, Quote) or hasattr(msg, 'mid'):
+            # self.last_price = msg.mid()
+        elif not isinstance(msg, Quote):
+            print(msg)
+        # determine which pending markout requests we can complete now
+
+        completed = [x for x in self.pending if x['next_timestamp'] <
+                     self.last_timestamp]
+        self.pending = [x for x in self.pending if x not in completed]
+
+        for x in completed:
+            x['final_price'] = self.last_price
+            if x['side'] == TradeSide.Bid:
+                x['markout'] = (x['final_price'] - x['initial_price'])/100*x['notional']
+            else:
+                x['markout'] = -1*(x['final_price'] - x['initial_price']) / 100 * x['notional']
 
         if isinstance(msg, Quote) or hasattr(msg, 'mid'):
             self.last_price = msg.mid()
