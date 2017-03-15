@@ -9,7 +9,7 @@ from core.constants import *
 class Quote:
     def __init__(self, instr, timestamp, bid, ask):
         self.instr = instr
-        self.timestamp = float(timestamp)
+        self.timestamp = timestamp # <-- should be in datetime format
         self.bid = float(bid)
         self.ask = float(ask)
 

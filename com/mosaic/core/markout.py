@@ -1,4 +1,6 @@
-from core.trade import Trade,Quote
+from core.trade import Trade, Quote
+import datetime as dt
+
 
 class MarkoutCalculator:
     '''
@@ -21,9 +23,10 @@ class MarkoutCalculator:
         else:
             for mk in self.lags_list:
                 mkmsg = {'trade': msg,
+                         'trade id': msg.trade_id,
                          'initial_price': self.last_price,
-                         'next_timestamp': msg.timestamp + mk,
-                         'dt': mk
+                         'next_timestamp': msg.timestamp + dt.timedelta(0, mk),  # mk in secs.
+                         'dt': mk  # mk in secs
                          }
                 # print(mkmsg)
                 self.pending.append(mkmsg)
@@ -33,14 +36,12 @@ class MarkoutCalculator:
 
         if isinstance(msg, Trade):
             self.generate_markout_requests(msg)
-        elif isinstance(msg, Quote) or hasattr(msg, 'mid'):
-            self.last_price = msg.mid()
-        else:
+        # elif isinstance(msg, Quote) or hasattr(msg, 'mid'):
+            # self.last_price = msg.mid()
+        elif not isinstance(msg, Quote):
             print(msg)
-
-        # print(msg.instr, msg.timestamp, self.last_price, type(msg))
-
         # determine which pending markout requests we can complete now
+
         completed = [x for x in self.pending if x['next_timestamp'] <=
                      self.last_timestamp]
         self.pending = [x for x in self.pending if x not in completed]
@@ -48,6 +49,9 @@ class MarkoutCalculator:
         for x in completed:
             x['final_price'] = self.last_price
             x['markout'] = x['final_price'] - x['initial_price']
+
+        if isinstance(msg, Quote) or hasattr(msg, 'mid'):
+            self.last_price = msg.mid()
 
         return completed
 
