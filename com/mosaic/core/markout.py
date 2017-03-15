@@ -42,7 +42,7 @@ class MarkoutCalculator:
             print(msg)
         # determine which pending markout requests we can complete now
 
-        completed = [x for x in self.pending if x['next_timestamp'] <=
+        completed = [x for x in self.pending if x['next_timestamp'] <
                      self.last_timestamp]
         self.pending = [x for x in self.pending if x not in completed]
 
