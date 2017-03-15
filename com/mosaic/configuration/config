@@ -7,6 +7,9 @@ ONRepo = 0.002
 IncludeCostOfCarry = True
 MinHedgeDV01 = 500
 
+[GovtBond_Markout]
+lags_list = 0,60,300,3600
+
 [QuantLib-Calendar]
 
 [FX]
