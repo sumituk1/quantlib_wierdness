@@ -1,15 +1,13 @@
 import datetime as dt
 import math
-
 import numpy as np
-
-from core.constants import *
+from com.mosaic.core.constants import *
 
 
 class Quote:
     def __init__(self, sym, timestamp, bid, ask):
         self.sym = sym
-        self.timestamp = timestamp # <-- should be in datetime format
+        self.timestamp = timestamp  # <-- should be in datetime format
         self.bid = float(bid)
         self.ask = float(ask)
 
@@ -24,18 +22,24 @@ class Quote:
 
 
 class Trade:
-    def __init__(self, trade_id=None, instr=None,
-                 timestamp=None, size=None,
-                 notional=None, side=None, traded_px=None,
-                 client_sys_key=None, trade_date=None,
-                 trade_settle_date=None, trade_rc=None,
-                 sales=None, trader=None
+    def __init__(self, trade_id, sym,
+                 timestamp,
+                 notional,
+                 side,
+                 traded_px,
+                 trade_date,
+                 trade_settle_date,
+                 ccy = Currency.EUR,
+                 client_sys_key=None,
+                 trade_rc=None,
+                 sales=None,
+                 trader=None,
+                 delta=None
                  ):
         # properties of trade itself
         self.trade_id = trade_id
-        self.instr = instr
+        self.sym = sym
         self.timestamp = timestamp
-        self.size = size
         self.notional = notional
         self.side = side
         self.traded_px = traded_px
@@ -45,14 +49,16 @@ class Trade:
         self.trade_rc = trade_rc  # revenue credits? Do JPM use them?
         self.sales = sales
         self.trader = trader
+        self.delta = delta
+        self.ccy = ccy
 
     @property
     def __str__(self):
-        return 'TRADE: trade_id:' + str(self.trade_id) +\
-               'instr:' + str(self.instr) + \
+        return 'TRADE: trade_id:' + str(self.trade_id) + \
+               'instr:' + str(self.sym) + \
                ' timestamp:' + str(self.timestamp) + \
                ' price:' + str(self.traded_px) + \
-               ' size:' + str(self.size)
+               ' size:' + str(self.notional)
 
 
 class FixedIncomeTrade(Trade):
@@ -73,57 +79,71 @@ class FixedIncomeTrade(Trade):
     day_count = DayCountConv.ACT_365
 
     # Constructor
-    def __init__(self, *varargin):
+    def __init__(self, trade_id, sym,
+                 timestamp,
+                 notional,
+                 side,
+                 traded_px,
+                 trade_date,
+                 trade_settle_date,
+                 duration,
+                 ccy = Currency.EUR,
+                 client_sys_key=None,
+                 trade_rc=None,
+                 sales=None, trader=None, delta=None,
+                 spot_settle_date=None, issue_date=None, maturity_date=None,coupon=None,coupon_frequency=None):
+        # all properties that any trade can have belong in the superclass
+        Trade.__init__(self,trade_id=trade_id,
+                       timestamp=timestamp,
+                       sym=sym,
+                       notional=notional,
+                       side=side,
+                       traded_px=traded_px,
+                       client_sys_key=client_sys_key,
+                       trade_date=trade_date,
+                       trade_settle_date=trade_settle_date,
+                       # trade_rc=7,  # revenue credits? Does everybody use them?
+                       sales=sales,
+                       trader=trader,
+                       ccy=ccy)
 
-        if len(varargin) == 1:
-            trade_in = varargin[0]
-            # all properties that any trade can have belong in the superclass
-            Trade.__init__(trade_id=trade_in[0],
-                             notional=trade_in[2],
-                             side=trade_in[3],
-                             traded_px=trade_in[4],
-                             client_sys_key=trade_in[7],
-                             trade_date=trade_in[11],
-                             trade_settle_date=trade_in[12],
-                             trade_rc=trade_in[13],  # revenue credits? Does everybody use them?
-                             sales=trade_in[14],
-                             trader=trade_in[15])
-            # properties of the general instrument
-            self.sym = trade_in[1]
-            self.is_benchmark = trade_in[10]
-            self.ccy = trade_in[17]
-            self.tenor = trade_in[18]
-            # instrument static
-            self.issue_date = trade_in[22]
-            self.maturity_date = trade_in[23]
-            self.coupon = trade_in[24]
-            self.coupon_frequency = trade_in[25]
-            self.DV01 = trade_in[19]  # DV01 of unit notional?
-            self.duration = trade_in[8]
-            self.on_repo = trade_in[9]  # what does this mean?
-            # properties of the instrument on that date
-            self.spot_settle_date = trade_in[20]
-            # properties of last quote observed before trade?
-            self.bid_px = trade_in[5]
-            self.ask_px = trade_in[6]
-            self.mid_px = np.mean(self.bid_px, self.ask_px)
+        # properties of the general instrument
+        self.trade_rc= trade_rc
+        self.duration = duration
+        self.is_benchmark = False
 
-            # what is that?
-            self.risk_path_id = trade_in[21]
-            self.mid_px_ts = trade_in[16]  # key value pair
+        self.calculate_trade_delta(delta)
+        # instrument static
+        self.issue_date = issue_date
+        self.maturity_date = maturity_date
+        self.coupon = coupon
+        self.coupon_frequency = coupon_frequency
+        self.spot_settle_date = spot_settle_date
+        # self.on_repo = trade_in[9]  # what does this mean?
+        # properties of the instrument on that date
+
+
+        # # properties of last quote observed before trade?
+        # self.bid_px = trade_in[5]
+        # self.ask_px = trade_in[6]
+        # self.mid_px = np.mean(self.bid_px, self.ask_px)
+
+        # what is that?
+        # self.risk_path_id = trade_in[21]
+        # self.mid_px_ts = trade_in[16]  # key value pair
+
+    def calculate_trade_delta(self, delta):
+        if delta is None:
+            self.delta = self.duration * self.notional * 0.0001
         else:
-            self.on_repo = math.nan
-
-    def calculate_trade_dv01(self):
-        self.DV01 = self.duration * self.notional * 0.0001
-        # return tradeDV01
+            self.delta = delta
 
     def __str__(self):
-        return "Trade: TradeId - %s, Sym - %s, TradeDate - %s, SpotSettleDate - %s, TradeSettleDate - %s, Side - %s, " \
-               "TradedPx - %s, MidPx - %s, DV01 - %s" % \
-               (self.trade_id, self.sym, self.trade_date, self.spot_settle_date, self.trade_settle_date,
-                self.side, self.traded_px, self.mid_px_ts["mid"], self.DV01)
-
+        return 'TRADE: trade_id:' + str(self.trade_id) + \
+               ' instr:' + str(self.sym) + \
+               ' timestamp:' + str(self.timestamp) + \
+               ' price:' + str(self.traded_px) + \
+               ' size:' + str(self.notional)
 
 if __name__ == '__main__':
     date_0 = dt.datetime(2017, 1, 2)
@@ -140,4 +160,4 @@ if __name__ == '__main__':
     tr.on_repo = 0.02
     tr.trade_date = date_0
     tr.ccy = 'EUR'
-    tr.calculate_trade_dv01()
+    # tr.calculate_trade_dv01()

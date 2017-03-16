@@ -1,7 +1,7 @@
 import csv
-from core.trade import Quote, Trade,FixedIncomeTrade
 import datetime as dt
-from core.constants import *
+from com.mosaic.core.trade import Quote, Trade, FixedIncomeTrade
+from com.mosaic.core.constants import *
 
 
 # Create a Quote object by reading data from csv.
@@ -32,20 +32,16 @@ def file_to_trade_list(fname):
 
     # convert them to Trade objects, assuming first row is headers
     for x in my_list[1:]:
-        tr = Trade()
-        tr.trade_id = x[1]
-        tr.sym = x[4]
-        tr.notional = float(x[6])
-        tr.timestamp = dt.datetime.strptime(x[13], "%d/%m/%Y %H:%M")
-        tr.side = TradeSide.Ask if x[10] == "Ask" else TradeSide.Bid
-        tr.traded_px = float(x[7])
-        # tr.mid_px = 96.935
-        tr.client_key = x[17]
-        tr.duration = float(x[9])
-        # tr.on_repo = 0.02
-        tr.trade_date = x[14]
-        tr.traded_px = float(x[7])
-        tr.ccy = 'EUR'
-        # tr.calculate_trade_dv01()
+        tr = FixedIncomeTrade( trade_id=x[1],
+                               sym=x[4],
+                               notional=float(x[6]),
+                               timestamp=dt.datetime.strptime(x[13], "%d/%m/%Y %H:%M"),
+                               side=TradeSide.Ask if x[10] == "Ask" else TradeSide.Bid,
+                               traded_px=float(x[7]),
+                               client_sys_key=x[17],
+                               trade_date=x[14],
+                               ccy=Currency.EUR,
+                               trade_settle_date=x[15],
+                               duration=float(x[9]))
         trade_list.append(tr)
     return trade_list
