@@ -102,9 +102,4 @@ class GovtBondMarkoutCalculator(MarkoutCalculator):
         return completed
 
 
-class MarkoutCalculatorFactory:
-    def __init__(self, lags_list):
-        self.lags_list = lags_list
 
-    def __call__(self):
-        return MarkoutCalculator(self.lags_list)

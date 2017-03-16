@@ -3,7 +3,7 @@ import math
 
 import numpy as np
 
-from core.constants import *
+from mosaic.core.constants import *
 
 
 class Quote:
