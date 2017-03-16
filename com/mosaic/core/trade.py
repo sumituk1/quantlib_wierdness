@@ -7,8 +7,8 @@ from mosaic.core.constants import *
 
 
 class Quote:
-    def __init__(self, instr, timestamp, bid, ask):
-        self.instr = instr
+    def __init__(self, sym, timestamp, bid, ask):
+        self.sym = sym
         self.timestamp = timestamp # <-- should be in datetime format
         self.bid = float(bid)
         self.ask = float(ask)
@@ -17,7 +17,7 @@ class Quote:
         return 0.5 * (self.ask + self.bid)
 
     def __str__(self):
-        return 'QUOTE: instr:' + str(self.instr) + \
+        return 'QUOTE: instr:' + str(self.sym) + \
                ' timestamp:' + str(self.timestamp) + \
                ' bid:' + str(self.bid) + \
                ' ask:' + str(self.ask)
@@ -78,7 +78,7 @@ class FixedIncomeTrade(Trade):
         if len(varargin) == 1:
             trade_in = varargin[0]
             # all properties that any trade can have belong in the superclass
-            super().__init__(trade_id=trade_in[0],
+            Trade.__init__(trade_id=trade_in[0],
                              notional=trade_in[2],
                              side=trade_in[3],
                              traded_px=trade_in[4],

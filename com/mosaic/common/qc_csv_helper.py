@@ -13,13 +13,13 @@ def file_to_quote_list(fname):
 
     # convert them to Quote objects, assuming first row is headers
 
-    quote = [Quote(instr=x[3], ask=x[2],
-                    timestamp=dt.datetime.strptime(x[0], "%d/%m/%Y %H:%M"),
-                    bid=x[1]) for x in my_list[1:]]
+    quote = [Quote(sym=x[3], ask=x[2],
+                   timestamp=dt.datetime.strptime(x[0], "%d/%m/%Y %H:%M"),
+                   bid=x[1]) for x in my_list[1:]]
     # make sure they're sorted in ascending order
     quote = sorted(quote, key=lambda x: x.timestamp)
 
-    return quote[0].instr, quote
+    return quote[0].sym, quote
 
 
 # Create a Trade object by reading data from csv.
