@@ -25,6 +25,7 @@ class MarkoutCalculator:
             print(msg)
             raise ValueError('A trade arrived before any quote data!')
         else:
+            # for each markout lag in lags_list, create a markout_msg for this trade
             for mk in self.lags_list:
                 # mkmsg = {'trade': msg,
                 #          'trade_id': msg.trade_id,
@@ -100,7 +101,7 @@ class GovtBondMarkoutCalculator(MarkoutCalculator):
         MarkoutCalculator.__init__(self, lags_list=lags_list)
 
     def __call__(self, msg):
-        MarkoutCalculator.__call__(self , msg)
+        return MarkoutCalculator.__call__(self, msg)
 
         # def __call__(self, msg):
         #     self.last_timestamp = msg.timestamp

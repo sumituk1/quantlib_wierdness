@@ -32,9 +32,9 @@ class MarkoutMessage:
 
     @property
     def __str__(self):
-        return 'trade:' + self.trade + \
-               ' instr:' + str(self.sym) + \
-               ' next_timestamp:' + str(self.next_timestamp) + \
+        return 'trade_id:' + self.trade_id + \
+               ' instr:' + self.sym + \
+               ' next_timestamp:' + self.next_timestamp.strftime("%d/%m/%Y %H:%M") + \
                ' dt:' + str(self.dt) + \
                ' price_markout:' + str(self.price_markout) + \
                ' yield_markout:' + str(self.yield_markout)
