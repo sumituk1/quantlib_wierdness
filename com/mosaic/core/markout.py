@@ -1,6 +1,7 @@
 from core.trade import Trade, Quote
 from com.mosaic.common.constants import *
 from common.read_config import *
+from common.constants import ProductClass
 import datetime as dt
 
 
@@ -27,6 +28,7 @@ class MarkoutCalculator:
                 mkmsg = {'trade': msg,
                          'trade_id': msg.trade_id,
                          'notional': msg.notional,
+                         'sym': msg.sym,
                          'side': msg.side,
                          'initial_price': msg.traded_px, # self.last_price,
                          'next_timestamp': msg.timestamp + dt.timedelta(0, mk),  # mk in secs.
@@ -79,8 +81,8 @@ class GovtBondMarkoutCalculator(MarkoutCalculator):
 
         if isinstance(msg, Trade):
             self.generate_markout_requests(msg)
-            # elif isinstance(msg, Quote) or hasattr(msg, 'mid'):
-            # self.last_price = msg.mid()
+        elif isinstance(msg, Quote):
+            self.sym = msg.sym
         elif not isinstance(msg, Quote):
             print(msg)
         # determine which pending markout requests we can complete now
@@ -103,8 +105,12 @@ class GovtBondMarkoutCalculator(MarkoutCalculator):
 
 
 class MarkoutCalculatorFactory:
-    def __init__(self, lags_list):
+    def __init__(self, product_class, lags_list=None):
+        self.product_class = product_class
         self.lags_list = lags_list
 
     def __call__(self):
-        return MarkoutCalculator(self.lags_list)
+        if self.product_class == ProductClass.GovtBond:
+            return GovtBondMarkoutCalculator()
+        elif self.product_class == ProductClass.CorpBond:
+            return MarkoutCalculator(lags_list= self.lags_list)
