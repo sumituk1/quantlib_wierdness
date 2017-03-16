@@ -3,9 +3,11 @@
 import QuantLib as ql
 from enum import Enum
 
+
 class BootStrapMethod:
     PiecewiseLogCubicDiscount = "PicewiseLogCubicDiscount"
     PiecewiseFlatForward = "PiecewiseFlatForward"
+
 
 class DayCountConv:
     ACT_ACT = "ACT/ACT"
@@ -13,12 +15,12 @@ class DayCountConv:
     ACT_360 = "ACT/360"
     ACT_365 = "ACT/365"
     ACT_365L = "ACT/365L"
-    ACT_252 = "ACT/252" # -> Business252 in Quantlib
+    ACT_252 = "ACT/252"  # -> Business252 in Quantlib
 
     BASIC30_360 = "BASIC30/360"
     NASD30_360 = "NASD30/360"
 
-    Thirty360 = "30/360" # -> Thirty360:
+    Thirty360 = "30/360"  # -> Thirty360:
     Thirty360_US = "30/360 US"  # -> Thirty360:
     ThirtyE360 = "30E/360"  # -> Thirty360:
 
@@ -43,7 +45,8 @@ class DayCountConv:
             dcf = DayCountConv.NASD30_360
         elif dayCountStr == "30/360 US":
             dcf = DayCountConv.Thirty360_US
-        return	dcf
+        return dcf
+
 
 class Frequency:
     MONTHLY = "M"
@@ -72,7 +75,7 @@ class Frequency:
 
     @staticmethod
     def getFrequencyNumber(freqStr):
-        freqNumberOut = 1 #<-- default to annual
+        freqNumberOut = 1  # <-- default to annual
         if freqStr == Frequency.MONTHLY:
             freqNumberOut = 12
         elif freqStr == Frequency.DAILY:
@@ -104,12 +107,14 @@ class Frequency:
             freqStrOut = ql.Annual
         return freqStrOut
 
+
 class CalendarFactory:
     def __init__(self):
-        self.map ={"USA": "UnitedStates","FRA": "France","GRE": "Greece","GBR": "UnitedKingdom"}
+        self.map = {"USA": "UnitedStates", "FRA": "France", "GRE": "Greece", "GBR": "UnitedKingdom"}
 
     def get(self, countryISO):
         return eval("%s()" % self.map[countryISO])
+
 
 class HolidayCities:
     USA = "NY"
@@ -120,6 +125,7 @@ class HolidayCities:
     TARGET = "TARGET"
     ISR = "ISRAEL"
     CHINA = "BEJ"
+
 
 class Currency:
     EUR = "EUR"
@@ -144,4 +150,13 @@ class Currency:
 
 class TradeSide:
     Bid = "B"
-    Ask = "A"
+    Ask = "A"  #
+
+
+class ProductClass:
+    GovtBond = 1
+    CorpBond = 2
+    Swaps = 3
+    FXSpot = 4
+    FXForwards = 5
+    FXNDF = 6
