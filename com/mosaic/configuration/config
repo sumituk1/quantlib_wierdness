@@ -9,6 +9,9 @@ MinHedgeDV01 = 500
 
 [GovtBond_Markout]
 lags_list = 0,60,300,3600
+UST_COB = 22:00:00
+GBP_COB = 17:00:00
+EGB_COB = 16:30:00
 
 [QuantLib-Calendar]
 
