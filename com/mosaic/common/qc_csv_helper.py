@@ -13,9 +13,10 @@ def file_to_quote_list(fname):
 
     # convert them to Quote objects, assuming first row is headers
 
-    quote = [Quote(sym=x[3], ask=x[2],
-                   timestamp=dt.datetime.strptime(x[0], "%d/%m/%Y %H:%M"),
-                   bid=x[1]) for x in my_list[1:]]
+    quote = [Quote(sym=x[3],
+                   ask=float(x[2]),
+                   timestamp=dt.datetime.strptime(x[0], "%Y.%m.%dD%H:%M:%S"),
+                   bid=float(x[1])) for x in my_list[1:]]
     # make sure they're sorted in ascending order
     quote = sorted(quote, key=lambda x: x.timestamp)
 
@@ -35,13 +36,13 @@ def file_to_trade_list(fname):
         tr = FixedIncomeTrade( trade_id=x[1],
                                sym=x[4],
                                notional=float(x[6]),
-                               timestamp=dt.datetime.strptime(x[13], "%d/%m/%Y %H:%M"),
+                               timestamp=dt.datetime.strptime(x[13], "%Y.%m.%dD%H:%M:%S"),
                                side=TradeSide.Ask if x[10] == "Ask" else TradeSide.Bid,
                                traded_px=float(x[7]),
                                client_sys_key=x[17],
-                               trade_date=x[14],
-                               ccy=Currency.EUR,
-                               trade_settle_date=x[15],
+                               trade_date=dt.datetime.strptime(x[14], "%Y.%m.%d"),
+                               ccy=x[18],
+                               trade_settle_date=dt.datetime.strptime(x[15], "%Y.%m.%d"),
                                duration=float(x[9]))
         trade_list.append(tr)
     return trade_list

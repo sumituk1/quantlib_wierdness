@@ -3,6 +3,7 @@ import math
 import numpy as np
 from mosaic.core.constants import *
 
+
 class Quote:
     def __init__(self, sym, timestamp, bid, ask):
         self.sym = sym
@@ -28,7 +29,7 @@ class Trade:
                  traded_px,
                  trade_date,
                  trade_settle_date,
-                 ccy = Currency.EUR,
+                 ccy=Currency.EUR,
                  client_sys_key=None,
                  trade_rc=None,
                  sales=None,
@@ -51,7 +52,6 @@ class Trade:
         self.delta = delta
         self.ccy = ccy
 
-    @property
     def __str__(self):
         return 'TRADE: trade_id:' + str(self.trade_id) + \
                'instr:' + str(self.sym) + \
@@ -86,13 +86,13 @@ class FixedIncomeTrade(Trade):
                  trade_date,
                  trade_settle_date,
                  duration,
-                 ccy = Currency.EUR,
+                 ccy=Currency.EUR,
                  client_sys_key=None,
                  trade_rc=None,
                  sales=None, trader=None, delta=None,
-                 spot_settle_date=None, issue_date=None, maturity_date=None,coupon=None,coupon_frequency=None):
+                 spot_settle_date=None, issue_date=None, maturity_date=None, coupon=None, coupon_frequency=None):
         # all properties that any trade can have belong in the superclass
-        Trade.__init__(self,trade_id=trade_id,
+        Trade.__init__(self, trade_id=trade_id,
                        timestamp=timestamp,
                        sym=sym,
                        notional=notional,
@@ -107,7 +107,7 @@ class FixedIncomeTrade(Trade):
                        ccy=ccy)
 
         # properties of the general instrument
-        self.trade_rc= trade_rc
+        self.trade_rc = trade_rc
         self.duration = duration
         self.is_benchmark = False
 
@@ -143,6 +143,7 @@ class FixedIncomeTrade(Trade):
                ' timestamp:' + str(self.timestamp) + \
                ' price:' + str(self.traded_px) + \
                ' size:' + str(self.notional)
+
 
 if __name__ == '__main__':
     date_0 = dt.datetime(2017, 1, 2)

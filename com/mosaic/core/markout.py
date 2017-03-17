@@ -27,23 +27,43 @@ class MarkoutCalculator:
         else:
             # for each markout lag in lags_list, create a markout_msg for this trade
             for mk in self.lags_list:
-                # mkmsg = {'trade': msg,
-                #          'trade_id': msg.trade_id,
-                #          'notional': msg.notional,
-                #          'sym': msg.sym,
-                #          'side': msg.side,
-                #          'initial_price': msg.traded_px, # self.last_price,
-                #          'next_timestamp': msg.timestamp + dt.timedelta(0, mk),  # mk in secs.
-                #          'dt': mk  # mk in secs
-                #          }
-                mkmsg = MarkoutMessage(trade=msg,
-                                       trade_id=msg.trade_id,
-                                       notional=msg.notional,
-                                       sym=msg.sym,
-                                       side=msg.side,
-                                       initial_price=msg.traded_px,
-                                       next_timestamp=msg.timestamp + dt.timedelta(0, mk),
-                                       dt=mk)
+                if "COB" not in mk:
+                    mkmsg = MarkoutMessage(trade=msg,
+                                           trade_id=msg.trade_id,
+                                           notional=msg.notional,
+                                           sym=msg.sym,
+                                           side=msg.side,
+                                           initial_price=msg.traded_px,
+                                           next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
+                                           dt=mk)
+                else:
+                    # This is a COB lag. Extract the COB time in UTC
+                    COB_time_utc = None
+
+                    # first get the UTC time for COB per ccy of risk
+                    if msg.ccy == Currency.EUR:
+                        COB_time_utc = get_data_given_section_and_key("GovtBond_Markout", "EGB_COB")
+                    elif msg.ccy == Currency.USD:
+                        COB_time_utc = get_data_given_section_and_key("GovtBond_Markout", "UST_COB")
+                    elif msg.ccy == Currency.GBP:
+                        COB_time_utc = get_data_given_section_and_key("GovtBond_Markout", "GBP_COB")
+
+                    # now convert the str_time to time object
+                    COB_time_utc = dt.datetime.strptime(COB_time_utc,"%H:%M:%S").time()
+
+                    # now get the COB lag i.e. COB_T0 or COB_T1, COB_T2
+                    COB_lag = mk[-1]
+                    COB_time_utc = dt.datetime.combine(msg.trade_date, COB_time_utc) + \
+                                                       dt.timedelta(days=float(COB_lag))
+
+                    mkmsg = MarkoutMessage(trade=msg,
+                                           trade_id=msg.trade_id,
+                                           notional=msg.notional,
+                                           sym=msg.sym,
+                                           side=msg.side,
+                                           initial_price=msg.traded_px,
+                                           next_timestamp=COB_time_utc,
+                                           dt=mk)
                 # print(mkmsg)
                 self.pending.append(mkmsg)
 
@@ -88,11 +108,19 @@ class MarkoutCalculator:
 
 class GovtBondMarkoutCalculator(MarkoutCalculator):
     # Constructor
+    boo_contains_COB = False
+
     def __init__(self, lags_list=None):
         if lags_list is None:
             # get the lags_list from config file
             lags_list_str = get_data_given_section_and_key("GovtBond_Markout", "lags_list")
-            lags_list = [float(x) for x in lags_list_str.split(',')]
+            # check if there's any "COB"
+            # boo_contains_COB = [x for x in lags_list_str.split(',') if "COB" in x]
+            # if boo_contains_COB:
+            #     lags_list = extract_COB_markout_lags(lags_list_str)
+            # else:
+            #     lags_list = [float(x) for x in lags_list_str.split(',')]
+            lags_list = [x for x in lags_list_str.split(',')]
         else:
             lags_list = lags_list
 
