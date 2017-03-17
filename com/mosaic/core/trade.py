@@ -1,6 +1,4 @@
 import datetime as dt
-import math
-import numpy as np
 from mosaic.core.constants import *
 
 
@@ -66,16 +64,15 @@ class FixedIncomeTrade(Trade):
     is_benchmark = False
     notional = None
     sym = None
-    # Ccy = Currency.EUR
     bid_px = ask_px = mid_px = None
     on_repo = None
     duration = None
     trade_added_to_rp = False
     is_d2d_force_close = False
-    # Instrument Static
-    coupon = 0.02
-    coupon_frequency = Frequency.SEMI
-    day_count = DayCountConv.ACT_365
+    # # Instrument Static
+    # coupon = 0.02
+    # coupon_frequency = Frequency.SEMI
+    # day_count = DayCountConv.ACT_365
 
     # Constructor
     def __init__(self, trade_id, sym,
@@ -89,8 +86,14 @@ class FixedIncomeTrade(Trade):
                  ccy=Currency.EUR,
                  client_sys_key=None,
                  trade_rc=None,
-                 sales=None, trader=None, delta=None,
-                 spot_settle_date=None, issue_date=None, maturity_date=None, coupon=None, coupon_frequency=None):
+                 sales=None,
+                 trader=None,
+                 delta=None,
+                 spot_settle_date=None,
+                 issue_date=None,
+                 maturity_date=None,
+                 coupon=None,
+                 coupon_frequency=None):
         # all properties that any trade can have belong in the superclass
         Trade.__init__(self, trade_id=trade_id,
                        timestamp=timestamp,
