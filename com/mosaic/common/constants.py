@@ -1,6 +1,9 @@
 # This has the list of day counts and the related convention
 # from workalendar.usa import *
-import QuantLib as ql
+try:
+    import QuantLib as ql
+except:
+    print('couldn\'t find QuantLib!')
 from enum import Enum
 
 
@@ -89,23 +92,25 @@ class Frequency:
         elif freqStr == Frequency.ANNUAL:
             freqNumberOut = 1
         return freqNumberOut
-
-    @staticmethod
-    def getQLFrequency(freqStr):
-        freqStrOut = ql.Semiannual
-        if freqStr == Frequency.MONTHLY:
-            freqStrOut = ql.Monthly
-        elif freqStr == Frequency.DAILY:
-            freqStrOut = ql.Daily
-        elif freqStr == Frequency.WEEKLY:
-            freqStrOut = ql.Weekly
-        elif freqStr == Frequency.SEMI:
+    try: #want the rest of the file to work even if we have no Quantlib!
+        @staticmethod
+        def getQLFrequency(freqStr):
             freqStrOut = ql.Semiannual
-        elif freqStr == Frequency.QUARTERLY:
-            freqStrOut = ql.Quarterly
-        elif freqStr == Frequency.ANNUAL:
-            freqStrOut = ql.Annual
-        return freqStrOut
+            if freqStr == Frequency.MONTHLY:
+                freqStrOut = ql.Monthly
+            elif freqStr == Frequency.DAILY:
+                freqStrOut = ql.Daily
+            elif freqStr == Frequency.WEEKLY:
+                freqStrOut = ql.Weekly
+            elif freqStr == Frequency.SEMI:
+                freqStrOut = ql.Semiannual
+            elif freqStr == Frequency.QUARTERLY:
+                freqStrOut = ql.Quarterly
+            elif freqStr == Frequency.ANNUAL:
+                freqStrOut = ql.Annual
+            return freqStrOut
+    except:
+        pass
 
 
 class CalendarFactory:

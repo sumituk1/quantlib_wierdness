@@ -1,7 +1,7 @@
 import datetime as dt
 import math
 import numpy as np
-from com.mosaic.core.constants import *
+from mosaic.core.constants import *
 
 class Quote:
     def __init__(self, sym, timestamp, bid, ask):

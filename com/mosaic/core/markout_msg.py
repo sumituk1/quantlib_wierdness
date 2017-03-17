@@ -30,11 +30,11 @@ class MarkoutMessage:
         self.price_markout = np.nan
         self.yield_markout = np.nan
 
-    @property
+#    @property
     def __str__(self):
-        return 'trade_id:' + self.trade_id + \
-               ' instr:' + self.sym + \
-               ' next_timestamp:' + self.next_timestamp.strftime("%d/%m/%Y %H:%M") + \
-               ' dt:' + str(self.dt) + \
-               ' price_markout:' + str(self.price_markout) + \
-               ' yield_markout:' + str(self.yield_markout)
+         return 'trade_id:' + self.trade_id + \
+              ' instr:' + self.sym + \
+              ' next_timestamp:' + self.next_timestamp.strftime("%d/%m/%Y %H:%M") + \
+              ' dt:' + str(self.dt) + \
+              ' price_markout:' + str(self.price_markout) + \
+              ' yield_markout:' + str(self.yield_markout)

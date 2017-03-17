@@ -1,8 +1,8 @@
-from com.mosaic.core.trade import Trade, Quote
-from com.mosaic.core.markout_msg import *
-from com.mosaic.common.constants import *
-from com.mosaic.common.read_config import *
-from com.mosaic.common.constants import ProductClass
+from .trade import Trade, Quote
+from .markout_msg import *
+from mosaic.common.constants import *
+from mosaic.common.read_config import *
+
 import datetime as dt
 
 
@@ -100,8 +100,9 @@ class GovtBondMarkoutCalculator(MarkoutCalculator):
         # all properties that any trade can have belong in the superclass
         MarkoutCalculator.__init__(self, lags_list=lags_list)
 
-    def __call__(self, msg):
-        return MarkoutCalculator.__call__(self, msg)
+# don't need this code, the function is inherited anyway
+#    def __call__(self, msg):
+#        return MarkoutCalculator.__call__(self, msg)
 
         # def __call__(self, msg):
         #     self.last_timestamp = msg.timestamp
@@ -130,14 +131,3 @@ class GovtBondMarkoutCalculator(MarkoutCalculator):
         #
         # return completed
 
-
-class MarkoutCalculatorFactory:
-    def __init__(self, product_class, lags_list=None):
-        self.product_class = product_class
-        self.lags_list = lags_list
-
-    def __call__(self):
-        if self.product_class == ProductClass.GovtBond:
-            return GovtBondMarkoutCalculator()
-        elif self.product_class == ProductClass.CorpBond:
-            return MarkoutCalculator(lags_list=self.lags_list)
