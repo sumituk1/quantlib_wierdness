@@ -104,9 +104,6 @@ class GovtBondMarkoutCalculator(MarkoutCalculator):
         return completed
 
 
-<<<<<<< HEAD
-
-=======
 class MarkoutCalculatorFactory:
     def __init__(self, product_class, lags_list=None):
         self.product_class = product_class
@@ -117,4 +114,3 @@ class MarkoutCalculatorFactory:
             return GovtBondMarkoutCalculator()
         elif self.product_class == ProductClass.CorpBond:
             return MarkoutCalculator(lags_list= self.lags_list)
->>>>>>> origin/master
