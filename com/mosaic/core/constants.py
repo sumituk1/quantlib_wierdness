@@ -148,3 +148,11 @@ class Frequency:
             return freqStrOut
     except:
         print("Didn't find Quantlib, so can't define Frequency.getQLFrequency")
+
+class ProductClass:
+    GovtBond = 1
+    CorpBond = 2
+    Swaps = 3
+    FXSpot = 4
+    FXForwards = 5
+    FXNDF = 6
