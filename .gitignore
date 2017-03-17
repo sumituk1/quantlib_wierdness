@@ -2,3 +2,12 @@ target
 .idea
 com/__pycache__/
 com/mosaic/__pycache__/
+com/mosaic/common/__pycache__/__init__.cpython-35.pyc
+com/mosaic/common/__pycache__/constants.cpython-35.pyc
+com/mosaic/common/__pycache__/qc_csv_helper.cpython-35.pyc
+com/mosaic/common/__pycache__/read_config.cpython-35.pyc
+com/mosaic/core/__pycache__/__init__.cpython-35.pyc
+com/mosaic/core/__pycache__/constants.cpython-35.pyc
+com/mosaic/core/__pycache__/markout.cpython-35.pyc
+com/mosaic/core/__pycache__/markout_msg.cpython-35.pyc
+com/mosaic/core/__pycache__/trade.cpython-35.pyc
