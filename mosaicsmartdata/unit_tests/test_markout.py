@@ -10,7 +10,7 @@ from unittest import TestCase
 
 class TestOrderBook(TestCase):
     # Test case for "Buy"
-    def test_case_1(self, plotFigure = True):
+    def test_case_1(self, plotFigure = False):
         tolerance = 5*1e-2
         datapath = "..\\resources\\"  # generally a good idea to use relative paths whenever possible
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
@@ -47,17 +47,17 @@ class TestOrderBook(TestCase):
 
         # do assertions
         for mk_msg in output_list:
-            if mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 0:
+            if mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '0':
                 self.assertEquals(np.abs(mk_msg.bps_markout), 0.0, msg=None)
-            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 60:
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '60':
                 self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0833))/mk_msg.bps_markout), tolerance, msg=None)
-            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 300:
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '300':
                 self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.1333)) / mk_msg.bps_markout), tolerance, msg=None)
-            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 300:
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.1333)) / mk_msg.bps_markout), tolerance, msg=None)
-            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == "COB0":
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '3600':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.572)) / mk_msg.bps_markout), tolerance, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB0':
                 self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0722)) / mk_msg.bps_markout), tolerance, msg=None)
-            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == "COB1":
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB1':
                 self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.844)) / mk_msg.bps_markout), tolerance, msg=None)
 
         # plot figure
