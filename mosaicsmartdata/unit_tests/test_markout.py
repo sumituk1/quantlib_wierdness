@@ -61,14 +61,14 @@ class TestOrderBook(TestCase):
                 self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.844)) / mk_msg.bps_markout), tolerance, msg=None)
 
         # plot figure
-        if plotFigure:
-            plt.figure()
-            x_data = [x.dt for x in output_list if x.trade_id == "DE10YT_OTR_111"]
-            plt.xticks(x_data, ['0','60','3600','COB0','COB1','COB2'])
-            plt.plot(x_data,
-                     [x.bps_markout for x in output_list if x.trade_id == "DE10YT_OTR_111"],
-                     label="markout_bps")
-            plt.xlabel("time")
-            plt.ylabel("markout(bps)")
-            plt.grid(True)
-            plt.show()
+        # if plotFigure:
+        #     plt.figure()
+        #     x_data = [x.dt for x in output_list if x.trade_id == "DE10YT_OTR_111"]
+        #     plt.xticks(x_data, ['0','60','3600','COB0','COB1','COB2'])
+        #     plt.plot(x_data,
+        #              [x.bps_markout for x in output_list if x.trade_id == "DE10YT_OTR_111"],
+        #              label="markout_bps")
+        #     plt.xlabel("time")
+        #     plt.ylabel("markout(bps)")
+        #     plt.grid(True)
+        #     plt.show()
