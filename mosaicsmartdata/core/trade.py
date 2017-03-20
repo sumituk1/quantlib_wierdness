@@ -1,5 +1,5 @@
 import datetime as dt
-from mosaic.core.constants import *
+from mosaicsmartdata.core.constants import *
 
 
 class Quote:

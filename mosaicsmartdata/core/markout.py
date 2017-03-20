@@ -1,8 +1,7 @@
 from .trade import Trade, Quote
 from .markout_msg import *
-from mosaic.core.constants import *
-from mosaic.common.read_config import *
-
+from mosaicsmartdata.core.constants import *
+from mosaicsmartdata.common.read_config import *
 import datetime as dt
 
 
