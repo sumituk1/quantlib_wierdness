@@ -1,6 +1,5 @@
 import datetime
 from unittest import TestCase
-
 from common.isda_daycounters import (actual360, actual365,
                               actualactual, thirty360)
 
