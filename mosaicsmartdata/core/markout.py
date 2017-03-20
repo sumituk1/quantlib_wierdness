@@ -1,8 +1,9 @@
-from mosaicsmartdata.core.trade import Trade, Quote
-from mosaicsmartdata.core.markout_msg import *
-from core.constants import *
-from common.read_config import *
 import datetime as dt
+
+from common.constants import *
+from common.read_config import *
+from mosaicsmartdata.core.markout_msg import *
+from mosaicsmartdata.core.trade import Trade, Quote
 
 
 class MarkoutCalculator:

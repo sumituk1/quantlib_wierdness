@@ -1,7 +1,8 @@
 import csv
 import datetime as dt
-from mosaicsmartdata.core.trade import Quote, Trade, FixedIncomeTrade
-from mosaicsmartdata.core.constants import *
+
+from common.constants import *
+from mosaicsmartdata.core.trade import Quote, FixedIncomeTrade
 
 
 # Create a Quote object by reading data from csv.

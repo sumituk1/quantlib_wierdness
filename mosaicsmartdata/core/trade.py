@@ -1,5 +1,6 @@
 import datetime as dt
-from core.constants import *
+
+from common.constants import *
 
 
 class Quote:
