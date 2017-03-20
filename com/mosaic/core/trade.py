@@ -84,6 +84,7 @@ class FixedIncomeTrade(Trade):
                  trade_settle_date,
                  duration,
                  ccy=Currency.EUR,
+                 par_value=100,
                  client_sys_key=None,
                  trade_rc=None,
                  sales=None,
@@ -116,6 +117,7 @@ class FixedIncomeTrade(Trade):
 
         self.calculate_trade_delta(delta)
         # instrument static
+        self.par_value = par_value
         self.issue_date = issue_date
         self.maturity_date = maturity_date
         self.coupon = coupon

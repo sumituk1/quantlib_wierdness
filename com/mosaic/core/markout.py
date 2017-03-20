@@ -88,12 +88,12 @@ class MarkoutCalculator:
 
         for x in completed:
             x.final_price = self.last_price
-            if x.side == TradeSide.Bid:
-                x.price_markout = (x.final_price - x.initial_price) * x.notional
-                x.yield_markout = -1 * ((x.final_price - x.initial_price) / x.trade.duration) * x.trade.delta
-            else:
-                x.price_markout = -1 * (x.final_price - x.initial_price) * x.notional
-                x.yield_markout = ((x.final_price - x.initial_price) / x.trade.duration) * x.trade.delta
+            x.cents_markout = (x.final_price - x.initial_price) * 100 # <-- assumes par_value is 100 for quote and trade
+            x.bps_markout = ((x.final_price - x.initial_price) / x.trade.duration / x.trade.par_value) * 10000
+
+            if x.side == TradeSide.Ask:
+                x.cents_markout *= -1
+                x.bps_markout *= -1
 
         if isinstance(msg, Quote) or hasattr(msg, 'mid'):
             self.last_price = msg.mid()
