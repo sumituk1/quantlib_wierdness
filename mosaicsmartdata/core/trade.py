@@ -1,6 +1,6 @@
 import datetime as dt
 
-from common.constants import *
+from mosaicsmartdata.common.constants import *
 
 
 class Quote:
