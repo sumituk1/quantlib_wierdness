@@ -65,7 +65,7 @@ class Quote(GenericParent):
 class Trade(GenericParent):
     def __init__(self, *args, **kwargs):
         self.trade_id = None
-        self.parent_id = None
+        self.basket_id = None
         self.paper_trade = False
         self.sym = None
         self.timestamp = None
@@ -87,8 +87,8 @@ class Trade(GenericParent):
         # use this syntax to require non-None values for certain fields
         self.check_values(['trade_id'])
 
-        if self.parent_id is None:
-            self.parent_id = self.trade_id
+        if self.basket_id is None:
+            self.basket_id = self.trade_id
 
 class FixedIncomeTrade(Trade):
     # Attributes with default parameter.
