@@ -1,6 +1,7 @@
 import csv
 import datetime as dt
-from mosaicsmartdata.common.constants import *
+
+from common.constants import *
 from mosaicsmartdata.core.trade import Quote, FixedIncomeTrade
 
 
