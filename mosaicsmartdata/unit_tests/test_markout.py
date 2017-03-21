@@ -3,6 +3,7 @@ import numpy as np
 import aiostreams.operators.operators as op
 from aiostreams.base import to_async_iterable
 from mosaicsmartdata.common import qc_csv_helper
+from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.core.markout import GovtBondMarkoutCalculator
 
 
@@ -11,13 +12,13 @@ class TestMarkouts(TestCase):
     def test_case_1(self, plotFigure = False):
         tolerance = 5*1e-2
         datapath = "..\\resources\\"  # generally a good idea to use relative paths whenever possible
-        quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
+        quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes_1.csv"]
         trade_files = "trades.csv"
 
         # Load the quotes data from csv
         quotes_dict = dict()
         for x in quote_files:
-            sym, quote = qc_csv_helper.file_to_quote_list(datapath + x)
+            sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Unhedged)
             quotes_dict[sym] = quote
 
         # Now get the trades list from csv

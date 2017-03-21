@@ -8,10 +8,11 @@ IncludeCostOfCarry = True
 MinHedgeDV01 = 500
 
 [GovtBond_Markout]
-lags_list = 0,60,300,3600,COB0,COB1,COB2
+lags_list = -60,0,60,300,3600,COB0,COB1,COB2
 UST_COB = 22:00:00
 GBP_COB = 17:00:00
 EGB_COB = 16:30:00
+markout_mode = unhedged
 
 [QuantLib-Calendar]
 
