@@ -1,7 +1,7 @@
 import datetime as dt
 
-from common.constants import *
-from common.read_config import *
+from mosaicsmartdata.common.constants import *
+from mosaicsmartdata.common.read_config import *
 from mosaicsmartdata.core.markout_msg import *
 from mosaicsmartdata.core.trade import Trade, Quote
 

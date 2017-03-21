@@ -2,8 +2,8 @@ from unittest import TestCase
 import numpy as np
 import aiostreams.operators.operators as op
 from aiostreams.base import to_async_iterable
-from common import qc_csv_helper
-from core.markout import GovtBondMarkoutCalculator
+from mosaicsmartdata.common import qc_csv_helper
+from mosaicsmartdata.core.markout import GovtBondMarkoutCalculator
 
 
 class TestMarkouts(TestCase):
