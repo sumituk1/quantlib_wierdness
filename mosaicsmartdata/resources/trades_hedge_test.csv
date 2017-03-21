@@ -1,0 +1,2 @@
+package_id,trade_id,product_class,product_class1,sym,tenor,notional,traded_px ,status ,mod_duration (or pv01),side,delta,benchmark ,timestamp,trade_date,settle_date,client_legal_name,sector,ccy,maturity,coupon,holiday_cities,frequency,day_count,issue_date,spot_settle_date
+999,222,GovtBond,GT30_30,912810QE1,30,400000000.00,99.243, Traded ,19.22824,Ask,"720,000",Y,2017.03.21D11:19:45.605000000,2017.03.21,2017.03.22,Mosaic Smart Data,Data Analytics,USD,2040.02.15,,,,,,2017.03.22
