@@ -91,14 +91,22 @@ class MarkoutCalculator:
                 x.cents_markout *= -1
                 x.bps_markout *= -1
 
-            # throw out all the Quotes before this timestamp which has just been calc'd
+            # 1. throw out all the Quotes before this timestamp which has just been processed
             self.last_price.drop(self.last_price[self.last_price['timestamp'] < x.next_timestamp].index, inplace=True)
             self.last_price.reset_index(drop=True,inplace=True)
 
         if isinstance(msg, Quote) or hasattr(msg, 'mid'):
-            ix = len(self.last_price)+1
+            ix = len(self.last_price) + 1
             self.last_price.set_value(ix, 'mid', msg.mid())
             self.last_price.set_value(ix, 'timestamp', msg.timestamp)
+            # Also throw out stale Quotes which have a timestamp > min(abs(lags_list) if lags_list < 0
+            stale_timestamp = self.last_price['timestamp'].values[-1] - \
+                              dt.timedelta(0, max([abs(float(x)) for x in self.lags_list if "COB" not in x]))
+
+            if len(self.last_price[self.last_price['timestamp'] <= stale_timestamp]) > 0:
+                # re-indexing is expensive!!
+                self.last_price.drop(self.last_price[self.last_price['timestamp'] <= stale_timestamp].index, inplace=True)
+                self.last_price.reset_index(drop=True, inplace=True)
             # # self.last_price.loc['mid'] = msg.mid()
             # self.last_price.loc['timestamp'] = msg.timestamp
 
