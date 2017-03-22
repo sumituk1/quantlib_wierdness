@@ -1,5 +1,6 @@
 import datetime as dt
-
+import operator
+import pandas as pd
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.common.read_config import *
 from mosaicsmartdata.core.markout_msg import *
@@ -17,7 +18,7 @@ class MarkoutCalculator:
     def __init__(self, lags_list, instr=None):
         self.pending = []
         self.lags_list = lags_list
-        self.last_price = None
+        self.last_price = pd.DataFrame (columns = ['mid','timestamp']).reset_index()#dict.fromkeys(["mid","timestamp"])
         self.last_timestamp = None
 
     def generate_markout_requests(self, msg):
@@ -78,16 +79,11 @@ class MarkoutCalculator:
             print(msg)
         # determine which pending markout requests we can complete now
 
-        completed = [x for x in self.pending if x.next_timestamp <
-                     self.last_timestamp]
+        completed = [x for x in self.pending if x.next_timestamp < self.last_price['timestamp'].values[-1]]
         self.pending = [x for x in self.pending if x not in completed]
 
-        # for x in completed:
-        #     x['final_price'] = self.last_price
-        #     x['markout'] = x['final_price'] - x['initial_price']
-
         for x in completed:
-            x.final_price = self.last_price
+            x.final_price = self.last_price[self.last_price['timestamp'] <= x.next_timestamp]['mid'].values[-1]
             x.cents_markout = (x.final_price - x.initial_price) * 100 # <-- assumes par_value is 100 for quote and trade
             x.bps_markout = ((x.final_price - x.initial_price) / x.trade.duration / x.trade.par_value) * 10000
 
@@ -96,7 +92,11 @@ class MarkoutCalculator:
                 x.bps_markout *= -1
 
         if isinstance(msg, Quote) or hasattr(msg, 'mid'):
-            self.last_price = msg.mid()
+            ix = len(self.last_price)+1
+            self.last_price.set_value(ix, 'mid', msg.mid())
+            self.last_price.set_value(ix, 'timestamp', msg.timestamp)
+            # # self.last_price.loc['mid'] = msg.mid()
+            # self.last_price.loc['timestamp'] = msg.timestamp
 
         return completed
 
