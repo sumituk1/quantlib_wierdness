@@ -91,6 +91,10 @@ class MarkoutCalculator:
                 x.cents_markout *= -1
                 x.bps_markout *= -1
 
+            # throw out all the Quotes before this timestamp which has just been calc'd
+            self.last_price.drop(self.last_price[self.last_price['timestamp'] < x.next_timestamp].index, inplace=True)
+            self.last_price.reset_index(drop=True,inplace=True)
+
         if isinstance(msg, Quote) or hasattr(msg, 'mid'):
             ix = len(self.last_price)+1
             self.last_price.set_value(ix, 'mid', msg.mid())
