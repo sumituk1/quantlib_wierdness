@@ -49,6 +49,10 @@ class TestMarkouts(TestCase):
         for mk_msg in output_list:
             if mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '0':
                 self.assertEquals(np.abs(mk_msg.bps_markout), 0.0, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '-900':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.15)) / mk_msg.bps_markout), tolerance, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '-60':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.022) / mk_msg.bps_markout), tolerance, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '60':
                 self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0833))/mk_msg.bps_markout), tolerance, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '300':
