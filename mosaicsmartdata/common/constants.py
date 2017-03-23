@@ -6,6 +6,10 @@ class BootStrapMethod:
     PiecewiseLogCubicDiscount = "PicewiseLogCubicDiscount"
     PiecewiseFlatForward = "PiecewiseFlatForward"
 
+class MarkoutMode:
+    Unhedged = 1
+    Hedged = 2
+
 class DayCountConv:
     ACT_ACT = "ACT/ACT"
     ACT_ACT_ISDA = "ACT/ACT(ISDA)"
