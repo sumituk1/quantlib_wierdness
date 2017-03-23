@@ -71,7 +71,7 @@ class Quote(GenericParent):
 class Trade(GenericParent):
     def __init__(self, *args, **kwargs):
         self.trade_id = None
-        self.basket_id = None
+        self.package_id = None
         self.paper_trade = False
         self.sym = None
         self.timestamp = None
@@ -93,8 +93,8 @@ class Trade(GenericParent):
         # use this syntax to require non-None values for certain fields
         self.check_values(['trade_id'])
 
-        if self.basket_id is None:
-            self.basket_id = self.trade_id
+        if self.package_id is None:
+            self.package_id = self.trade_id
 
         def markout_mults(self):
             return {'price': 1, 'PV': self.delta}
