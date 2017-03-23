@@ -133,7 +133,9 @@ class FixedIncomeTrade(Trade):
 
 
     def markout_mults(self):
-        return {'price': 1, 'PV': self.delta, 'cents': 100.0,
+        return {'price': 1,
+                'PV': self.delta,
+                'cents': 100.0,
                 'bps':(1.0 / self.duration / self.par_value) * 10000}
 
 if __name__ == '__main__':
