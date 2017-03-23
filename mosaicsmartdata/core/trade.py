@@ -56,8 +56,13 @@ class Quote(GenericParent):
         self.bid = float(self.bid)
         self.ask = float(self.ask)
 
-    def mid(self):
-        return 0.5*(self.bid+self.ask)
+    def __getattr__(self,item):
+        if item in self.__dict__:
+            return self.__dict__[item]
+        elif item == 'mid':
+            return 0.5*(self.bid+self.ask)
+        else:
+            raise ValueError('This object doesn\'t understand ' + item)
 
 
 
@@ -87,8 +92,16 @@ class Trade(GenericParent):
         # use this syntax to require non-None values for certain fields
         self.check_values(['trade_id'])
 
+        # specific processing code comes last
         if self.basket_id is None:
             self.basket_id = self.trade_id
+
+    def markout_mults(self):
+        return {'price':1.0,
+                'PV': self.delta,
+                'bps': ( 1.0/ self.duration /self.par_value) * 10000,
+                'cents': 100.0
+                }
 
 class FixedIncomeTrade(Trade):
     # Attributes with default parameter.
@@ -121,6 +134,10 @@ class FixedIncomeTrade(Trade):
 
         if self.delta is None:
             self.delta = self.duration * self.notional * 0.0001
+
+        def markout_mults(self):
+            return {'price':1, 'PV': self.delta, 'yield': 0}
+
 
 if False:
     class Trade:

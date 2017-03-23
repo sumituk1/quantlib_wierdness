@@ -41,23 +41,23 @@ class TestMarkouts(TestCase):
         trade_async_iter = to_async_iterable(trades_list)
         quote_trade_list.append(trade_async_iter)
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator) | op.flatten() > output_list
+        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten() > output_list
 
         # do assertions
-        self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
+        self.assertEquals(len(set([(lambda x: x.trade.trade_id)(x) for x in output_list])), 3, msg=None)
         for mk_msg in output_list:
-            if mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '0':
-                self.assertEquals(np.abs(mk_msg.bps_markout), 0.0, msg=None)
-            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '60':
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0833))/mk_msg.bps_markout), tolerance, msg=None)
-            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '300':
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.1333)) / mk_msg.bps_markout), tolerance, msg=None)
-            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '3600':
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.572)) / mk_msg.bps_markout), tolerance, msg=None)
-            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB0':
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0722)) / mk_msg.bps_markout), tolerance, msg=None)
-            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB1':
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.844)) / mk_msg.bps_markout), tolerance, msg=None)
+            if mk_msg.trade.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '0':
+                self.assertEquals(np.abs(mk_msg.markout_bps), 0.0, msg=None)
+            elif mk_msg.trade.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '60':
+                self.assertLessEqual(np.abs((mk_msg.markout_bps - (-0.0833))/mk_msg.markout_bps), tolerance, msg=None)
+            elif mk_msg.trade.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '300':
+                self.assertLessEqual(np.abs((mk_msg.markout_bps - (-0.1333)) / mk_msg.markout_bps), tolerance, msg=None)
+            elif mk_msg.trade.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '3600':
+                self.assertLessEqual(np.abs((mk_msg.markout_bps - (-0.572)) / mk_msg.markout_bps), tolerance, msg=None)
+            elif mk_msg.trade.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB0':
+                self.assertLessEqual(np.abs((mk_msg.markout_bps - (-0.0722)) / mk_msg.markout_bps), tolerance, msg=None)
+            elif mk_msg.trade.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB1':
+                self.assertLessEqual(np.abs((mk_msg.markout_bps - (-0.844)) / mk_msg.markout_bps), tolerance, msg=None)
 
         # plot figure
         # if plotFigure:
@@ -65,7 +65,7 @@ class TestMarkouts(TestCase):
         #     x_data = [x.dt for x in output_list if x.trade_id == "DE10YT_OTR_111"]
         #     plt.xticks(x_data, ['0','60','3600','COB0','COB1','COB2'])
         #     plt.plot(x_data,
-        #              [x.bps_markout for x in output_list if x.trade_id == "DE10YT_OTR_111"],
+        #              [x.markout_bps for x in output_list if x.trade_id == "DE10YT_OTR_111"],
         #              label="markout_bps")
         #     plt.xlabel("time")
         #     plt.ylabel("markout(bps)")
@@ -106,27 +106,27 @@ class TestMarkouts(TestCase):
         trade_async_iter = to_async_iterable(trades_list)
         quote_trade_list.append(trade_async_iter)
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator) | op.flatten() > output_list
+        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten() > output_list
 
         # do assertions
         self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
         for mk_msg in output_list:
             if mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '0':
-                self.assertEquals(np.abs(mk_msg.cents_markout), 0.0, msg=None)
+                self.assertEquals(np.abs(mk_msg.markout_cents), 0.0, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '60':
-                self.assertLessEqual(np.abs((mk_msg.cents_markout - (-1.50)) / mk_msg.bps_markout), tolerance,
+                self.assertLessEqual(np.abs((mk_msg.markout_cents - (-1.50)) / mk_msg.markout_bps), tolerance,
                                      msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '300':
-                self.assertLessEqual(np.abs((mk_msg.cents_markout - (-2.40)) / mk_msg.bps_markout), tolerance,
+                self.assertLessEqual(np.abs((mk_msg.markout_cents - (-2.40)) / mk_msg.markout_bps), tolerance,
                                      msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '3600':
-                self.assertLessEqual(np.abs((mk_msg.cents_markout - (-10.30)) / mk_msg.bps_markout), tolerance,
+                self.assertLessEqual(np.abs((mk_msg.markout_cents - (-10.30)) / mk_msg.markout_bps), tolerance,
                                      msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB0':
-                self.assertLessEqual(np.abs((mk_msg.cents_markout - (-1.30)) / mk_msg.bps_markout), tolerance,
+                self.assertLessEqual(np.abs((mk_msg.markout_cents - (-1.30)) / mk_msg.markout_bps), tolerance,
                                      msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB1':
-                self.assertLessEqual(np.abs((mk_msg.cents_markout - (-15.20)) / mk_msg.bps_markout), tolerance,
+                self.assertLessEqual(np.abs((mk_msg.markout_cents - (-15.20)) / mk_msg.markout_bps), tolerance,
                                      msg=None)
 
     # Test for Buy in bps over intra-day to COB1
@@ -164,24 +164,24 @@ class TestMarkouts(TestCase):
         trade_async_iter = to_async_iterable(trades_list)
         quote_trade_list.append(trade_async_iter)
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator) | op.flatten() > output_list
+        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten() > output_list
 
         # do assertions
         self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
 
         for mk_msg in output_list:
             if mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == '0':
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.38)/mk_msg.bps_markout), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.markout_bps - 0.38)/mk_msg.markout_bps), tolerance, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == '60':
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.47) / mk_msg.bps_markout), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.markout_bps - 0.47) / mk_msg.markout_bps), tolerance, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == '300':
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.51) / mk_msg.bps_markout), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.markout_bps - 0.51) / mk_msg.markout_bps), tolerance, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == '3600':
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.57) / mk_msg.bps_markout), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.markout_bps - 0.57) / mk_msg.markout_bps), tolerance, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB0':
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.0722) / mk_msg.bps_markout), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.markout_bps - 0.0722) / mk_msg.markout_bps), tolerance, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB1':
-                self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.844) / mk_msg.bps_markout), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.markout_bps - 0.844) / mk_msg.markout_bps), tolerance, msg=None)
 
     # Test for Buy in cents over intra-day to COB1
     def test_case_4(self, plotFigure=False):
@@ -217,22 +217,22 @@ class TestMarkouts(TestCase):
         trade_async_iter = to_async_iterable(trades_list)
         quote_trade_list.append(trade_async_iter)
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator) | op.flatten() > output_list
+        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten() > output_list
 
         # do assertions
         self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
 
         for mk_msg in output_list:
             if mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == '0':
-                self.assertLessEqual(np.abs((mk_msg.cents_markout - 6.90) / mk_msg.bps_markout), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.markout_cents - 6.90) / mk_msg.markout_bps), tolerance, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == '60':
-                self.assertLessEqual(np.abs((mk_msg.cents_markout - 8.40) / mk_msg.bps_markout), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.markout_cents - 8.40) / mk_msg.markout_bps), tolerance, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == '300':
-                self.assertLessEqual(np.abs((mk_msg.cents_markout - 9.10) / mk_msg.bps_markout), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.markout_cents - 9.10) / mk_msg.markout_bps), tolerance, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == '3600':
-                self.assertLessEqual(np.abs((mk_msg.cents_markout - 10.20) / mk_msg.bps_markout), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.markout_cents - 10.20) / mk_msg.markout_bps), tolerance, msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB0':
-                self.assertLessEqual(np.abs((mk_msg.cents_markout - 1.30) / mk_msg.bps_markout), tolerance,
+                self.assertLessEqual(np.abs((mk_msg.markout_cents - 1.30) / mk_msg.markout_bps), tolerance,
                                      msg=None)
             elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB1':
-                self.assertLessEqual(np.abs((mk_msg.cents_markout - 15.20) / mk_msg.bps_markout), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.markout_cents - 15.20) / mk_msg.markout_bps), tolerance, msg=None)
