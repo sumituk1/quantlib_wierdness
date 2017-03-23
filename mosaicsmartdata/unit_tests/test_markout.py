@@ -42,7 +42,7 @@ class TestMarkouts(TestCase):
         trade_async_iter = to_async_iterable(trades_list)
         quote_trade_list.append(trade_async_iter)
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator) | op.flatten() > output_list
+        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten() > output_list
 
         # do assertions
         self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
@@ -111,7 +111,7 @@ class TestMarkouts(TestCase):
         trade_async_iter = to_async_iterable(trades_list)
         quote_trade_list.append(trade_async_iter)
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator) | op.flatten() > output_list
+        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten() > output_list
 
         # do assertions
         self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
@@ -169,7 +169,7 @@ class TestMarkouts(TestCase):
         trade_async_iter = to_async_iterable(trades_list)
         quote_trade_list.append(trade_async_iter)
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator) | op.flatten() > output_list
+        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten() > output_list
 
         # do assertions
         self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
@@ -222,7 +222,7 @@ class TestMarkouts(TestCase):
         trade_async_iter = to_async_iterable(trades_list)
         quote_trade_list.append(trade_async_iter)
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator) | op.flatten() > output_list
+        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten() > output_list
 
         # do assertions
         self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
@@ -276,7 +276,7 @@ class TestMarkouts(TestCase):
         trade_async_iter = to_async_iterable(trades_list)
         quote_trade_list.append(trade_async_iter)
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator) | op.flatten() > output_list
+        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten() > output_list
 
         # do assertions
         self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)

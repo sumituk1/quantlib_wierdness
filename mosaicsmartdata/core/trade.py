@@ -58,10 +58,14 @@ class Quote(GenericParent):
         self.ask = float(self.ask)
         self.duration = float(self.duration) if self.duration is not None else None
 
-    def mid(self):
-        return 0.5*(self.bid+self.ask)
-
-
+    def __getattr__(self, item):
+        if item in self.__dict__:
+            return self.__dict__[item]
+        # calculate different markout types on the fly by applying the correct multiplier
+        elif str(item) == 'mid':
+            return 0.5*(self.bid + self.ask)
+        else:
+            raise ValueError('This object doesn\'t have attribute \"' + item + '\"' )
 
 
 class Trade(GenericParent):
@@ -91,6 +95,9 @@ class Trade(GenericParent):
 
         if self.basket_id is None:
             self.basket_id = self.trade_id
+
+        def markout_mults(self):
+            return {'price': 1, 'PV': self.delta}
 
 class FixedIncomeTrade(Trade):
     # Attributes with default parameter.
@@ -124,6 +131,10 @@ class FixedIncomeTrade(Trade):
         if self.delta is None:
             self.delta = self.duration * self.notional * 0.0001
 
+
+    def markout_mults(self):
+        return {'price': 1, 'PV': self.delta, 'cents': 100.0,
+                'bps':(1.0 / self.duration / self.par_value) * 10000}
 
 if __name__ == '__main__':
     date_0 = dt.datetime(2017, 1, 2)

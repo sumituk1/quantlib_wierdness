@@ -33,11 +33,11 @@ class MarkoutCalculator:
             # for each markout lag in lags_list, create a markout_msg for this trade
             for mk in self.lags_list:
                 if "COB" not in mk:
-                    mkmsg = MarkoutMessage(trade=msg,
-                                           trade_id=msg.trade_id,
-                                           notional=msg.notional,
-                                           sym=msg.sym,
-                                           side=msg.side,
+                    mkmsg = MarkoutMessage2(trade=msg,
+                                           #trade_id=msg.trade_id,
+                                           #notional=msg.notional,
+                                           #sym=msg.sym,
+                                           #side=msg.side,
                                            initial_price=msg.traded_px,
                                            next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
                                            dt=mk)
@@ -61,11 +61,11 @@ class MarkoutCalculator:
                     COB_time_utc = dt.datetime.combine(msg.trade_date, self.COB_time_utc) + \
                                         dt.timedelta(days=float(COB_lag))
 
-                    mkmsg = MarkoutMessage(trade=msg,
-                                           trade_id=msg.trade_id,
-                                           notional=msg.notional,
-                                           sym=msg.sym,
-                                           side=msg.side,
+                    mkmsg = MarkoutMessage2(trade=msg,
+                                           #trade_id=msg.trade_id,
+                                           #notional=msg.notional,
+                                           #sym=msg.sym,
+                                           #side=msg.side,
                                            initial_price=msg.traded_px,
                                            next_timestamp=COB_time_utc,
                                            dt=mk)
@@ -74,11 +74,11 @@ class MarkoutCalculator:
 
     def __call__(self, msg):
         self.last_timestamp = msg.timestamp
-
+        #print(msg)
         if isinstance(msg, Trade):
             self.generate_markout_requests(msg)
             # elif isinstance(msg, Quote) or hasattr(msg, 'mid'):
-            # self.last_price = msg.mid()
+            # self.last_price = msg.mid
         elif not isinstance(msg, Quote):
             print(msg)
         # determine which pending markout requests we can complete now
@@ -98,12 +98,10 @@ class MarkoutCalculator:
 
         for x in completed:
             x.final_price = self.last_price[self.last_price['timestamp'] <= x.next_timestamp]['mid'].values[-1]
-            x.cents_markout = (x.final_price - x.initial_price) * 100 # <-- assumes par_value is 100 for quote and trade
-            x.bps_markout = ((x.final_price - x.initial_price) / x.trade.duration / x.trade.par_value) * 10000
+            x.price_markout = (x.final_price - x.initial_price)
 
             if x.side == TradeSide.Ask:
-                x.cents_markout *= -1
-                x.bps_markout *= -1
+                x.price_markout *= -1
 
             # 1. throw out all the Quotes before this timestamp which has just been processed
             self.last_price.drop(self.last_price[self.last_price['timestamp'] < x.next_timestamp].index, inplace=True)
@@ -114,7 +112,7 @@ class MarkoutCalculator:
             if not self.cob_mode:
                 # intra-day markout lags given
                 ix = len(self.last_price) + 1
-                self.last_price.set_value(ix, 'mid', msg.mid())
+                self.last_price.set_value(ix, 'mid', msg.mid)
                 self.last_price.set_value(ix, 'timestamp', msg.timestamp)
 
                 stale_timestamp = self.last_price['timestamp'].values[-1] - \
@@ -130,9 +128,9 @@ class MarkoutCalculator:
                 # no need to store intra-day Quotes. Only store COB markouts
 
                 if self.COB_time_utc is not None and msg.timestamp.time() <= self.COB_time_utc:
-                    self.last_price = pd.DataFrame({'mid': [msg.mid()], 'timestamp': [msg.timestamp]})
+                    self.last_price = pd.DataFrame({'mid': [msg.mid], 'timestamp': [msg.timestamp]})
 
-                    # # self.last_price.loc['mid'] = msg.mid()
+                    # # self.last_price.loc['mid'] = msg.mid
                     # self.last_price.loc['timestamp'] = msg.timestamp
 
         return completed
@@ -193,6 +191,6 @@ class GovtBondMarkoutCalculator(MarkoutCalculator):
     #             x['markout'] = -1*(x['final_price'] - x['initial_price']) / 100 * x['notional']
 
     # if isinstance(msg, Quote) or hasattr(msg, 'mid'):
-    #     self.last_price = msg.mid()
+    #     self.last_price = msg.mid
     #
     # return completed
