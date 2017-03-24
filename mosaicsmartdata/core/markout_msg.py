@@ -16,8 +16,8 @@ class MarkoutMessage2(GenericParent):
         self.initial_price = None
         self.final_price = None
         self.dt = None
-        self.bps_markout = None
-        self.cents_markout = None
+        #self.bps_markout = None
+        #$self.cents_markout = None
         self.price_markout = None
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
