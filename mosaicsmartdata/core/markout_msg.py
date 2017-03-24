@@ -35,6 +35,50 @@ class MarkoutMessage2(GenericParent):
                 return self.price_markout*mults[mk_type]
         else:
             raise ValueError('This object doesn\'t understand ' + item)
+
+    def __str__(self):
+        out = ""
+        attribs = [a for a in dir(self) if not a.startswith('__') and not callable(getattr(self, a))]
+
+        for item in attribs:
+            if item == 'trade':
+                out += ' package_id:' + self.trade.package_id
+                out += ' trade_id:' + self.trade.trade_id
+                out += ' sym:' + self.trade.sym
+                out += ' timestamp:' + self.trade.timestamp.strftime("%d/%m/%Y %H:%M:%S")
+                out += ' delta:' + str(self.trade.delta)
+                out += ' paper_trade:' + str(self.trade.paper_trade)
+                out += ' client_sys_key:' + self.trade.client_sys_key
+                out += ' notional:' + str(self.trade.notional)
+                if self.trade.maturity_date is not None:
+                    out += ' trade_settle_date:' + self.trade.trade_settle_date.strftime("%d/%m/%Y %H:%M")
+                else:
+                    out += ' trade_settle_date:'
+                if self.trade.maturity_date is not None:
+                    out += ' trade_settle_date:' + self.trade.maturity_date.strftime("%d/%m/%Y %H:%M")
+                else:
+                    out += ' trade_settle_date:'
+                out += ' side:' + self.trade.side
+                out += ' traded_px:' + str(self.trade.traded_px)
+                out += ' ccy:' + self.trade.ccy
+            elif 'markout' not in item:
+                out += " " + item + ":" + str(self.__dict__[item])
+            else:
+                mk_type = str(item)[:-8]
+                mults = self.trade.markout_mults()
+                if mk_type in mults:
+                    for key,value in mults.items():
+                        out += " " + key + ":" + str(self.price_markout * value)
+
+        return out
+                # return self.price_markout * mults[mk_type]
+
+        # return 'trade_id:' + self.trade_id + \
+        #        ' instr:' + self.sym + \
+        #        ' next_timestamp:' + self.next_timestamp.strftime("%d/%m/%Y %H:%M") + \
+        #        ' dt:' + str(self.dt) + \
+        #        ' cents_markout:' + str(self.cents_markout) + \
+        #        ' bps_markout:' + str(self.bps_markout)
 if False:
     class MarkoutMessage:
         '''

@@ -42,40 +42,46 @@ class MarkoutCalculatorPre:
 
     def __call__(self, msg, COB_time_utc=None):
         self.last_timestamp = msg.timestamp
+        completed = []
         # print(msg)
         if isinstance(msg, Trade):
+
             self.COB_time_utc = COB_time_utc
-            self.generate_markout_requests(msg)
-            # elif isinstance(msg, Quote) or hasattr(msg, 'mid'):
-            # self.last_price = msg.mid
+            # Egor - no need to generate markout_requests for pre as they already would have been
+            # generated
+            # self.generate_markout_requests(msg)
+            for mk in self.lags_list:
+                mkmsg = MarkoutMessage2(trade=msg,
+                                        initial_price=msg.traded_px,
+                                        next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
+                                        dt=mk)
+
+                mkmsg.final_price = self.last_price[self.last_price['timestamp'] <=
+                                                    mkmsg.next_timestamp]['mid'].values[-1]
+                mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)
+
+                if mkmsg.side == TradeSide.Ask:
+                    mkmsg.price_markout *= -1
+                completed.append(mkmsg)
+
         elif not isinstance(msg, Quote):
             print(msg)
-        # determine which pending markout requests we can complete now
-        completed = []
 
-        if len(self.last_price) > 0:
-            # if self.cob_mode:
-            #     cut_off = self.last_timestamp
-            # else:
-            #     cut_off = self.last_price['timestamp'].values[-1]
-            # # todo: hack. Not sure why for COB I end up with a datetime64 in my dataframe
-            # if type(cut_off) == np.datetime64:
-            #     cut_off = pd.to_datetime(self.last_price['timestamp'].values[-1])
-
-            completed = [x for x in self.pending if
-                         x.next_timestamp < self.last_price['timestamp'].values[-1]]  # cut_off]
-            self.pending = [x for x in self.pending if x not in completed]
-
-        for x in completed:
-            x.final_price = self.last_price[self.last_price['timestamp'] <= x.next_timestamp]['mid'].values[-1]
-            x.price_markout = (x.final_price - x.initial_price)
-
-            if x.side == TradeSide.Ask:
-                x.price_markout *= -1
-                # # 1. throw out all the Quotes before this timestamp which has just been processed
-                # self.last_price.drop(self.last_price[self.last_price['timestamp'] < x.next_timestamp].index,
-                # inplace=True)
-                # self.last_price.reset_index(drop=True, inplace=True)
+        # COMMENTED AS PER EGOR'S SUGGESTION.
+        # ==================================
+        # completed = []
+        #
+        # if len(self.last_price) > 0:
+        #     completed = [x for x in self.pending if
+        #                  x.next_timestamp < self.last_price['timestamp'].values[-1]]  # cut_off]
+        #     self.pending = [x for x in self.pending if x not in completed]
+        #
+        # for x in completed:
+        #     x.final_price = self.last_price[self.last_price['timestamp'] <= x.next_timestamp]['mid'].values[-1]
+        #     x.price_markout = (x.final_price - x.initial_price)
+        #
+        #     if x.side == TradeSide.Ask:
+        #         x.price_markout *= -1
 
         if isinstance(msg, Quote) or hasattr(msg, 'mid'):
             # throw out stale Quotes which have a timestamp > min(abs(lags_list) if lags_list < 0
@@ -245,13 +251,14 @@ class GovtBondMarkoutCalculator(MarkoutCalculator):
     boo_contains_COB = False
 
     def __init__(self, lags_list=None):
+        # get the COB time per ccy
+        self.COB_time_utc_eur = get_data_given_section_and_key("GovtBond_Markout", "EGB_COB")
+        self.COB_time_utc_ust = get_data_given_section_and_key("GovtBond_Markout", "UST_COB")
+        self.COB_time_utc_gbp = get_data_given_section_and_key("GovtBond_Markout", "GBP_COB")
+        # set the lags_list
         if lags_list is None:
             # get the lags_list from config file
             lags_list_str = get_data_given_section_and_key("GovtBond_Markout", "lags_list")
-            # get the COB time per ccy
-            self.COB_time_utc_eur = get_data_given_section_and_key("GovtBond_Markout", "EGB_COB")
-            self.COB_time_utc_ust = get_data_given_section_and_key("GovtBond_Markout", "UST_COB")
-            self.COB_time_utc_gbp = get_data_given_section_and_key("GovtBond_Markout", "GBP_COB")
             lags_list = [x for x in lags_list_str.split(',')]
         else:
             lags_list = lags_list
