@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from unittest import TestCase
 import numpy as np
 import aiostreams.operators.operators as op
@@ -17,7 +18,7 @@ class TestHedgeMarkouts(TestCase):
         # Load the quotes data from csv
         quotes_dict = dict()
         for x in quote_files:
-            sym, quote = qc_csv_helper.file_to_quote_list(datapath + x,MarkoutMode.Hedged)
+            sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Hedged)
             quotes_dict[sym] = quote
 
         # Now get the trades list from csv
@@ -42,8 +43,8 @@ class TestHedgeMarkouts(TestCase):
         quote_trade_list.append(trade_async_iter)
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
         hedger = Hedger(my_hedge_calculator)
-        joint_stream | op.map(hedger) | op.flatten() > output_list
-        [print(x) for x in output_list]
+        joint_stream | op.map(hedger) | op.flatten() > print
+        # [print(x) for x in output_list]
 
         # do assertions
         # self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
