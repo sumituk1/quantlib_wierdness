@@ -29,7 +29,8 @@ class Hedger:
 
         elif isinstance(msg, Trade):
             hedges = self.hedge_calculator(msg, self.last_quotes)
-            return hedges
+            # want to send the original trade on as well
+            return hedges + [msg]
 
         else:
             raise ValueError('Message must be a subclass of either Quote or Trade!')
@@ -70,7 +71,8 @@ def my_hedge_calculator(msg, lastquotes):
                                    trade = msg,
                                    duration=hedge_quote.duration)
 
-    return hedge_trade
+    # In general, there may be multiple hedge trades, so this must return a list
+    return [hedge_trade]
 
 
 def load_config(ccy):
