@@ -155,6 +155,8 @@ class FixedIncomeFuturesHedge(Trade):
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
         self.notional = 100000  # for futures
         self.paper_trade = True
+        self.par_value = 100
+        self.maturity_date = None
         self.hedge_contracts = 0
         # self.notional = 0.0
 
@@ -187,6 +189,12 @@ class FixedIncomeFuturesHedge(Trade):
             raise ValueError("Futures Hedge calculation called on trade with no hedges set")
         self.notional *= self.hedge_contracts
 
+    def markout_mults(self):
+        return {'price': 1,
+                'PV': self.delta,
+                'cents': 100.0,
+                'bps': (1.0 / self.duration / self.par_value) * 10000}
+
 
 """
 Handle OTC related hedge calcs
@@ -206,6 +214,8 @@ class FixedIncomeOTCHedge(Trade):
         self.notional = 1  # for OTC bonds
         self.paper_trade = True
         self.hedge_contracts = 0.0
+        self.par_value = 100
+        self.maturity_date = None
         # self.notional = 0.0
         # self.traded_px = None
         # set delta of hedge instrument
@@ -234,6 +244,12 @@ class FixedIncomeOTCHedge(Trade):
         if not self.trade_beta:
             raise ValueError("Futures Hedge calculation called on trade with no hedges set")
         self.notional *= self.hedge_contracts
+
+    def markout_mults(self):
+        return {'price': 1,
+                'PV': self.delta,
+                'cents': 100.0,
+                'bps': (1.0 / self.duration / self.par_value) * 10000}
 
 
 if __name__ == '__main__':
