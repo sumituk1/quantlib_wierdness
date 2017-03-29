@@ -55,13 +55,17 @@ class MarkoutCalculatorPre:
                                         initial_price=msg.traded_px,
                                         next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
                                         dt=mk)
+                if len(self.last_price[self.last_price['timestamp'] <= mkmsg.next_timestamp]['mid'].values) == 0:
+                    # TODO: empty Quote mid for lagged time. Log this
+                    mkmsg.price_markout = None
+                else:
+                    mkmsg.final_price = self.last_price[self.last_price['timestamp'] <=
+                                                        mkmsg.next_timestamp]['mid'].values[-1]
+                    mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)
 
-                mkmsg.final_price = self.last_price[self.last_price['timestamp'] <=
-                                                    mkmsg.next_timestamp]['mid'].values[-1]
-                mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)
-
-                if mkmsg.side == TradeSide.Ask:
+                if (mkmsg.side == TradeSide.Ask) and (not mkmsg.price_markout is None):
                     mkmsg.price_markout *= -1
+
                 completed.append(mkmsg)
 
         elif not isinstance(msg, Quote):
@@ -168,7 +172,7 @@ class MarkoutCalculatorPost:
                 # print(mkmsg)
                 self.pending.append(mkmsg)
 
-    def __call__(self, msg, COB_time_utc = None):
+    def __call__(self, msg, COB_time_utc=None):
         self.last_timestamp = msg.timestamp
 
         if isinstance(msg, Trade):

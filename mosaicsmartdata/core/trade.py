@@ -122,7 +122,7 @@ class FixedIncomeTrade(Trade):
         self.trade_added_to_rp = False
         self.is_d2d_force_close = False
         self.duration = None
-        self.beta = None  # for hedging using multiple assets
+        self.beta = dict()  # for hedging using multiple assets
         self.par_value = 100
         self.spot_settle_date = None
         self.issue_date = None
@@ -150,50 +150,98 @@ class FixedIncomeTrade(Trade):
         my_string = my_string.replace(': ,', ': ')
         return my_string
 
-class FixedIncomeHedge(Trade):
-    def __init__(self, *args, **kwargs):
-        self.package_id = None
 
-        self.is_futures = False
-        self.is_cash = False
+class FixedIncomeFuturesHedge(Trade):
+    def __init__(self, *args, **kwargs):
+        # self.package_id = None
         self.min_hedge_delta = 1000  # in relevant ccy
-        self.trade = None
-        self.duration = None
+        # self.trade = None
+        self.duration = None # <- hedge trade attribute for the time being
+        self.trade_delta = None # <- hedge trade_delta attribute for the time being
+        self.trade_beta = dict()
+
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
-        self.notional = 1  # for futures
+        self.notional = 100000  # for futures
         self.paper_trade = True
         self.hedge_contracts = 0
-        self.hedge_cost = 0.0
-        if self.delta is None and not self.is_futures:
-            # futures delta should always be passed in
-            self.delta = self.duration * self.notional * 0.0001
-        self.package_id = self.trade.package_id
+        # self.notional = 0.0
+
+        # Futures delta should always be passed in
+        # if self.delta is None:
+        #     # futures delta should always be passed in
+        #     self.delta = self.duration * self.notional * 0.0001
+        # self.package_id = None
+        # self.trade_beta = dict()
+        # self.trade_delta = None
         self.calculate_hedge_contracts()
         self.calculate_initial_hedge_cost()
 
+    # def __call__(self):
+    #     self.calculate_hedge_contracts()
+    #     self.calculate_initial_hedge_cost()
+
     def calculate_hedge_contracts(self):
-        if self.trade.delta > self.min_hedge_delta:
-            if self.trade.beta is None:
-                self.trade.beta = 1  # todo: need to add beta functionality
-            if self.is_futures:
-                # we expect the futures delta to be passed in per 100000 notional
-                self.hedge_contracts = np.round(self.trade.beta * self.trade.delta / self.delta, 0)
-                if self.notional is None:
-                    self.notional = 100000
-            else:
-                # for Cash, this will simply be the notional of the hedge bond
-                self.hedge_contracts = self.trade.beta * self.trade.delta / self.delta
-
+        if self.trade_delta > self.min_hedge_delta:
+            create_hedge = True
         else:
-            self.hedge_contracts = 0.0
+            create_hedge = False
+        if create_hedge:
+            if not self.trade_beta:
+                raise ValueError("Futures Hedge calculation called on trade with no hedges set")
+            self.hedge_contracts = self.trade_beta[self.sym] * self.trade_delta / self.delta
 
-    def calculate_initial_hedge_cost(self, contracts=None):
-        if self.hedge_contracts is None:
-            self.calculate_hedge_contracts()
-        if self.hedge_contracts > 0:
-            self.hedge_cost = self.hedge_contracts * self.notional
+    def calculate_initial_hedge_cost(self):
+        if not self.trade_beta:
+            raise ValueError("Futures Hedge calculation called on trade with no hedges set")
+        self.notional *= self.hedge_contracts
+
+
+"""
+Handle OTC related hedge calcs
+"""
+
+
+class FixedIncomeOTCHedge(Trade):
+    def __init__(self, *args, **kwargs):
+        # self.package_id = None
+        self.min_hedge_delta = 1000  # in relevant ccy
+        # self.trade = None
+        self.duration = None # <- hedge duration attribute for the time being
+        self.trade_delta = None # <- hedge trade_delta attribute for the time being
+        self.trade_beta = dict()
+
+        super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+        self.notional = 1  # for OTC bonds
+        self.paper_trade = True
+        self.hedge_contracts = 0.0
+        # self.notional = 0.0
+        # self.traded_px = None
+        # set delta of hedge instrument
+        if self.delta is None:
+            # futures delta should always be passed in
+            self.delta = self.duration * self.notional * 0.0001
+        # self.package_id = self.trade.package_id
+        self.calculate_hedge_contracts()
+        self.calculate_initial_hedge_cost()
+
+    # def __call__(self):
+    #     self.calculate_hedge_contracts()
+    #     self.calculate_initial_hedge_cost()
+
+    def calculate_hedge_contracts(self):
+        if self.trade_delta > self.min_hedge_delta:
+            create_hedge = True
         else:
-            self.hedge_cost = 0.0
+            create_hedge = False
+        if create_hedge:
+            if not self.trade_beta:
+                raise ValueError("OTC Hedge calculation called on trade with no hedges set")
+            self.hedge_contracts = self.trade_beta[self.sym] * self.trade_delta / self.delta
+
+    def calculate_initial_hedge_cost(self):
+        if not self.trade_beta:
+            raise ValueError("Futures Hedge calculation called on trade with no hedges set")
+        self.notional *= self.hedge_contracts
 
 
 if __name__ == '__main__':

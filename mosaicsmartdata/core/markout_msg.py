@@ -1,6 +1,7 @@
 import numpy as np
 from mosaicsmartdata.core.trade import GenericParent
 
+
 class MarkoutMessage2(GenericParent):
     '''
     A basic markout calculator
@@ -16,13 +17,13 @@ class MarkoutMessage2(GenericParent):
         self.initial_price = None
         self.final_price = None
         self.dt = None
-        #self.bps_markout = None
-        #$self.cents_markout = None
+        # self.bps_markout = None
+        # $self.cents_markout = None
         self.price_markout = None
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
-    def __getattr__(self,item):
+    def __getattr__(self, item):
         if item in self.__dict__:
             return self.__dict__[item]
         # calculate different markout types on the fly by applying the correct multiplier
@@ -32,7 +33,7 @@ class MarkoutMessage2(GenericParent):
             mk_type = str(item)[:-8]
             mults = self.trade.markout_mults()
             if mk_type in mults:
-                return self.price_markout*mults[mk_type]
+                return self.price_markout * mults[mk_type] if not self.price_markout is None else "NaN"
         else:
             raise ValueError('This object doesn\'t understand ' + item)
 
@@ -67,11 +68,12 @@ class MarkoutMessage2(GenericParent):
                 mk_type = str(item)[:-8]
                 mults = self.trade.markout_mults()
                 if mk_type in mults:
-                    for key,value in mults.items():
-                        out += " " + key + ":" + str(self.price_markout * value)
+                    for key, value in mults.items():
+                        out += " " + key + ":" + str(self.price_markout * value
+                                                     if not self.price_markout is None else "NaN")
 
         return out
-                # return self.price_markout * mults[mk_type]
+        # return self.price_markout * mults[mk_type]
 
         # return 'trade_id:' + self.trade_id + \
         #        ' instr:' + self.sym + \
@@ -79,6 +81,8 @@ class MarkoutMessage2(GenericParent):
         #        ' dt:' + str(self.dt) + \
         #        ' cents_markout:' + str(self.cents_markout) + \
         #        ' bps_markout:' + str(self.bps_markout)
+
+
 if False:
     class MarkoutMessage:
         '''
