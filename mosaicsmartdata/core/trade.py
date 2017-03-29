@@ -143,14 +143,6 @@ class FixedIncomeTrade(Trade):
                 'cents': 100.0,
                 'bps': (1.0 / self.duration / self.par_value) * 10000}
 
-    def __str__(self):
-        my_string = str(type(self)) + ' : '
-        for key, value in self.__dict__.items():
-            my_string = my_string + ', ' + key + ' = ' + str(value)
-        my_string = my_string.replace(': ,', ': ')
-        return my_string
-
-
 class FixedIncomeFuturesHedge(Trade):
     def __init__(self, *args, **kwargs):
         # self.package_id = None

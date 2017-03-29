@@ -63,7 +63,7 @@ def my_hedge_calculator(msg, lastquotes):
         if num_hedges == 0:
             raise ValueError('No Hedge prices received before receiving a Trade object!')
         else:
-            hedge_listed_trade = [None] * num_hedges
+            # hedge_listed_trade = [None] * num_hedges
             if not msg.beta:
                 set_beta = True
             for i in range(0, num_hedges):
@@ -93,6 +93,7 @@ def my_hedge_calculator(msg, lastquotes):
                 # else:
                 #     hedge_quote = lastquotes[hedge_sym_arr]
             hedge_trades.append(hedge_listed_trade)
+
     ''' ---Now process for OTC--- '''
     hedge_otc_mapper = load_config(msg.ccy, HedgeClass.OTC)
     if not hedge_otc_mapper == "":
@@ -137,7 +138,7 @@ def my_hedge_calculator(msg, lastquotes):
                                         trade_beta=msg.beta,
                                         duration=hedge_quote.duration)
                 hedge_trades.append(hedge_otc_trade)
-    return hedge_trades + [msg]
+    return hedge_trades
 
 def load_config(ccy, hedge_class):
     if ccy == Currency.USD:
