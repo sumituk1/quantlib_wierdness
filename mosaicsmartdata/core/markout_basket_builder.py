@@ -4,12 +4,12 @@ class MarkoutBasketBuilder:
 
     def __call__(self, msg):
         self.basket.append(msg)
-        if msg.paper_trade:
-            return []
-        else:
+        if len(self.basket) >= msg.package_size:
             my_msg = self.basket
             self.basket = []
             return [my_msg]
+        else:
+            return []
 
 
 def aggregate_markouts(hedge_markout_msgs):

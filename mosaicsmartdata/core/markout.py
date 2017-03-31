@@ -273,33 +273,3 @@ class GovtBondMarkoutCalculator(MarkoutCalculator):
         # all properties that any trade can have belong in the superclass
         MarkoutCalculator.__init__(self, lags_list=lags_list)
 
-        # don't need this code, the function is inherited anyway
-        #    def __call__(self, msg):
-        #        return MarkoutCalculator.__call__(self, msg)
-
-        # def __call__(self, msg):
-        #     self.last_timestamp = msg.timestamp
-        #
-        #     if isinstance(msg, Trade):
-        #         self.generate_markout_requests(msg)
-        #     elif isinstance(msg, Quote):
-        #         self.sym = msg.sym
-        #     elif not isinstance(msg, Quote):
-        #         print(msg)
-        #     # determine which pending markout requests we can complete now
-        #
-        #     completed = [x for x in self.pending if x['next_timestamp'] <
-        #                  self.last_timestamp]
-        #     self.pending = [x for x in self.pending if x not in completed]
-        #
-        #     for x in completed:
-        #         x['final_price'] = self.last_price
-        #         if x['side'] == TradeSide.Bid:
-        #             x['markout'] = (x['final_price'] - x['initial_price'])/100*x['notional']
-        #         else:
-        #             x['markout'] = -1*(x['final_price'] - x['initial_price']) / 100 * x['notional']
-
-        # if isinstance(msg, Quote) or hasattr(msg, 'mid'):
-        #     self.last_price = msg.mid
-        #
-        # return completed

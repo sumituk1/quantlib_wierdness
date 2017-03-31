@@ -35,7 +35,10 @@ class Hedger:
         elif isinstance(msg, Trade):
             hedges = self.hedge_calculator(msg, self.last_quotes)
             # want to send the original trade on as well
-            return hedges + [msg]
+            package = hedges + [msg]
+            for x in package:
+                x.package_size = len(package)
+            return package
         else:
             raise ValueError('Message must be a subclass of either Quote or Trade!')
 

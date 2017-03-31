@@ -76,6 +76,7 @@ class Trade(GenericParent):
     def __init__(self, *args, **kwargs):
         self.trade_id = None
         self.package_id = None
+        self.package_size = 1
         self.paper_trade = False
         self.sym = None
         self.timestamp = None
