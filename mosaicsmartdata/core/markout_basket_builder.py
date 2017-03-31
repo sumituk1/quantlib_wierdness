@@ -18,6 +18,6 @@ def aggregate_markouts(hedge_markout_msgs):
     # mults = trade_mk_msg.trade.markout_mults()
 
     trade_mk_msg.hedged_cents = sum([x.price_markout * x.trade.markout_mults()['cents'] for x in hedge_markout_msgs])
-    trade_mk_msg.price = sum([x.price_markout * x.trade.markout_mults()['price'] for x in hedge_markout_msgs])
+    trade_mk_msg.hedged_price = sum([x.price_markout * x.trade.markout_mults()['price'] for x in hedge_markout_msgs])
     trade_mk_msg.hedged_bps = trade_mk_msg.price / trade_mk_msg.trade.delta
     return [trade_mk_msg]

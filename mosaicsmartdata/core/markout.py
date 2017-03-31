@@ -215,7 +215,10 @@ class MarkoutCalculator:
 
         pre_lags = [x for x in lags_list if x[0] == '-']
         post_lags = [x for x in lags_list if not x[0] == '-']
-        self.max_lag = max([abs(float(x)) for x in lags_list if "COB" not in x])
+        if len([x for x in lags_list if "COB" not in x]) > 0:
+            self.max_lag = max([abs(float(x)) for x in lags_list if "COB" not in x])
+        else:
+            self.max_lag = None
         # always do a post trade
         self.markout_calculator_post = MarkoutCalculatorPost(lags_list=post_lags)
         self.markout_calculator_pre = None
