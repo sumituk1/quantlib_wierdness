@@ -1,4 +1,5 @@
 [DEFAULT]
+instrument_static = ..\resources\instrument_static.csv
 
 [Rates-RiskPath]
 DaysForceClose = 2
@@ -9,8 +10,8 @@ MinHedgeDV01 = 500
 
 [GovtBond_Markout]
 lags_list_old = COB0,COB1,COB2
-lags_list_old2 = -900,-60,0,60,300,3600,COB0,COB1,COB2
-lags_list = 0
+lags_list = -900,-60,0,60,300,3600,COB0,COB1,COB2
+lags_list_2 = 0
 UST_COB = 22:00:00
 GBP_COB = 17:00:00
 EGB_COB = 16:30:00
