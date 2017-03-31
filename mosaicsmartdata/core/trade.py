@@ -138,18 +138,19 @@ class FixedIncomeTrade(Trade):
             self.delta = self.duration * self.notional * 0.0001
 
     def markout_mults(self):
-        return {'price': 1,
+        return {'price': (1 / self.par_value) * self.notional,
                 'PV': self.delta,
                 'cents': 100.0,
                 'bps': (1.0 / self.duration / self.par_value) * 10000}
+
 
 class FixedIncomeFuturesHedge(Trade):
     def __init__(self, *args, **kwargs):
         # self.package_id = None
         self.min_hedge_delta = 1000  # in relevant ccy
         # self.trade = None
-        self.duration = None # <- hedge trade attribute for the time being
-        self.trade_delta = None # <- hedge trade_delta attribute for the time being
+        self.duration = None  # <- hedge trade attribute for the time being
+        self.trade_delta = None  # <- hedge trade_delta attribute for the time being
         self.trade_beta = dict()
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
@@ -190,7 +191,7 @@ class FixedIncomeFuturesHedge(Trade):
         self.notional *= self.hedge_contracts
 
     def markout_mults(self):
-        return {'price': 1,
+        return {'price': (1 / self.par_value) * self.notional,
                 'PV': self.delta,
                 'cents': 100.0,
                 'bps': (1.0 / self.duration / self.par_value) * 10000}
@@ -206,9 +207,10 @@ class FixedIncomeOTCHedge(Trade):
         # self.package_id = None
         self.min_hedge_delta = 1000  # in relevant ccy
         # self.trade = None
-        self.duration = None # <- hedge duration attribute for the time being
-        self.trade_delta = None # <- hedge trade_delta attribute for the time being
+        self.duration = None  # <- hedge duration attribute for the time being
+        self.trade_delta = None  # <- hedge trade_delta attribute for the time being
         self.trade_beta = dict()
+        # self.settle_date = None
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
         self.notional = 1  # for OTC bonds
@@ -216,6 +218,7 @@ class FixedIncomeOTCHedge(Trade):
         self.hedge_contracts = 0.0
         self.par_value = 100
         self.maturity_date = None
+
         # self.notional = 0.0
         # self.traded_px = None
         # set delta of hedge instrument
@@ -246,7 +249,7 @@ class FixedIncomeOTCHedge(Trade):
         self.notional *= self.hedge_contracts
 
     def markout_mults(self):
-        return {'price': 1,
+        return {'price': (1 / self.par_value) * self.notional,
                 'PV': self.delta,
                 'cents': 100.0,
                 'bps': (1.0 / self.duration / self.par_value) * 10000}
