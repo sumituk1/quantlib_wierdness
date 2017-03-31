@@ -4,7 +4,7 @@ class MarkoutBasketBuilder:
 
     def __call__(self, msg):
         self.basket.append(msg)
-        if len(self.basket) >= msg.package_size:
+        if len(self.basket) >= msg.trade.package_size:
             my_msg = self.basket
             self.basket = []
             return [my_msg]
@@ -19,5 +19,5 @@ def aggregate_markouts(hedge_markout_msgs):
 
     trade_mk_msg.hedged_cents = sum([x.price_markout * x.trade.markout_mults()['cents'] for x in hedge_markout_msgs])
     trade_mk_msg.hedged_price = sum([x.price_markout * x.trade.markout_mults()['price'] for x in hedge_markout_msgs])
-    trade_mk_msg.hedged_bps = trade_mk_msg.price / trade_mk_msg.trade.delta
-    return [trade_mk_msg]
+    trade_mk_msg.hedged_bps = trade_mk_msg.hedged_price / trade_mk_msg.trade.delta
+    return trade_mk_msg
