@@ -19,6 +19,11 @@ def get_data_given_section_and_key(section, key):
     return config[section][key]
 
 
+# gets the value given a section
+def get_data_given_section(section):
+    return dict(config.items(section))
+
+
 # TODO: This code shouldn't be here.
 # prepares the passed in ccy pair in the correct market convention order
 def create_ccy_pair(_dom, _for):
@@ -40,3 +45,7 @@ if __name__ == "__main__":
     zz = get_data_given_section_and_key('FX', 'fx_ccy_g10')
     print(zz)
     print(create_ccy_pair("GBP", "JPY"))
+    config.read("C:\\Users\\Sumit Sengupta\\Documents\msq-domain\\mosaicsmartdata\\configuration\\config")
+    zz = get_data_given_section('USD_GovtBond_Hedge_Mapper')
+    print(zz)
+
