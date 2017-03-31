@@ -1,9 +1,11 @@
 import os
 import sys
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),"../configuration")))
-import configparser
+# import configparser
+from mosaicsmartdata.core.config_parser import *
 
-config = configparser.ConfigParser()
+# config = configparser.ConfigParser()
+config = ConfigParser()
 pre = os.path.abspath(os.path.dirname(__file__) + '/' + '../configuration')
 configFilePath = os.path.join(pre, 'config')
 config.read(configFilePath)
@@ -21,7 +23,8 @@ def get_data_given_section_and_key(section, key):
 
 # gets the value given a section
 def get_data_given_section(section):
-    return dict(config.items(section))
+    # return dict(config.items(section))
+    return dict(config.options(section, no_defaults=True))
 
 
 # TODO: This code shouldn't be here.
