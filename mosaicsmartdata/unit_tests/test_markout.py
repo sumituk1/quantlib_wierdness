@@ -11,7 +11,7 @@ class TestMarkouts(TestCase):
     # Test for Sell in bps over intra-day to COB1
     def test_case_1(self, plotFigure = False):
         tolerance = 5*1e-2
-        datapath = "..\\resources\\"  # generally a good idea to use relative paths whenever possible
+        datapath = "..\\resources\\unhedged_markout_tests\\"  # generally a good idea to use relative paths whenever possible
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
@@ -80,7 +80,7 @@ class TestMarkouts(TestCase):
     # Test for Sell in cents over intra-day to COB1
     def test_case_2(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "..\\resources\\"  # generally a good idea to use relative paths whenever possible
+        datapath = "..\\resources\\unhedged_markout_tests\\"  # generally a good idea to use relative paths whenever possible
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
@@ -138,7 +138,7 @@ class TestMarkouts(TestCase):
     def test_case_3(self, plotFigure=False):
         tolerance = 5 * 1e-2
         tolerance = 5 * 1e-2
-        datapath = "..\\resources\\"  # generally a good idea to use relative paths whenever possible
+        datapath = "..\\resources\\unhedged_markout_tests\\"  # generally a good idea to use relative paths whenever possible
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
@@ -191,7 +191,7 @@ class TestMarkouts(TestCase):
     # Test for Buy in cents over intra-day to COB1
     def test_case_4(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "..\\resources\\"  # generally a good idea to use relative paths whenever possible
+        datapath = "..\\resources\\unhedged_markout_tests\\"  # generally a good idea to use relative paths whenever possible
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
@@ -245,7 +245,7 @@ class TestMarkouts(TestCase):
     # ONLY COB markouts. Make sure the config file has only got COB0, COB1 and COB2 in lags_list
     def test_case_5(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "..\\resources\\"  # generally a good idea to use relative paths whenever possible
+        datapath = "..\\resources\\unhedged_markout_tests\\"
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
@@ -305,7 +305,7 @@ class TestMarkouts(TestCase):
     # test NaN
     def test_case_6(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "..\\resources\\"  # generally a good idea to use relative paths whenever possible
+        datapath = "..\\resources\\unhedged_markout_tests\\"  # generally a good idea to use relative paths whenever possible
         quote_files = ["912810QE1_quotes.csv"]
         trade_files = "trades_NaN_test.csv"
 
