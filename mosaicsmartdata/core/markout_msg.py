@@ -51,14 +51,18 @@ class MarkoutMessage2(GenericParent):
                 out += ' paper_trade:' + str(self.trade.paper_trade)
                 out += ' client_sys_key:' + self.trade.client_sys_key
                 out += ' notional:' + str(self.trade.notional)
+                if self.trade.trade_settle_date is not None:
+                    out += ' trade_settle_date:' + self.trade.trade_settle_date.strftime("%d/%m/%Y")
                 if self.trade.maturity_date is not None:
-                    out += ' trade_settle_date:' + self.trade.trade_settle_date.strftime("%d/%m/%Y %H:%M")
-                else:
-                    out += ' trade_settle_date:'
-                if self.trade.maturity_date is not None:
-                    out += ' trade_settle_date:' + self.trade.maturity_date.strftime("%d/%m/%Y %H:%M")
-                else:
-                    out += ' trade_settle_date:'
+                    out += ' trade_maturity_date:' + self.trade.maturity_date.strftime("%d/%m/%Y")
+                # if self.trade.maturity_date is not None:
+                #     out += ' trade_settle_date:' + self.trade.trade_settle_date.strftime("%d/%m/%Y %H:%M")
+                # else:
+                #     out += ' trade_settle_date:'
+                # if self.trade.maturity_date is not None:
+                #     out += ' trade_settle_date:' + self.trade.maturity_date.strftime("%d/%m/%Y %H:%M")
+                # else:
+                #     out += ' trade_settle_date:'
                 out += ' side:' + self.trade.side
                 out += ' traded_px:' + str(self.trade.traded_px)
                 out += ' ccy:' + self.trade.ccy
