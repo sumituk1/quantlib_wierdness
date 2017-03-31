@@ -40,6 +40,17 @@ class Hedger:
             raise ValueError('Message must be a subclass of either Quote or Trade!')
 
 
+'''Extracts a duration based beta'''
+def extract_beta(i, trade_duration, hedge_sym_arr, lastquotes):
+    other_hedge_sym = [x for x in hedge_sym_arr if not x == hedge_sym_arr[i]]
+    if lastquotes[hedge_sym_arr[i]].duration > trade_duration:
+        return (lastquotes[hedge_sym_arr[i]].duration - trade_duration) / \
+               (lastquotes[hedge_sym_arr[i]].duration - lastquotes[other_hedge_sym].duration)
+    else:
+        return (trade_duration - lastquotes[hedge_sym_arr[i]].duration) / \
+               (lastquotes[hedge_sym_arr[i]].duration - lastquotes[other_hedge_sym].duration)
+
+
 def my_hedge_calculator(msg, lastquotes):
     # as a simple example, just do opposite trade as a hedge
     hedge_dict = msg.__dict__
@@ -72,7 +83,7 @@ def my_hedge_calculator(msg, lastquotes):
                     msg.beta[hedge_sym_arr[i]] = 1 / num_hedges
                 hedge_listed_trade = \
                     FixedIncomeFuturesHedge(trade_id=msg.trade_id + "_LISTED_HEDGE_" + str(i),
-                                            package_id = msg.package_id,
+                                            package_id=msg.package_id,
                                             sym=hedge_sym_arr[i],
                                             paper_trade=True,
                                             notional=100000,  # <- typically futures notional is 100000
@@ -83,9 +94,9 @@ def my_hedge_calculator(msg, lastquotes):
                                             client_sys_key=msg.client_sys_key,
                                             trade_date=hedge_quote.timestamp.date(),
                                             ccy=msg.ccy,
-                                            trade_settle_date=None,
+                                            trade_settle_date=msg.trade_settle_date,
                                             min_hedge_delta=min_hedge_delta)
-                                            # trade=msg)
+                # trade=msg)
                 # duration=hedge_quote.duration)
                 # # set the duration of the hedge based on the Quote object
                 # if hedge_sym_arr not in lastquotes:
@@ -117,11 +128,12 @@ def my_hedge_calculator(msg, lastquotes):
             for i in range(0, num_hedges):
                 hedge_quote = lastquotes[hedge_sym_arr[i]]
                 if set_beta:
-                    # equally distribute between the hedges
+                    # TODO: distribute beta between left leg and right leg
+                    # msg.beta[hedge_sym_arr[i]] = extract_beta(i, msg.duration, hedge_sym_arr, lastquotes)
                     msg.beta[hedge_sym_arr[i]] = 1 / num_hedges
                 hedge_otc_trade = \
                     FixedIncomeOTCHedge(trade_id=msg.trade_id + "_OTC_HEDGE_" + str(i),
-                                        package_id = msg.package_id,
+                                        package_id=msg.package_id,
                                         sym=hedge_sym_arr[i],
                                         paper_trade=True,
                                         notional=1,  # <- typically futures notional is 100000
@@ -132,13 +144,14 @@ def my_hedge_calculator(msg, lastquotes):
                                         client_sys_key=msg.client_sys_key,
                                         trade_date=hedge_quote.timestamp.date(),
                                         ccy=msg.ccy,
-                                        trade_delta = msg.delta,
-                                        trade_settle_date=None,
+                                        trade_delta=msg.delta,
+                                        trade_settle_date=msg.trade_settle_date,
                                         min_hedge_delta=min_hedge_delta,
                                         trade_beta=msg.beta,
                                         duration=hedge_quote.duration)
                 hedge_trades.append(hedge_otc_trade)
     return hedge_trades
+
 
 def load_config(ccy, hedge_class):
     if ccy == Currency.USD:

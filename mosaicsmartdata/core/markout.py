@@ -14,12 +14,13 @@ class MarkoutCalculatorPre:
     It assumes all messages arrrive in strict timestamp order
     '''
 
-    def __init__(self, lags_list, instr=None):
+    def __init__(self, lags_list, max_lag, instr=None):
         self.pending = []
         self.lags_list = lags_list
         self.last_price = pd.DataFrame(columns=['mid', 'timestamp']).reset_index()
         self.last_timestamp = None
         self.COB_time_utc = None
+        self.max_lag = max_lag
 
     def generate_markout_requests(self, msg):
         if len(self.last_price) == 0:
@@ -94,8 +95,8 @@ class MarkoutCalculatorPre:
             self.last_price.set_value(ix, 'mid', msg.mid)
             self.last_price.set_value(ix, 'timestamp', msg.timestamp)
 
-            stale_timestamp = self.last_price['timestamp'].values[-1] - \
-                              dt.timedelta(0, max([abs(float(x)) for x in self.lags_list]))
+            stale_timestamp = self.last_price['timestamp'].values[-1] - dt.timedelta(0, self.max_lag)
+            # dt.timedelta(0, max([abs(float(x)) for x in self.lags_list]))
 
             if len(self.last_price[self.last_price['timestamp'] <= stale_timestamp]) > 0:
                 # re-indexing is expensive!!
@@ -214,11 +215,12 @@ class MarkoutCalculator:
 
         pre_lags = [x for x in lags_list if x[0] == '-']
         post_lags = [x for x in lags_list if not x[0] == '-']
+        self.max_lag = max([abs(float(x)) for x in lags_list if "COB" not in x])
         # always do a post trade
         self.markout_calculator_post = MarkoutCalculatorPost(lags_list=post_lags)
         self.markout_calculator_pre = None
         if len(pre_lags) > 0:
-            self.markout_calculator_pre = MarkoutCalculatorPre(lags_list=pre_lags)
+            self.markout_calculator_pre = MarkoutCalculatorPre(max_lag = self.max_lag, lags_list=pre_lags)
 
     def generate_markout_requests(self, msg):
         self.markout_calculator_post.generate_markout_requests(msg)
