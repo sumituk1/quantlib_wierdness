@@ -1,5 +1,5 @@
 [DEFAULT]
-instrument_static = ..\resources\instrument_static.csv
+instrument_static = C:\Users\Sumit Sengupta\Documents\msq-domain\mosaicsmartdata\resources\instrument_static.csv
 
 [Rates-RiskPath]
 DaysForceClose = 2
