@@ -1,7 +1,11 @@
 import csv
 import datetime as dt
 from mosaicsmartdata.common.constants import *
+from mosaicsmartdata.core.instrument_singleton import *
 from mosaicsmartdata.core.trade import Quote, FixedIncomeTrade
+
+# Load instrument static
+instrument_static = InstumentSingleton()
 
 
 # converts a time precision in nano-seconds (kdb+) to a datetime object
@@ -15,7 +19,7 @@ def parse_iso_timestamp(timestamp):
 
 # Create a Quote object by reading data from csv.
 # In the future, this will come from Kafka
-def file_to_quote_list(fname, markout_mode = MarkoutMode.Unhedged):
+def file_to_quote_list(fname, markout_mode=MarkoutMode.Unhedged):
     with open(fname, 'r') as f:
         reader = csv.reader(f)
         my_list = list(reader)
@@ -33,7 +37,7 @@ def file_to_quote_list(fname, markout_mode = MarkoutMode.Unhedged):
                        ask=float(x[2]),
                        timestamp=parse_iso_timestamp(x[0]),
                        bid=float(x[1]),
-                       duration=float(x[4])) for x in my_list[1:]]
+                       duration=instrument_static(sym=x[3])['duration']) for x in my_list[1:]]
     # make sure they're sorted in ascending order
     quote = sorted(quote, key=lambda x: x.timestamp)
 
