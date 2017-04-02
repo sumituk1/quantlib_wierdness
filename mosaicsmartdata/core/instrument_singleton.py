@@ -22,12 +22,17 @@ class InstumentSingleton(Borg):
         # now keep applying filter
         for k,v in kwargs.items():
             out_data_df = out_data_df[out_data_df[k] == v]
-        return out_data_df
+        if len(out_data_df) == 0:
+            raise Exception("could find instrument static key %s"%list(kwargs.items())[0][1])
+
+        return out_data_df.iloc[-1]
 
     def __str__(self):  # just for the illustration below, could be anything else
         return str(self.__dict__)
 
 if __name__ == "__main__":
     instrument_static = InstumentSingleton()
-    instr_static_df = instrument_static(sym='FGBLc1',date='2017.03.30')
-    print(instr_static_df)
+    instr_static_df = instrument_static(sym='FGBLc1') #,date='2017.03.30')
+    instr_static_df_2 = instrument_static(sym='US30YT=RR')  # ,date='2017.03.30')
+    print(instr_static_df['duration'])
+    print(instr_static_df_2['duration'])
