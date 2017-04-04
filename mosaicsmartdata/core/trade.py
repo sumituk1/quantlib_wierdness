@@ -92,6 +92,7 @@ class Trade(GenericParent):
         self.trader = None
         self.delta = None
         self.tenor = None
+        self.venue = None
         # just paste this magic line in to assign the kwargs
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
