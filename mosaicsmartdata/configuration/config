@@ -17,6 +17,25 @@ GBP_COB = 17:00:00
 EGB_COB = 16:30:00
 markout_mode = unhedged
 
+[USD_GovtBond_Listed_Hedge_Mapper]
+country_list = USD
+min_hedge_delta = 1000
+1 = TUc1
+2 = TUc1
+3 = TUc1,FVc1
+4 = FVc1
+5 = FVc1
+6 = FVc1,TYc1
+7 = FVc1,TYc1
+8 = TYc1
+9 = TYc1
+10 = TYc1
+11 = TYc1
+12 = TYc1
+15 = TYc1,USc1
+20 = USc1
+25 = USc1
+30 = USc1
 
 [USD_GovtBond_OTC_Hedge_Mapper]
 country_list = USD

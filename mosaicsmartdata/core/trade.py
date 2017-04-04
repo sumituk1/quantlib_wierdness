@@ -155,7 +155,7 @@ class FixedIncomeFuturesHedge(Trade):
         self.trade_beta = dict()
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
-        self.notional = 100000  # for futures
+        # self.notional = 100000  # for futures
         self.paper_trade = True
         self.par_value = 100
         self.maturity_date = None
@@ -163,18 +163,15 @@ class FixedIncomeFuturesHedge(Trade):
         # self.notional = 0.0
 
         # Futures delta should always be passed in
-        # if self.delta is None:
-        #     # futures delta should always be passed in
-        #     self.delta = self.duration * self.notional * 0.0001
+        if self.delta is None:
+            # futures delta per contract_size or notional
+            self.delta = FixedIncomeFuturesHedge.calculate_futures_delta(contract_size=self.notional,
+                                                                         futures_duration=self.duration)
         # self.package_id = None
         # self.trade_beta = dict()
         # self.trade_delta = None
         self.calculate_hedge_contracts()
         self.calculate_initial_hedge_cost()
-
-    # def __call__(self):
-    #     self.calculate_hedge_contracts()
-    #     self.calculate_initial_hedge_cost()
 
     def calculate_hedge_contracts(self):
         if self.trade_delta > self.min_hedge_delta:
@@ -184,12 +181,16 @@ class FixedIncomeFuturesHedge(Trade):
         if create_hedge:
             if not self.trade_beta:
                 raise ValueError("Futures Hedge calculation called on trade with no hedges set")
-            self.hedge_contracts = self.trade_beta[self.sym] * self.trade_delta / self.delta
+            self.hedge_contracts = np.round(self.trade_beta[self.sym] * self.trade_delta / self.delta)
 
     def calculate_initial_hedge_cost(self):
         if not self.trade_beta:
             raise ValueError("Futures Hedge calculation called on trade with no hedges set")
         self.notional *= self.hedge_contracts
+
+    @staticmethod
+    def calculate_futures_delta(contract_size, futures_duration):
+        return futures_duration * contract_size * 0.0001
 
     def markout_mults(self):
         return {'price': (1 / self.par_value) * self.notional,
