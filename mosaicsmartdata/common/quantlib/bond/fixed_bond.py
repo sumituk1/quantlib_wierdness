@@ -5,21 +5,21 @@
 # /quantlib-fittedbonddiscountcurve-fitresults-error)
 import QuantLib as ql
 # import QuantLib.time.date as dt
-from common.constants import *
+from mosaicsmartdata.common.constants import *
 import numpy as np
 import datetime as dt
 import locale
 import six
-from common.isda_daycounters import (actual360, actual365,
-                                     actualactual, thirty360)
+from mosaicsmartdata.common.isda_daycounters import (actual360, actual365,
+                                                     actualactual, thirty360)
 import re
 
 # from QuantLib.termstructures.yields.zero_curve import ZeroCurve
 
-todaysDate = ql.Date(15, 1, 2015)
-ql.Settings.instance().evaluationDate = todaysDate
-spotDates = [ql.Date(15, 1, 2015), ql.Date(15, 7, 2015), ql.Date(15, 1, 2016)]
-spotRates = [0.0, 0.005, 0.007]
+# todaysDate = ql.Date(15, 1, 2015)
+# ql.Settings.instance().evaluationDate = todaysDate
+# spotDates = [ql.Date(15, 1, 2015), ql.Date(15, 7, 2015), ql.Date(15, 1, 2016)]
+# spotRates = [0.0, 0.005, 0.007]
 dayCount = ql.Thirty360()
 calendar = ql.UnitedStates
 interpolation = ql.Linear()
@@ -33,9 +33,8 @@ _monthName = ['January', 'February', 'March', 'April', 'May',
 _shortMonthName = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
                    'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
-date_re_list = [ \
-    # Styles: (1)
-    (re.compile("([0-9]+)-([A-Za-z]+)-([0-9]{2,4})"),
+date_re_list = [  # Styles: (1)
+    (re.compile('([0-9]+)-([A-Za-z]+)-([0-9]{2,4})'),
      (3, 2, 1)),
     # Styles: (2)
     (re.compile("([0-9]{4,4})([0-9]{2,2})([0-9]{2,2})"),
@@ -109,11 +108,11 @@ def pydate(date):
     Accomodate date inputs as string or python date
     """
 
-    if isinstance(date, datetime.datetime):
+    if isinstance(date, dt.datetime):
         return date
     else:
         yy, mm, dd = _parsedate(date)
-        return datetime.datetime(yy, mm, dd)
+        return dt.datetime(yy, mm, dd)
 
 
 def pydate_to_qldate(date):
@@ -126,7 +125,7 @@ def pydate_to_qldate(date):
         return date
     if isinstance(date, six.string_types):
         yy, mm, dd = _parsedate(date)
-        return Date(dd, mm, yy)
+        return ql.Date(dd, mm, yy)
     else:
         return ql.QuantLib.Date(date.day, date.month, date.year)
 
@@ -155,7 +154,7 @@ def df_to_zero_curve(rates, settlement_date, daycounter=ql.Actual365Fixed):
     values.insert(0, values[0])
     values.append(values[-1])
 
-    return ZeroCurve(dates, values, daycounter)
+    return ql.ZeroCurve(dates, values, daycounter)
 
 
 # Maps incoming holidayCities to quantlib Calendar
@@ -276,17 +275,17 @@ def calculateAccrued(dcf, coupon, freq, dayCount=ql.Thirty360, faceValue=100):
 
 
 # Creates a fixed Rate bond
-def createFixedRateBond(issueDate, maturityDate, frequency, holidayCities,
+def createFixedRateBond(issue_date, maturity_date, frequency, holidayCities,
                         coupon, inDayCount=DayCountConv.ACT_ACT,
                         faceValue=100, settlementDays=2):
     ql_calendar = mapHolidayCalendar(holidayCities)
     ql_dayCount = mapDayCountConv(inDayCount)
     ql_frequency = ql.Period(mapFrequency(frequency))
-    businessConvention = ql.Unadjusted
-    dateGeneration = ql.DateGeneration.Backward
-    monthEnd = False
-    schedule = ql.Schedule(issueDate, maturityDate, ql_frequency, ql_calendar, businessConvention,
-                           businessConvention, dateGeneration, monthEnd)
+    business_convention = ql.Unadjusted
+    date_generation = ql.DateGeneration.Backward
+    month_end = False
+    schedule = ql.Schedule(issue_date, maturity_date, ql_frequency, ql_calendar, business_convention,
+                           business_convention, date_generation, month_end)
 
     fixedRateBond = ql.FixedRateBond(settlementDays, faceValue, schedule, [coupon], ql_dayCount)
 
