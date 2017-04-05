@@ -20,6 +20,9 @@ class MarkoutMessage2(GenericParent):
         # self.bps_markout = None
         # $self.cents_markout = None
         self.price_markout = None
+        self.hedged_cents = None
+        self.hedged_price = None
+        self.hedged_bps = None
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 

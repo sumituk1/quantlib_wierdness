@@ -1,5 +1,6 @@
 import csv
 import datetime as dt
+import numpy as np
 from mosaicsmartdata.common.constants import *
 from collections import namedtuple
 import json
@@ -41,22 +42,101 @@ def json_to_trade(json_message):
                           duration=float(request.bondTrade.modifiedDuration))
     return tr
 
+
+# Converts a markout message to a json string
+def mktmsg_to_json(markout_message):
+    # "negotiationId": "ID123456789",
+    #   "instrumentId": "1234567",
+    #   "dateLocalDate": "2017-01-01",
+    #   "cashflowDirection": "+",
+    #   "venueName": "venueNameValue",
+    #   "legMarkout": {
+    #     "evaluatedPricingSourceDimensionItem": {
+    #       "evaluatedPricingSource": "INTERNAL",
+    #       "description": "Internal"
+    #     },
+    #     "markoutPeriodDimensionItem": {
+    #       "markoutPeriod": {
+    #         "timeUnit": "DAYS",
+    #         "value": 1
+    #       }
+    #     },
+    #     "markoutPrice": {
+    #       "priceType": {
+    #         "priceType": "UNHEDGED_INITIAL_EDGE"
+    #       },
+    #       "value": 0.98765
+    #     }
+    #   }
+    out = dict()
+    out['negotiationId'] = markout_message.trade.trade_id
+    out['instrumentId'] = markout_message.trade.sym
+    out['dateLocalDate'] = dt.datetime.strftime(markout_message.trade.trade_date, '%Y-%m-%d')
+    out['cashflowDirection'] = "+" if markout_message.trade.side == TradeSide.Bid else "-"
+    out['venueName'] = markout_message.trade.venue
+    out['legMarkout'] = []
+
+    # dict_evaluatedPricingSource = {'evaluatedPricingSource': 'INTERNAL'}
+    # out['legMarkout'].append({'evaluatedPricingSource': 'INTERNAL'})
+    # out['legMarkout']['evaluatedPricingSourceDimensionItem']['description'] = 'Internal'
+    dict_markoutPeriod = {}
+    if "COB" not in str(markout_message.dt):
+        dict_markoutPeriod['timeUnit'] = 'SECONDS'
+        dict_markoutPeriod['value'] = markout_message.dt
+    elif "COB" in str(markout_message.dt):
+        dict_markoutPeriod['timeUnit'] = 'DAY'
+        dict_markoutPeriod['value'] = markout_message.dt[-1]
+
+    # set the UNHEDGED price/cents/bps
+    # --------------------------------
+    lst_markoutPrice = []
+    attribs = [a for a in dir(markout_message) if not a.startswith('__') and 'markout' in a]
+    mk_type = attribs[0][:-8]
+    mults = markout_message.trade.markout_mults()
+    if mk_type in mults:
+        for key, value in mults.items():
+            if key == 'bps':
+                val = markout_message.price_markout * value \
+                    if markout_message.price_markout is not None else np.nan
+                lst_markoutPrice.append({'priceType': 'UNHEDGED_INITIAL_EDGE', 'value': val})
+                # out['legMarkout']['markoutPrice'].append({'value' : val})
+            if key == 'cents':
+                val = markout_message.price_markout * value \
+                    if markout_message.price_markout is not None else np.nan
+                lst_markoutPrice.append({'priceType': 'UNHEDGED_SPREAD_PRICE', 'value': val})
+    # set the HEDGED price/cents/bps
+    # --------------------------------
+    val = markout_message.hedged_bps if markout_message.hedged_bps is not None else np.nan
+    lst_markoutPrice.append({'priceType': 'HEDGED_INITIAL_EDGE', 'value': val})
+
+    val = markout_message.hedged_cents if markout_message.hedged_cents is not None else np.nan
+    lst_markoutPrice.append({'priceType': 'HEDGED_SPREAD_PRICE', 'value': val})
+
+    out['legMarkout'].append({'evaluatedPricingSource': 'INTERNAL',
+                              "markoutPeriod": dict_markoutPeriod,
+                              "markoutPrice": lst_markoutPrice})
+    # out['legMarkout']['markoutPrice'] = lst
+    zz = json.dumps(out)
+    return zz
+
+
 # Create a Quote object based on incoming json message
 def json_to_quote(json_message):
     request = json.loads(json_message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
     # calculate a vwap of bids
     zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if
           str.upper(x.entryType) == "BID"]
-    bid_close = sum([x[0] * x[1] for x in zz])/sum([x[0] for x in zz])
+    bid_close = sum([x[0] * x[1] for x in zz]) / sum([x[0] for x in zz])
     # calculate a vwap of ask
     zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if
           str.upper(x.entryType) == "OFFER"]
-    ask_close = sum([x[0] * x[1] for x in zz])/sum([x[0] for x in zz])
+    ask_close = sum([x[0] * x[1] for x in zz]) / sum([x[0] for x in zz])
     quote = Quote(sym=request[0][0].symbol,
                   ask=ask_close,
                   timestamp=dt.datetime.fromtimestamp(request[0][0].timestamp / 1000),
                   bid=bid_close)
     return quote
+
 
 if __name__ == "__main__":
     json_message = '{"bondTrade": {"negotiationId": "123456789", "orderId": "123456789::venue::date::DE10YT_OTR_111::BUY",\
