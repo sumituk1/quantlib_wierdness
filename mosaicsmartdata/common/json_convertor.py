@@ -84,7 +84,7 @@ def mktmsg_to_json(markout_message):
         dict_markoutPeriod['timeUnit'] = 'SECONDS'
         dict_markoutPeriod['value'] = markout_message.dt
     elif "COB" in str(markout_message.dt):
-        dict_markoutPeriod['timeUnit'] = 'DAY'
+        dict_markoutPeriod['timeUnit'] = 'DAYS'
         dict_markoutPeriod['value'] = markout_message.dt[-1]
 
     # set the UNHEDGED price/cents/bps
