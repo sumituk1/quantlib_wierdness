@@ -1,10 +1,11 @@
 from unittest import TestCase
+from mosaicsmartdata.core.markout_msg import MarkoutMessage2
 from mosaicsmartdata.common.json_convertor import *
 
 
 class TestMarkouts(TestCase):
     # Test for Trade json convertor
-    def test_case_1(self, plotFigure = False):
+    def test_case_1(self):
         json_message = '{"bondTrade": {"negotiationId": "123456789", "orderId": "123456789::venue::date::DE10YT_OTR_111::BUY",\
             "packageId": "123456789::venue::date", "productClass": "GovtBond", "productClass1": "DE10YT",\
             "sym": "DE10YT=RR", "tenor": 30, "quantity": 1000000, "tradedPx": 1.5, "modifiedDuration": 18.0,\
@@ -24,9 +25,10 @@ class TestMarkouts(TestCase):
         self.assertEquals(trade.side, TradeSide.Ask, msg=None)
         self.assertEquals(trade.timestamp, dt.datetime(2017,1,16,14,5,0,600000), msg=None)
 
+        return trade
 
     # Test for Quote json convertor
-    def test_case_2(self, plotFigure=False):
+    def test_case_2(self):
         msg = '{\
             "marketDataSnapshotFullRefreshList": [\
               {\
@@ -100,3 +102,37 @@ class TestMarkouts(TestCase):
         self.assertEquals(quote.ask, 1.12455, msg=None)
         self.assertEquals(quote.bid, 1.12435, msg=None)
         self.assertEquals(quote.sym, '912810RB6', msg=None)
+
+    # test case for json creation for mkt_message
+    def test_case_3(self):
+        trade = self.test_case_1()
+        # t = FixedIncomeTrade(trade_id=1, duration=20, notional=5)
+
+        msg = MarkoutMessage2(dt=-900,trade=trade, price_markout=1, hedged_bps=0.34, hedged_cents=0.13, hedged_price=1.05)
+
+        # do assertions on the markout_message
+        self.assertEqual(round(msg.bps_markout,3), 5.556)
+        self.assertEqual(msg.cents_markout, 100.0)
+        self.assertEqual(msg.PV_markout, 1800)
+        self.assertEqual(msg.price_markout, 1)
+
+        json_markout = mktmsg_to_json(msg)
+        print(json_markout) # check if the markoutPeriod value = -900
+
+    # test case for json creation for mkt_message
+    def test_case_4(self):
+        trade = self.test_case_1()
+        # t = FixedIncomeTrade(trade_id=1, duration=20, notional=5)
+
+        msg = MarkoutMessage2(dt='COB2', trade=trade, price_markout=1, hedged_bps=0.34, hedged_cents=0.13,
+                              hedged_price=1.05)
+
+        # do assertions on the markout_message
+        self.assertEqual(round(msg.bps_markout, 3), 5.556)
+        self.assertEqual(msg.cents_markout, 100.0)
+        self.assertEqual(msg.PV_markout, 1800)
+        self.assertEqual(msg.price_markout, 1)
+
+        json_markout = mktmsg_to_json(msg)
+
+        print("json_markout") # CHECK IF THE MARKOUTPERIODVALUE = 0AND TIMEUNIT='DAY'
