@@ -14,11 +14,15 @@ from mosaicsmartdata.core.hedger import *
 
 class TestHedgeMarkouts(TestCase):
     # Test hedge with Cash
-    def test_case_1(self, plotFigure=True):
+    def test_case_1(self, plotFigure=False):
         tolerance = 5 * 1e-2
         datapath = "..\\resources\\hedged_markout_tests\\"  # generally a good idea to use relative paths whenever possible
         quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv"]
         trade_files = "trades_hedge_test.csv"
+
+        # Create a singleton configurator and instrument_static
+        configurator = Configurator('config')
+        instrument_static = InstumentSingleton()
 
         # Load the quotes data from csv
         quotes_dict = dict()
@@ -102,12 +106,16 @@ class TestHedgeMarkouts(TestCase):
             plt.show()
 
     # Test hedge with futures
-    def test_case_2(self, plotFigure=True):
+    def test_case_2(self, plotFigure=False):
         tolerance = 5 * 1e-2
         datapath = "..\\resources\\hedged_markout_tests\\"
         quote_files = ["912828T91_quotes.csv",
                        "FVc1_quotes.csv","TUc1_quotes.csv","TYc1_quotes.csv","USc1_quotes.csv"]
         trade_files = "trades_hedge_test.csv"
+
+        # Create a singleton configurator
+        configurator = Configurator('config')
+        instrument_static = InstumentSingleton()
 
         # Load the quotes data from csv
         quotes_dict = dict()
@@ -269,6 +277,10 @@ class TestHedgeMarkouts(TestCase):
         datapath = "..\\resources\\hedged_markout_tests\\"
         quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv"]
         trade_files = "trades_hedge_test.csv"
+
+        # Create a singleton configurator
+        configurator = Configurator('config_hedge_test_case_5')
+        instrument_static = InstumentSingleton()
 
         # Load the quotes data from csv
         quotes_dict = dict()
