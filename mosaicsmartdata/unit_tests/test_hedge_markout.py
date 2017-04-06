@@ -364,7 +364,7 @@ class TestHedgeMarkouts(TestCase):
             plt.show()
 
     # test BTP hedging rule
-    def test_case_6(self, plotFigure=True):
+    def test_case_6(self, plotFigure=False):
         tolerance = 5 * 1e-2
         datapath = "..\\resources\\hedged_markout_tests\\"
         quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv",
@@ -414,43 +414,150 @@ class TestHedgeMarkouts(TestCase):
 
         # do assertions
         self.assertEquals(len(output_list), 9, msg=None)
+        for mk_msg in output_list:
+            if mk_msg.trade_id == 123 and mk_msg.dt == '-900':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.869) / mk_msg.hedged_bps), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 6.981) / mk_msg.hedged_cents), tolerance,
+                                     msg=None)
+            if mk_msg.trade_id == 123 and mk_msg.dt == '-60':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.2522) / mk_msg.hedged_bps), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 1.85625) / mk_msg.hedged_cents), tolerance,
+                                     msg=None)
+            if mk_msg.trade_id == 123 and mk_msg.dt == '0':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.01837) / mk_msg.hedged_bps), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.1437)) / mk_msg.hedged_cents), tolerance,
+                                     msg=None)
+            elif mk_msg.trade_id == 123 and mk_msg.dt == '60':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.01837)) / mk_msg.hedged_bps), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.1437)) / mk_msg.hedged_cents), tolerance,
+                                     msg=None)
+            elif mk_msg.trade_id == 123 and mk_msg.dt == '300':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.2901) / mk_msg.hedged_bps), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 2.4187) / mk_msg.hedged_cents), tolerance, msg=None)
+            elif mk_msg.trade_id == 123 and mk_msg.dt == '3600':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - -0.01837) / mk_msg.hedged_bps), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.1437)) / mk_msg.hedged_cents), tolerance,
+                                     msg=None)
+            elif mk_msg.trade_id == 123 and mk_msg.dt == 'COB0':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 3.3260) / mk_msg.hedged_bps), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 24.29374) / mk_msg.hedged_cents), tolerance,
+                                     msg=None)
+            elif mk_msg.trade_id == 123 and mk_msg.dt == 'COB1':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 8.429) / mk_msg.hedged_bps), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 61.7312) / mk_msg.hedged_cents), tolerance,
+                                     msg=None)
+            elif mk_msg.trade_id == 123 and mk_msg.dt == 'COB2':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 12.9047) / mk_msg.hedged_bps), tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 97.9187) / mk_msg.hedged_cents), tolerance,
+                                     msg=None)
+        # plot figure
+        if plotFigure:
+            fig, ax = plt.subplots()
+            x_data = [x.dt for x in output_list]
+
+            plt.plot([x.hedged_bps for x in output_list], label="hedged markout_bps", color="red")
+            plt.plot([x.bps_markout for x in output_list], label="unhedged markout_bps", color="blue")
+            ax.set_xticklabels(x_data)
+            plt.xlabel("time")
+            plt.ylabel("markout(bps)")
+            plt.legend()
+            plt.grid(True)
+            plt.show()
+
+    # test BTP Cash hedging rule
+    def test_case_7(self, plotFigure=True):
+        tolerance = 5 * 1e-2
+        datapath = "..\\resources\\hedged_markout_tests\\"
+        quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv",
+                       "US5YT_RR_quotes.csv",
+                       "IT488903_quotes.csv", "IT15YT_RR_quotes.csv", "IT30YT_RR_quotes.csv",
+                       "FBTPc1_RR_quotes.csv"]
+        trade_files = "trades_hedge_test_2.csv"
+
+        # Create a singleton configurator
+        configurator = Configurator('config')
+        instrument_static = InstumentSingleton()
+
+        # Load the quotes data from csv
+        quotes_dict = dict()
+        for x in quote_files:
+            sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Hedged)
+            quotes_dict[sym] = quote
+
+        # Now get the trades list from csv
+        trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
+
+        # Method 2 - go through each of the instruments,
+        # create a stream of quote per sym
+        quote_trade_list = []
+        for k, v in quotes_dict.items():
+            # quote_async_iter = to_async_iterable(quotes_dict[k])
+            # quote_trade_list.append(quote_async_iter)
+            quote_async_iter = to_async_iterable(quotes_dict[k])
+            # trades_list_sym = []
+            # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
+
+            # trade_async_iter = to_async_iterable(trades_list_sym)
+            quote_trade_list.append(quote_async_iter)
+            # quote_trade_list.append(trade_async_iter)
+
+        output_list = []
+        trade_async_iter = to_async_iterable(trades_list)
+        quote_trade_list.append(trade_async_iter)
+        joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
+        hedger = Hedger(my_hedge_calculator,product_class=ProductClass.GovtBond)
+
+        # 1. set up initla hedges at point of trade
+        new_trades = joint_stream | op.map(hedger) | op.flatten()
+        # 2. Perform markouts of both underlying trade and the paper_trades
+        leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
+        # 3. Aggregate all the markouts per package_id
+        leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
+        op.map(aggregate_markouts) > output_list
+
+        # do assertions
+        self.assertEquals(len(output_list), 9, msg=None)
         # for mk_msg in output_list:
         #     if mk_msg.trade_id == 123 and mk_msg.dt == '-900':
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.0266) / mk_msg.hedged_bps), tolerance, msg=None)
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.0687)) / mk_msg.hedged_cents), tolerance,
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.869) / mk_msg.hedged_bps), tolerance, msg=None)
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - 6.981) / mk_msg.hedged_cents), tolerance,
         #                              msg=None)
         #     if mk_msg.trade_id == 123 and mk_msg.dt == '-60':
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02661) / mk_msg.hedged_bps), tolerance, msg=None)
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.0687)) / mk_msg.hedged_cents), tolerance,
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.2522) / mk_msg.hedged_bps), tolerance, msg=None)
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - 1.85625) / mk_msg.hedged_cents), tolerance,
         #                              msg=None)
         #     if mk_msg.trade_id == 123 and mk_msg.dt == '0':
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02661) / mk_msg.hedged_bps), tolerance, msg=None)
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.0687)) / mk_msg.hedged_cents), tolerance,
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.01837) / mk_msg.hedged_bps), tolerance, msg=None)
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.1437)) / mk_msg.hedged_cents), tolerance,
         #                              msg=None)
         #     elif mk_msg.trade_id == 123 and mk_msg.dt == '60':
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02661) / mk_msg.hedged_bps), tolerance, msg=None)
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.0687)) / mk_msg.hedged_cents), tolerance,
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.01837)) / mk_msg.hedged_bps), tolerance,
+        #                              msg=None)
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.1437)) / mk_msg.hedged_cents), tolerance,
         #                              msg=None)
         #     elif mk_msg.trade_id == 123 and mk_msg.dt == '300':
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.0900) / mk_msg.hedged_bps), tolerance, msg=None)
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.3218) / mk_msg.hedged_cents), tolerance, msg=None)
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.2901) / mk_msg.hedged_bps), tolerance, msg=None)
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - 2.4187) / mk_msg.hedged_cents), tolerance,
+        #                              msg=None)
         #     elif mk_msg.trade_id == 123 and mk_msg.dt == '3600':
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.07512) / mk_msg.hedged_bps), tolerance, msg=None)
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-1.6312)) / mk_msg.hedged_cents), tolerance,
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - -0.01837) / mk_msg.hedged_bps), tolerance,
+        #                              msg=None)
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.1437)) / mk_msg.hedged_cents), tolerance,
         #                              msg=None)
         #     elif mk_msg.trade_id == 123 and mk_msg.dt == 'COB0':
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.5031)) / mk_msg.hedged_bps), tolerance, msg=None)
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-21.9437)) / mk_msg.hedged_cents), tolerance,
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 3.3260) / mk_msg.hedged_bps), tolerance, msg=None)
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - 24.29374) / mk_msg.hedged_cents), tolerance,
         #                              msg=None)
         #     elif mk_msg.trade_id == 123 and mk_msg.dt == 'COB1':
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.9256)) / mk_msg.hedged_bps), tolerance, msg=None)
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-27.8031)) / mk_msg.hedged_cents), tolerance,
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 8.429) / mk_msg.hedged_bps), tolerance, msg=None)
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - 61.7312) / mk_msg.hedged_cents), tolerance,
         #                              msg=None)
         #     elif mk_msg.trade_id == 123 and mk_msg.dt == 'COB2':
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.8957)) / mk_msg.hedged_bps), tolerance, msg=None)
-        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-23.896)) / mk_msg.hedged_cents), tolerance,
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 12.9047) / mk_msg.hedged_bps), tolerance, msg=None)
+        #         self.assertLessEqual(np.abs((mk_msg.hedged_cents - 97.9187) / mk_msg.hedged_cents), tolerance,
         #                              msg=None)
-        # # plot figure
+
+        # plot figure
         if plotFigure:
             fig, ax = plt.subplots()
             x_data = [x.dt for x in output_list]
