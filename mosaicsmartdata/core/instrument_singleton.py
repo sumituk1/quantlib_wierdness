@@ -13,7 +13,8 @@ class InstumentSingleton(Borg):
         # this line plus the inheritance makes the magic happen
         # any class using that pattern will be a singleton
         super().__init__()
-        self.instrument_static_fname = get_config_given_key("instrument_static")
+        configurator = Configurator()
+        self.instrument_static_fname = configurator.get_config_given_key("instrument_static")
 
     def __call__(self, **kwargs):
         if 'data' not in self.__dict__:

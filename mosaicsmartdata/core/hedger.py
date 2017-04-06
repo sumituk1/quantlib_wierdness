@@ -24,8 +24,9 @@ class Hedger:
         self.hedge_calculator = hedge_calculator
         self.last_quotes = {}
         # Load instrument static
-        self.instrument_static = InstumentSingleton()
+        # self.instrument_static = InstumentSingleton()
         self.product_class = product_class
+        self.configurator = Configurator() # <- passed in configurator object
 
     def __call__(self, msg):
         if isinstance(msg, Quote):
@@ -37,7 +38,8 @@ class Hedger:
         elif isinstance(msg, Trade):
             hedges = self.hedge_calculator(msg,
                                            self.last_quotes,
-                                           self.instrument_static,
+                                           # self.instrument_static,
+                                           # self.configurator,
                                            self.product_class)
             # want to send the original trade on as well
             package = hedges + [msg]
@@ -107,45 +109,47 @@ def extract_beta(hedge_quote_sym, trade_duration, hedge_sym_arr, lastquotes):
 
 def my_hedge_calculator(msg,
                         lastquotes,
-                        instrument_static,
+                        # instrument_static,
+                        # configurator,
                         product_class=None):
     hedge_dict = msg.__dict__
     # hedge_trades = []
-    hedge_trades_futures = None
-    hedge_trades_cash = None
+    instrument_static = InstumentSingleton()
+    configurator = Configurator()
     msg_processed = False
 
     if product_class is not None:
         # caller passed in specific hedge class to hedge the underlying
         if product_class == ProductClass.BondFutures:
-            hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes, instrument_static)
+            hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes)
         elif product_class == ProductClass.GovtBond:
-            hedge_trades, msg_processed = perform_cash_hedge(msg, lastquotes, instrument_static)
+            hedge_trades, msg_processed = perform_cash_hedge(msg, lastquotes)
         # msg_processed = True  # TODO: currently we support ONLY Futures OR Cash hedging
 
     # No specific hedge class passed in. So walk the config and try and do the hedging, starting with Futures
     if not msg_processed:
-        hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes, instrument_static)
+        hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes)
         # hedge_trades.append(hedge_trades_futures)
     if not msg_processed:
         # No futures hedging performed.
-        hedge_trades, _ = perform_cash_hedge(msg, lastquotes, instrument_static)
+        hedge_trades, _ = perform_cash_hedge(msg, lastquotes)
         # hedge_trades.append(hedge_trades_cash)
     return hedge_trades
 
 
 def load_config(ccy, hedge_class):
+    configurator = Configurator()
     if ccy == Currency.USD:
         if hedge_class == HedgeClass.Listed:
             # load the USD relevant hedge config
             try:
-                return get_data_given_section('USD_GovtBond_Listed_Hedge_Mapper')
+                return configurator.get_data_given_section('USD_GovtBond_Listed_Hedge_Mapper')
             except configparser.NoSectionError:
                 # section not present
                 return ""
         else:
             try:
-                return get_data_given_section('USD_GovtBond_OTC_Hedge_Mapper')
+                return configurator.get_data_given_section('USD_GovtBond_OTC_Hedge_Mapper')
             except configparser.NoSectionError:
                 return ""
     else:
@@ -153,8 +157,10 @@ def load_config(ccy, hedge_class):
 
 
 # Cash hedging
-def perform_cash_hedge(msg, lastquotes, instrument_static):
+def perform_cash_hedge(msg, lastquotes):
     ''' Perform OTC hedge'''
+    instrument_static = InstumentSingleton()
+    configurator = Configurator()
     hedge_otc_mapper = load_config(msg.ccy, HedgeClass.OTC)
     msg_processed = False
     hedge_trades = []
@@ -220,11 +226,13 @@ def perform_cash_hedge(msg, lastquotes, instrument_static):
 ''' ---Process for LISTED--- '''
 
 
-def perform_futures_hedge(msg, lastquotes, instrument_static):
+def perform_futures_hedge(msg, lastquotes):
     ''' ---Process for LISTED--- '''
+    instrument_static = InstumentSingleton()
+    configurator = Configurator()
     hedge_trades = []
     msg_processed = False
-    hedge_listed_mapper = load_config(msg.ccy, HedgeClass.Listed)
+    hedge_listed_mapper = load_config(msg.ccy, HedgeClass.Listed,configurator)
     if not hedge_listed_mapper == "":
         msg_processed = True
         min_hedge_delta = float(hedge_listed_mapper['min_hedge_delta'])
