@@ -93,6 +93,8 @@ class Trade(GenericParent):
         self.delta = None
         self.tenor = None
         self.venue = None
+        self.country_of_risk = Country.US # default to US
+
         # just paste this magic line in to assign the kwargs
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
@@ -131,6 +133,7 @@ class FixedIncomeTrade(Trade):
         self.maturity_date = None
         self.coupon = None
         self.coupon_frequency = None
+
 
         # the magic line to process the kwargs
         # other_args = self.apply_kwargs(self.__dict__,kwargs)
