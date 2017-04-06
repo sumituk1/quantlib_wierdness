@@ -3,6 +3,7 @@ import numpy as np
 import aiostreams.operators.operators as op
 from aiostreams.base import to_async_iterable
 from mosaicsmartdata.common import qc_csv_helper
+from mosaicsmartdata.common.read_config import Configurator
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.core.markout import GovtBondMarkoutCalculator
 
@@ -15,10 +16,14 @@ class TestMarkouts(TestCase):
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
+        # Load the configuration file
+        configurator = Configurator('config')
+
         # Load the quotes data from csv
         quotes_dict = dict()
         for x in quote_files:
-            sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Unhedged)
+            sym, quote = qc_csv_helper.file_to_quote_list(datapath + x,
+                                                          markout_mode= MarkoutMode.Unhedged)
             quotes_dict[sym] = quote
 
         # Now get the trades list from csv
@@ -42,7 +47,8 @@ class TestMarkouts(TestCase):
         trade_async_iter = to_async_iterable(trades_list)
         quote_trade_list.append(trade_async_iter)
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten() > output_list
+        joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator())\
+        | op.flatten() > output_list
 
         # do assertions
         self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
@@ -83,6 +89,9 @@ class TestMarkouts(TestCase):
         datapath = "..\\resources\\unhedged_markout_tests\\"  # generally a good idea to use relative paths whenever possible
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
+
+        # create a singleton Configurator
+        configurator = Configurator('config')
 
         # Load the quotes data from csv
         quotes_dict = dict()
@@ -142,6 +151,9 @@ class TestMarkouts(TestCase):
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
+        # Create a singleton configurator
+        configurator = Configurator('config')
+
         # Load the quotes data from csv
         quotes_dict = dict()
         for x in quote_files:
@@ -194,6 +206,9 @@ class TestMarkouts(TestCase):
         datapath = "..\\resources\\unhedged_markout_tests\\"  # generally a good idea to use relative paths whenever possible
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
+
+        # Create a singleton configurator
+        configurator = Configurator('config')
 
         # Load the quotes data from csv
         quotes_dict = dict()
@@ -248,6 +263,9 @@ class TestMarkouts(TestCase):
         datapath = "..\\resources\\unhedged_markout_tests\\"
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
+
+        # Create a singleton configurator
+        configurator = Configurator('config')
 
         # Load the quotes data from csv
         quotes_dict = dict()
@@ -308,6 +326,9 @@ class TestMarkouts(TestCase):
         datapath = "..\\resources\\unhedged_markout_tests\\"  # generally a good idea to use relative paths whenever possible
         quote_files = ["912810QE1_quotes.csv"]
         trade_files = "trades_NaN_test.csv"
+
+        # Create a singleton configurator
+        configurator = Configurator('config')
 
         # Load the quotes data from csv
         quotes_dict = dict()
