@@ -25,19 +25,26 @@ def file_to_quote_list(fname, markout_mode=MarkoutMode.Unhedged):
         my_list = list(reader)
 
     # convert them to Quote objects, assuming first row is headers
+    #
+    # if markout_mode is MarkoutMode.Unhedged:
+    #     # for simple markouts, we don;t need the duration in the Quotes
+    #     quote = [Quote(sym=x[3],
+    #                    ask=float(x[2]),
+    #                    timestamp=parse_iso_timestamp(x[0]),
+    #                    bid=float(x[1])) for x in my_list[1:]]
+    # else:
+    #     quote = [Quote(sym=x[3],
+    #                    ask=float(x[2]),
+    #                    timestamp=parse_iso_timestamp(x[0]),
+    #                    bid=float(x[1]),
+    #                    duration=instrument_static(sym=x[3])['duration']) for x in my_list[1:]]
 
-    if markout_mode is MarkoutMode.Unhedged:
-        # for simple markouts, we don;t need the duration in the Quotes
-        quote = [Quote(sym=x[3],
-                       ask=float(x[2]),
-                       timestamp=parse_iso_timestamp(x[0]),
-                       bid=float(x[1])) for x in my_list[1:]]
-    else:
-        quote = [Quote(sym=x[3],
-                       ask=float(x[2]),
-                       timestamp=parse_iso_timestamp(x[0]),
-                       bid=float(x[1]),
-                       duration=instrument_static(sym=x[3])['duration']) for x in my_list[1:]]
+    # for simple markouts, we don;t need the duration in the Quotes
+    quote = [Quote(sym=x[3],
+                   ask=float(x[2]),
+                   timestamp=parse_iso_timestamp(x[0]),
+                   bid=float(x[1])) for x in my_list[1:]]
+
     # make sure they're sorted in ascending order
     quote = sorted(quote, key=lambda x: x.timestamp)
 
@@ -65,7 +72,8 @@ def file_to_trade_list(fname):
                               trade_date=dt.datetime.strptime(x[14], "%Y.%m.%d"),
                               ccy=x[18],
                               trade_settle_date=dt.datetime.strptime(x[15], "%Y.%m.%d"),
-                              duration=float(x[9]))
+                              duration=float(x[9]),
+                              country_of_risk=x[26])
         trade_list.append(tr)
     return trade_list
 

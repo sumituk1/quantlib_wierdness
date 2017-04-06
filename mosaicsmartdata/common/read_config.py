@@ -42,6 +42,16 @@ class Configurator(Borg):
     def get_data_given_section_and_key(self, section, key):
         return self.config[section][key]
 
+    # goes through the config stack and searches for the section which matches the partial_name
+    # and completely matches the val passed in
+    def get_section_given_item_val(self, val, partial_section_name):
+        for k1, v1 in self.config.items():
+            for k2, v2 in self.config[k1].items():
+                if (str.upper(partial_section_name) in str.upper(k1)) \
+                        and (val in v2.split(',')):
+                    return k1
+        return None
+
     # gets the value given a section
     def get_data_given_section(self, section):
         # return dict(config.items(section))
@@ -71,6 +81,8 @@ if __name__ == "__main__":
     config_2 = Configurator('config')
     print(config_2.create_ccy_pair("GBP", "JPY"))
     zz = config_2.get_data_given_section_and_key("GovtBond_Markout", "EGB_COB")
+    print(zz)
+    zz = config_2.get_section_given_item_val("IT","GovtBond_listed_Hedge_Mapper")
     print(zz)
     # config.read("C:\\Users\\Sumit Sengupta\\Documents\msq-domain\\mosaicsmartdata\\configuration\\config")
     # zz = get_data_given_section('USD_GovtBond_Hedge_Mapper')
