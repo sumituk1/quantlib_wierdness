@@ -26,7 +26,7 @@ class Hedger:
         # Load instrument static
         # self.instrument_static = InstumentSingleton()
         self.product_class = product_class
-        self.configurator = Configurator() # <- passed in configurator object
+        self.configurator = Configurator()  # <- passed in configurator object
 
     def __call__(self, msg):
         if isinstance(msg, Quote):
@@ -91,17 +91,20 @@ class Hedger:
 # Can ONLY handle 2 hedges.
 # NOTE: hedge weights are inversely proportional to the diff of duration
 def extract_beta(hedge_quote_sym, trade_duration, hedge_sym_arr, lastquotes):
+    instrument_static = InstumentSingleton()
     if len(hedge_sym_arr) == 0:
         raise ValueError("extract_beta called with no hedge_sym passed in")
     if len(hedge_sym_arr) == 1:
         return 1
     other_hedge_sym = [x for x in hedge_sym_arr if not x == hedge_quote_sym][0]
-    if lastquotes[hedge_quote_sym].duration > trade_duration:
-        return (trade_duration - lastquotes[other_hedge_sym].duration) / \
-               abs((lastquotes[hedge_quote_sym].duration - lastquotes[other_hedge_sym].duration))
+    if instrument_static(sym=lastquotes[hedge_quote_sym].sym)['duration'] > trade_duration:
+        return (trade_duration - instrument_static(sym=lastquotes[other_hedge_sym].sym)['duration']) / \
+               abs((instrument_static(sym=lastquotes[hedge_quote_sym].sym)['duration'] -
+                    instrument_static(sym=lastquotes[other_hedge_sym].sym)['duration']))
     else:
-        return (lastquotes[other_hedge_sym].duration - trade_duration) / \
-               abs((lastquotes[hedge_quote_sym].duration - lastquotes[other_hedge_sym].duration))
+        return (instrument_static(sym=lastquotes[other_hedge_sym].sym)['duration'] - trade_duration) / \
+               abs((instrument_static(sym=lastquotes[hedge_quote_sym].sym)['duration'] -
+                    instrument_static(sym=lastquotes[other_hedge_sym].sym)['duration']))
 
 
 '''Implementation of the Hedge calculation. This is triggered by the Hedger class'''
@@ -124,7 +127,7 @@ def my_hedge_calculator(msg,
             hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes)
         elif product_class == ProductClass.GovtBond:
             hedge_trades, msg_processed = perform_cash_hedge(msg, lastquotes)
-        # msg_processed = True  # TODO: currently we support ONLY Futures OR Cash hedging
+            # msg_processed = True  # TODO: currently we support ONLY Futures OR Cash hedging
 
     # No specific hedge class passed in. So walk the config and try and do the hedging, starting with Futures
     if not msg_processed:
@@ -137,23 +140,44 @@ def my_hedge_calculator(msg,
     return hedge_trades
 
 
-def load_config(ccy, hedge_class):
+# Loads the relevant config section for configuration related to hedging
+def load_config(country_of_risk, hedge_class):
     configurator = Configurator()
-    if ccy == Currency.USD:
-        if hedge_class == HedgeClass.Listed:
-            # load the USD relevant hedge config
-            try:
-                return configurator.get_data_given_section('USD_GovtBond_Listed_Hedge_Mapper')
-            except configparser.NoSectionError:
-                # section not present
-                return ""
-        else:
-            try:
-                return configurator.get_data_given_section('USD_GovtBond_OTC_Hedge_Mapper')
-            except configparser.NoSectionError:
-                return ""
+    # For non US - look in specific Listed or Cash section for the country_list and match
+    if hedge_class == HedgeClass.Listed:
+        section = configurator.get_section_given_item_val(country_of_risk, "GovtBond_Listed_Hedge_Mapper")
+
     else:
-        ValueError('Not implemented')
+        section = configurator.get_section_given_item_val(country_of_risk, "GovtBond_OTC_Hedge_Mapper")
+    if section is not None:
+        return configurator.get_data_given_section(section)
+    else:
+        raise ValueError('load_config(): Hedger not implemented')
+    #
+    # if country_of_risk == Country.US:
+    #     if hedge_class == HedgeClass.Listed:
+    #         # load the USD relevant hedge config
+    #         try:
+    #             return configurator.get_data_given_section('USD_GovtBond_Listed_Hedge_Mapper')
+    #         except configparser.NoSectionError:
+    #             # section not present
+    #             return ""
+    #     else:
+    #         try:
+    #             return configurator.get_data_given_section('USD_GovtBond_OTC_Hedge_Mapper')
+    #         except configparser.NoSectionError:
+    #             return ""
+    # else:
+    #     # For non US - look in specific Listed or Cash section for the country_list and match
+    #     if hedge_class == HedgeClass.Listed:
+    #         section = configurator.get_section_given_item_val(country_of_risk, "GovtBond_Listed_Hedge_Mapper")
+    #
+    #     else:
+    #         section = configurator.get_section_given_item_val(country_of_risk, "GovtBond_OTC_Hedge_Mapper")
+    #     if section is not None:
+    #         return configurator.get_data_given_section(section)
+    #     else:
+    #         raise ValueError('load_config(): Hedger not implemented')
 
 
 # Cash hedging
@@ -161,7 +185,7 @@ def perform_cash_hedge(msg, lastquotes):
     ''' Perform OTC hedge'''
     instrument_static = InstumentSingleton()
     configurator = Configurator()
-    hedge_otc_mapper = load_config(msg.ccy, HedgeClass.OTC)
+    hedge_otc_mapper = load_config(msg.country_of_risk, HedgeClass.OTC)
     msg_processed = False
     hedge_trades = []
     if not hedge_otc_mapper == "":
@@ -175,11 +199,13 @@ def perform_cash_hedge(msg, lastquotes):
         hedge_sym_arr = hedge_sym_arr.split(',')
 
         # handle more than one right-wing
-        if sum([(lambda x: lastquotes[x].duration > msg.duration)(x) for x in hedge_sym_arr]) > 1:
+        if sum([(lambda x: instrument_static(sym=lastquotes[x].sym)['duration'] > msg.duration)(x)
+                for x in hedge_sym_arr]) > 1:
             del hedge_sym_arr[-1]
 
         # handle more than one left-wing
-        if sum([(lambda x: lastquotes[x].duration < msg.duration)(x) for x in hedge_sym_arr]) > 1:
+        if sum([(lambda x: instrument_static(sym=lastquotes[x].sym)['duration'] < msg.duration)(x)
+                for x in hedge_sym_arr]) > 1:
             del hedge_sym_arr[0]
 
         num_hedges = len([x for x in hedge_sym_arr if x in lastquotes])
@@ -217,7 +243,7 @@ def perform_cash_hedge(msg, lastquotes):
                                         trade_settle_date=msg.trade_settle_date,
                                         min_hedge_delta=min_hedge_delta,
                                         trade_beta=msg.beta,
-                                        duration=hedge_quote.duration)
+                                        duration=instrument_static(sym=hedge_quote.sym)['duration'])
                 hedge_trades.append(hedge_otc_trade)
 
     return hedge_trades, msg_processed
@@ -232,7 +258,7 @@ def perform_futures_hedge(msg, lastquotes):
     configurator = Configurator()
     hedge_trades = []
     msg_processed = False
-    hedge_listed_mapper = load_config(msg.ccy, HedgeClass.Listed,configurator)
+    hedge_listed_mapper = load_config(msg.country_of_risk, HedgeClass.Listed)
     if not hedge_listed_mapper == "":
         msg_processed = True
         min_hedge_delta = float(hedge_listed_mapper['min_hedge_delta'])
@@ -242,6 +268,16 @@ def perform_futures_hedge(msg, lastquotes):
         # get the hedge sym(s)
         hedge_sym_arr = hedge_listed_mapper[str([x for x in tenors_list if msg.tenor > x][-1]).rstrip('0').rstrip('.')]
         hedge_sym_arr = hedge_sym_arr.split(',')
+
+        # handle more than one right-wing
+        if sum([(lambda x: instrument_static(sym=lastquotes[x].sym)['duration'] > msg.duration)(x)
+                for x in hedge_sym_arr]) > 1:
+            del hedge_sym_arr[-1]
+
+        # handle more than one left-wing
+        if sum([(lambda x: instrument_static(sym=lastquotes[x].sym)['duration'] < msg.duration)(x)
+                for x in hedge_sym_arr]) > 1:
+            del hedge_sym_arr[0]
 
         num_hedges = len([x for x in hedge_sym_arr if x in lastquotes])
         # set the duration of the hedge based on the Quote object
@@ -268,7 +304,7 @@ def perform_futures_hedge(msg, lastquotes):
                     FixedIncomeFuturesHedge(trade_id=msg.trade_id + "_LISTED_HEDGE_" + str(i),
                                             package_id=msg.package_id,
                                             sym=hedge_sym_arr[i],
-                                            duration=hedge_quote.duration,
+                                            duration=instrument_static(sym=hedge_quote.sym)['duration'],
                                             paper_trade=True,
                                             notional=contract_size,
                                             trade_delta=msg.delta,  # <-- underlying trade_delta to be hedged
