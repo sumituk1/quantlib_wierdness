@@ -18,7 +18,7 @@ EGB_COB = 16:30:00
 markout_mode = unhedged
 
 [USD_GovtBond_Listed_Hedge_Mapper]
-country_list = USD
+country_list = US
 min_hedge_delta = 1000
 1 = TUc1
 2 = TUc1
@@ -38,7 +38,7 @@ min_hedge_delta = 1000
 30 = USc1
 
 [USD_GovtBond_OTC_Hedge_Mapper]
-country_list = USD
+country_list = US
 min_hedge_delta = 1000
 1 = US2YT=RR
 2 = US2YT=RR
@@ -92,10 +92,6 @@ min_hedge_delta = 500
 10 = FBTPc1
 11 = FBTPc1
 12 = FBTPc1
-15 = IT15YT=RR
-20 = IT15YT=RR,IT30YT=RR
-25 = IT30YT=RR
-30 = IT30YT=RR
 
 [EGB_peri_GovtBond_OTC_Hedge_Mapper]
 country_list = IT,ES,GR
