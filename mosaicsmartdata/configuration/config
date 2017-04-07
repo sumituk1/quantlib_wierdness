@@ -1,5 +1,6 @@
 [DEFAULT]
 instrument_static = instrument_static.csv
+repo = repo.csv
 
 [Rates-RiskPath]
 DaysForceClose = 2
