@@ -1,7 +1,10 @@
-from __future__ import absolute_import
+import logging
+logging.basicConfig(level=logging.WARNING)
+
+#from __future__ import absolute_import
 from unittest import TestCase
 import numpy as np
-import seaborn as sns
+#import seaborn as sns
 import datetime as dt
 import matplotlib.pyplot as plt
 import aiostreams.operators.operators as op
@@ -10,7 +13,10 @@ from mosaicsmartdata.common import qc_csv_helper
 from mosaicsmartdata.core.markout import GovtBondMarkoutCalculator
 from mosaicsmartdata.core.markout_basket_builder import *
 from mosaicsmartdata.core.hedger import *
+import os, inspect
 
+thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+os.chdir(thisfiledir)
 
 class TestHedgeMarkouts(TestCase):
     # Test hedge with Cash
@@ -272,7 +278,7 @@ class TestHedgeMarkouts(TestCase):
 
     # Test hedge where a 7y has got a 10yr and 30yr specified as a hedge (Enable config_2.txt)
     # Code should pick up the first one i.e. 10yr
-    def test_case_5(self, plotFigure=True):
+    def test_case_5(self, plotFigure=False):
         tolerance = 5 * 1e-2
         datapath = "..\\resources\\hedged_markout_tests\\"
         quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv"]

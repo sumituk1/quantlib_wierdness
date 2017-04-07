@@ -1,5 +1,6 @@
 import pandas as pd
 from mosaicsmartdata.common.read_config import *
+import inspect
 
 class Borg:
     _shared = {}
@@ -18,7 +19,8 @@ class InstumentSingleton(Borg):
 
     def __call__(self, **kwargs):
         if 'data' not in self.__dict__:
-            self.data = pd.read_csv(self.instrument_static_fname)
+            thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+            self.data = pd.read_csv(thisfiledir + '\\..\\configuration\\' + self.instrument_static_fname)
         out_data_df = self.data
         # now keep applying filter
         for k,v in kwargs.items():

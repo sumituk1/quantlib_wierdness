@@ -6,13 +6,16 @@ from mosaicsmartdata.common import qc_csv_helper
 from mosaicsmartdata.common.read_config import Configurator
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.core.markout import GovtBondMarkoutCalculator
+import os, inspect
 
+thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+os.chdir(thisfiledir)
 
 class TestMarkouts(TestCase):
     # Test for Sell in bps over intra-day to COB1
     def test_case_1(self, plotFigure = False):
         tolerance = 5*1e-2
-        datapath = "..\\resources\\unhedged_markout_tests\\"  # generally a good idea to use relative paths whenever possible
+        datapath =  "\\..\\resources\\unhedged_markout_tests\\"  # generally a good idea to use relative paths whenever possible
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
