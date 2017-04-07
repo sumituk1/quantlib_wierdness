@@ -134,7 +134,7 @@ def my_hedge_calculator(msg,
         hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes)
         # hedge_trades.append(hedge_trades_futures)
     if not msg_processed:
-        # No futures hedging performed.
+        # No futures hedging performed. So check to see if Cash hedging can be performed
         hedge_trades, _ = perform_cash_hedge(msg, lastquotes)
         # hedge_trades.append(hedge_trades_cash)
     return hedge_trades
@@ -248,10 +248,7 @@ def perform_cash_hedge(msg, lastquotes):
 
     return hedge_trades, msg_processed
 
-
-''' ---Process for LISTED--- '''
-
-
+# Futures hedging
 def perform_futures_hedge(msg, lastquotes):
     ''' ---Process for LISTED--- '''
     instrument_static = InstumentSingleton()
