@@ -332,11 +332,11 @@ def getNextCouponDate(issue_date, maturity_date, frequency, holidayCities, settl
 
 
 # Returns the days elapsed since last Coupon date
-def getLastCouponDate(issueDate, maturityDate, frequency, holidayCities, settleDate):
+def getLastCouponDate(issue_date, maturity_date, frequency, holidayCities, settle_date):
     # first create a Sceduke of cashflows
-    schedule = __createSchedule(pydate_to_qldate(issueDate), pydate_to_qldate(maturityDate),
+    schedule = __createSchedule(pydate_to_qldate(issue_date), pydate_to_qldate(maturity_date),
                                 frequency, holidayCities)
-    lastCouponDate = [i for i in list(schedule) if i < pydate_to_qldate(settleDate)][-1]
+    lastCouponDate = [i for i in list(schedule) if i < pydate_to_qldate(settle_date)][-1]
     return qldate_to_pydate(lastCouponDate)
 
 

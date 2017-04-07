@@ -14,6 +14,7 @@ from mosaicsmartdata.common.constants import DayCountConv, CalendarFactory, Freq
 from datetime import datetime
 from mosaicsmartdata.common.schedule import CSchedule
 import scipy.optimize as optimize
+import datetime as dt
 import numpy as np
 
 
@@ -60,18 +61,26 @@ def cleanprice_from_forward(forward_price, par, coup, spot_settle_date, forward_
 
 
 # calculate forward price from spot clean price
-def bond_forward_price(price, par, coup, spot_settle_date, forward_date, freq,
-                       repo, prev_coupon_date, next_coupon_date):
+def bond_forward_price(price,
+                       par,
+                       coupon,
+                       day_count,
+                       spot_settle_date,
+                       forward_date,
+                       freq,
+                       repo,
+                       prev_coupon_date,
+                       next_coupon_date):
     sch = CSchedule()
-    coupon = coup / 100 * par
+    coupon = coupon / 100 * par
     accrued_fwd = 0
     accrued_t0 = bond_accrued(coupon, prev_coupon_date, spot_settle_date)
 
     # day fraction between spot_settle and forward date
-    dcf_fwd = sch.days_factor_2(spot_settle_date, forward_date, DayCountConv.ACT_360, freq)
+    dcf_fwd = sch.days_factor_2(spot_settle_date, forward_date, day_count, freq)
 
     # day fraction between spot_settle and next coupon date
-    next_coupon_dcf = sch.days_factor_2(spot_settle_date, next_coupon_date, DayCountConv.ACT_360, freq)
+    next_coupon_dcf = sch.days_factor_2(spot_settle_date, next_coupon_date, day_count, freq)
 
     # check if there's a coupon cashflow occurring between settle_date and forward_date
     # accrued_fwd = bond_accrued(coupon, prev_coupon_date, forward_date)
@@ -91,26 +100,47 @@ def bond_forward_price(price, par, coup, spot_settle_date, forward_date, freq,
     return fwd_price
 
 
-def govbond_forwardprice(price, spot_settle_date,
-                         prev_coupon_date, next_coupon_date,
-                         forward_date, coupon, frequency, repo):
+def govbond_forwardprice(price,
+                         spot_settle_date,
+                         prev_coupon_date,
+                         next_coupon_date,
+                         forward_date,
+                         coupon,
+                         day_count,
+                         frequency,
+                         repo):
     # sch = CSchedule()
-    prev_coupon_date = datetime.strptime(prev_coupon_date, '%Y-%m-%d')
-    spot_settle_date = datetime.strptime(spot_settle_date, '%Y-%m-%d')
-    next_coupon_date = datetime.strptime(next_coupon_date, '%Y-%m-%d')
-    forward_date = datetime.strptime(forward_date, '%Y-%m-%d')
-    # maturity = datetime.strptime(maturity, '%Y-%m-%d')
 
     # convert frequency
     freq = Frequency.convertFrequencyStr(frequency)
 
+    # check next_coupon_date or issue_date
+    if next_coupon_date is None:
+        raise ValueError("Next_coupon_date not passed in")
+    else:
+        if isinstance(next_coupon_date, dt.date):
+            next_coupon_date = dt.datetime.combine(next_coupon_date, dt.datetime.min.time())
+
+    # check next_coupon_date or issue_date
+    if prev_coupon_date is None:
+        raise ValueError("Prev_coupon_date not passed in")
+    else:
+        if isinstance(next_coupon_date, dt.date):
+            prev_coupon_date = dt.datetime.combine(prev_coupon_date, dt.datetime.min.time())
+
     # convert daycount
     # dc = DayCountConv.convertDayCountStr(daycount)
 
-    forward_price = bond_forward_price(price, 100, coupon, spot_settle_date,
-                                       forward_date, freq,
-                                       repo, prev_coupon_date,
-                                       next_coupon_date)
+    forward_price = bond_forward_price(price=price,
+                                       par=100,
+                                       coupon=coupon,
+                                       spot_settle_date=spot_settle_date,
+                                       forward_date=forward_date,
+                                       freq=freq,
+                                       repo=repo,
+                                       day_count=day_count,
+                                       prev_coupon_date=prev_coupon_date,
+                                       next_coupon_date=next_coupon_date)
 
     return forward_price
 
