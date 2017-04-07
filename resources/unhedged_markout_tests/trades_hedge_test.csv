@@ -1,0 +1,2 @@
+package_id,trade_id,product_class,product_class1,sym,tenor,notional,traded_pxÿ,statusÿ,mod_duration (or pv01),side,delta,benchmarkÿ,timestamp,trade_date,settle_date,client_legal_name,sector,ccy,maturity,coupon,holiday_cities,frequency,day_count,issue_date,spot_settle_date,country_of_risk
+789,456,GovtBond,GT7,912828T91,7,10000000,96.071, Traded ,6.159,Bid,"6,159",Y,2017.03.21D11:19:45.605000000,2017.03.21,2017.03.22,Mosaic Smart Data,Data Analytics,USD,2016.10.31,,,,,,2017.03.22,US

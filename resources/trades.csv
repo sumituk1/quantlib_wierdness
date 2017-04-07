@@ -1,0 +1,4 @@
+Package_Id,Trade_Id,ProductClass,ProductSubClass1,sym,Tenor,  qty  , TradePx , Status ,ModDuration,Side, DV01 , Benchmark ,Timestamp,TradeDate,SettleDate,ClientLegalName,Sector,Ccy
+999,DE10YT_OTR_111,GovtBond,DE10YT,DE10YT=RR,30,400000000,99.243, Traded ,18,Ask,"720,000",Y,2017.01.16D14:05:00.000000000,2017.01.16,2017.01.18,Mosaic Smart Data,Data Analytics,EUR
+10001,DE10YT_OTR_999,GovtBond,DE10YT,DE10YT=RR,30,100000000,99.243, Traded ,18,Bid,"720,000",Y,2017.01.16D14:30:00.000000000,2017.01.16,2017.01.18,Mosaic Smart Data,Data Analytics,EUR
+888,UST30Y_OTR_111111,GovtBond,US30YT=RR,US30YT=RR,30,100000000,99.0625, Traded ,18,Bid,"180,000",Y,2017.01.17D15:02:00.000000000,2017.01.17,2017.01.19,Mosaic Smart Data,Data Analytics,USD
