@@ -2,6 +2,7 @@ import pandas as pd
 from mosaicsmartdata.common.read_config import *
 from mosaicsmartdata.common.constants import *
 import inspect
+import datetime as dt
 pd.options.mode.chained_assignment = None  # default='warn'
 class Borg:
     _shared = {}
@@ -35,20 +36,26 @@ class RepoSingleton(Borg):
         df_dict['GBP'] = out_data_gbp.sort_values(by=out_data_gbp.columns[0], ascending=False)
         # now keep applying filter
 
-        out_data = df_dict[kwargs["ccy"]] # <- a dataframe for a ccy
-        out_data = out_data[out_data.iloc[:, 0] <= pd.to_datetime(kwargs["date"])]
-
+        out_data_ccy_filt = df_dict[kwargs["ccy"]] # <- a dataframe for a ccy
+        out_data = out_data_ccy_filt[out_data_ccy_filt.iloc[:, 0] <= kwargs["date"]]
         if len(out_data) == 0:
+            # input date is before the min date in the stored data
+            out_data = out_data_ccy_filt.iloc[-1,:]
+            output = float(out_data.values[1])
+        else:
+            output = float(out_data.iloc[0, :].values[1])
+
+        if output is None:
             raise Exception("could find repo for %s"%list(kwargs.items())[0][1])
 
-        return out_data.iloc[0,:].values
+        return output
 
     # def __str__(self):  # just for the illustration below, could be anything else
     #     return str(self.__dict__)
 
 if __name__ == "__main__":
     repo = RepoSingleton()
-    data = repo(ccy=Currency.CHF, date='2017.03.10')
+    data = repo(ccy=Currency.EUR, date=dt.datetime(2017,3,10))
     print(data)
     # instr_static_df_2 = instrument_static(sym='US30YT=RR')  # ,date='2017.03.30')
     # print(instr_static_df['duration'])
