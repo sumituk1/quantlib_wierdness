@@ -10,9 +10,10 @@ class TestMarkouts(TestCase):
             "packageId": "123456789::venue::date", "productClass": "GovtBond", "productClass1": "DE10YT",\
             "sym": "DE10YT=RR", "tenor": 30, "quantity": 1000000, "tradedPx": 1.5, "modifiedDuration": 18.0,\
             "side": "Ask", "quantityDv01": 1800.0, "issueOldness": 1,"ccy": "USD", ' \
-                       '"timestamp": "2017.01.16D14:05:00.600000000",\
-                       "tradeDate": "2017.01.16", "settlementDate": "2017.01.18", "holidayCalendar": "NYC",\
-                       "spotSettlementDate": "2017.01.18", "venue": "BBGUST"}}'
+           '"timestamp": "2017.01.16D14:05:00.600000000",\
+           "tradeDate": "2017.01.16", "settlementDate": "2017.01.18", "holidayCalendar": "NYC",\
+           "spotSettlementDate": "2017.01.18", "venue": "BBGUST","countryOfIssue": "US","dayCount": "ACT/ACT",' \
+           '"issueDate": "2016.10.31","coupon": 1.2,"couponFrequency": "ANNUAL","maturityDate": "2047.01.18"}}'
         trade = json_to_trade(json_message=json_message)
 
         # do assertions
