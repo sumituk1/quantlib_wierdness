@@ -159,7 +159,7 @@ def df_to_zero_curve(rates, settlement_date, daycounter=ql.Actual365Fixed):
 
 # Maps incoming holidayCities to quantlib Calendar
 def mapHolidayCalendar(holidayCities):
-    if holidayCities == HolidayCities.USA:
+    if holidayCities == HolidayCities.USD:
         return ql.UnitedStates()
     elif holidayCities == HolidayCities.EUR:
         return ql.Germany()
@@ -215,7 +215,7 @@ def mapFrequency(freq):
 def calculateBusDays(holidayCities, py_sd, py_ed):
     ql_sd = pydate_to_qldate(py_sd)
     ql_ed = pydate_to_qldate(py_ed)
-    if holidayCities == HolidayCities.USA:
+    if holidayCities == HolidayCities.USD:
         cd = ql.UnitedStates()
     elif holidayCities == HolidayCities.EUR:
         cd = ql.Germany()

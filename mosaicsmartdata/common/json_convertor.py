@@ -39,7 +39,15 @@ def json_to_trade(json_message):
                           trade_settle_date=dt.datetime.strptime(request.bondTrade.settlementDate, "%Y.%m.%d"),
                           spot_settle_date=dt.datetime.strptime(request.bondTrade.spotSettlementDate, "%Y.%m.%d"),
                           venue=request.bondTrade.venue,
-                          duration=float(request.bondTrade.modifiedDuration))
+                          duration=float(request.bondTrade.modifiedDuration),
+                          maturity_date=dt.datetime.strptime(request.bondTrade.maturityDate, "%Y.%m.%d"),
+                          coupon=float(float(request.bondTrade.coupon)),
+                          holidayCities=HolidayCities.convert_holidayCities_str(request.bondTrade.holidayCalendar),
+                          coupon_frequency=Frequency.convertFrequencyStr(request.bondTrade.couponFrequency),
+                          day_count=DayCountConv.convertDayCountStr(request.bondTrade.dayCount),
+                          issue_date=dt.datetime.strptime(request.bondTrade.issueDate, "%Y.%m.%d"),
+                          country_of_risk=request.bondTrade.countryOfIssue
+                          )
     return tr
 
 
@@ -142,10 +150,17 @@ if __name__ == "__main__":
     json_message = '{"bondTrade": {"negotiationId": "123456789", "orderId": "123456789::venue::date::DE10YT_OTR_111::BUY",\
                    "packageId": "123456789::venue::date", "productClass": "GovtBond", "productClass1": "DE10YT",\
                    "sym": "DE10YT=RR", "tenor": 30, "quantity": 114.235, "tradedPx": 1.5, "modifiedDuration": 18.0,\
-                   "side": "Ask", "quantityDv01": 18.0, "issueOldness": 1,"ccy": "USD", ' \
+                   "side": "Ask", "quantityDv01": 18.0, "issueOldness": 1,' \
                    '"timestamp": "2017.01.16D14:05:00.600000000",\
-                   "tradeDate": "2017.01.16", "settlementDate": "2017.01.18", "holidayCalendar": "NYC",\
-                   "spotSettlementDate": "2017.01.18", "venue": "BBGUST"}}'
+                   "tradeDate": "2017.01.16", "settlementDate": "2017.01.24", "holidayCalendar": "NYC",\
+                   "spotSettlementDate": "2017.01.18",\
+                   "ccy": "USD",\
+                   "countryOfIssue": "US",\
+                   "dayCount": "ACT/ACT",\
+                   "issueDate": "2016.10.31",\
+                   "coupon": 1.2,\
+                   "couponFrequency": "ANNUAL",\
+                   "maturityDate": "2047.01.18","venue": "BBGUST"}}'
 
     print(json_to_trade(json_message=json_message))
 

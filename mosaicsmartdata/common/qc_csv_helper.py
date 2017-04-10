@@ -25,21 +25,6 @@ def file_to_quote_list(fname, markout_mode=MarkoutMode.Unhedged):
         reader = csv.reader(f)
         my_list = list(reader)
 
-    # convert them to Quote objects, assuming first row is headers
-    #
-    # if markout_mode is MarkoutMode.Unhedged:
-    #     # for simple markouts, we don;t need the duration in the Quotes
-    #     quote = [Quote(sym=x[3],
-    #                    ask=float(x[2]),
-    #                    timestamp=parse_iso_timestamp(x[0]),
-    #                    bid=float(x[1])) for x in my_list[1:]]
-    # else:
-    #     quote = [Quote(sym=x[3],
-    #                    ask=float(x[2]),
-    #                    timestamp=parse_iso_timestamp(x[0]),
-    #                    bid=float(x[1]),
-    #                    duration=instrument_static(sym=x[3])['duration']) for x in my_list[1:]]
-
     # for simple markouts, we don;t need the duration in the Quotes
     quote = [Quote(sym=x[3],
                    ask=float(x[2]),

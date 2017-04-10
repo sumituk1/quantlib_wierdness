@@ -14,7 +14,7 @@ class TestBondDurationZSpread(unittest.TestCase):
         settle_date = dt.datetime(2016, 8, 3)
         issueDate = dt.datetime(2014, 7, 25)  # -> python datetime
         maturity_date = dt.datetime(2021, 7, 31)
-        holidayCities = HolidayCities.USA
+        holidayCities = HolidayCities.USD
         coupon = 1.125
         frequency = Frequency.SEMI
         daycount = DayCountConv.ACT_ACT
@@ -47,7 +47,7 @@ class TestBondDurationZSpread(unittest.TestCase):
         maturity_date = dt.datetime(2026, 5, 15)
         coupon = 1.625
         frequency = Frequency.SEMI
-        holidayCities = HolidayCities.USA
+        holidayCities = HolidayCities.USD
         day_count = DayCountConv.ACT_ACT
         # nextCouponDate = dt.datetime(2017,11,15)
         nextCouponDate = bond.getNextCouponDate(issue_date=issue_date,
@@ -71,7 +71,7 @@ class TestBondDurationZSpread(unittest.TestCase):
         issue_date = dt.datetime(2014, 5, 15)
         coupon = 2.5
         frequency = Frequency.SEMI
-        holidayCities = HolidayCities.USA
+        holidayCities = HolidayCities.USD
         day_count = DayCountConv.ACT_ACT
 
         # next coupon date (This is needed especially when there is a big short stub

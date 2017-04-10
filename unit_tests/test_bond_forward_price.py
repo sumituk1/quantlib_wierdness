@@ -21,7 +21,7 @@ class TestBondForwardPrice(unittest.TestCase):
         issue_date = dt.datetime(2014, 1, 31)  # -> python datetime
         maturity_date = dt.datetime(2021, 1, 31)
         coupon = 1.125  # bond coupon
-        holidayCities = HolidayCities.USA
+        holidayCities = HolidayCities.USD
         frequency = Frequency.SEMI  # coupon frequency
         # next_coupon_date = dt.datetime(2017,1,31)
         # next coupon date (This is needed especially when there is a big short stub)

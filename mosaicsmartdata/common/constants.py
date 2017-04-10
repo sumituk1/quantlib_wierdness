@@ -1,6 +1,6 @@
 # This has the list of day counts and the related convention
 # from workalendar.usa import *
-
+import QuantLib as ql
 
 class BootStrapMethod:
     PiecewiseLogCubicDiscount = "PicewiseLogCubicDiscount"
@@ -60,7 +60,7 @@ class CalendarFactory:
 
 
 class HolidayCities:
-    USA = "NY"
+    USD = "NYC"
     GBP = "LON"
     EUR = "EUR"
     JPY = "TOK"
@@ -69,6 +69,26 @@ class HolidayCities:
     ISR = "ISRAEL"
     CHINA = "BEJ"
 
+    @staticmethod
+    def convert_holidayCities_str(holiday_cities):
+        holiday_cities = HolidayCities.USD
+        if holiday_cities == "NYC":
+            holiday_cities = HolidayCities.USD
+        elif holiday_cities == "LON":
+            holiday_cities = HolidayCities.GBP
+        elif holiday_cities == "EUR":
+            holiday_cities = HolidayCities.EUR
+        elif holiday_cities == "TOK":
+            holiday_cities = HolidayCities.JPY
+        elif holiday_cities == "ITALY":
+            holiday_cities = HolidayCities.IT
+        elif holiday_cities == "TARGET":
+            holiday_cities = HolidayCities.TARGET
+        elif holiday_cities == "ISRAEL":
+            holiday_cities = HolidayCities.ISR
+        elif holiday_cities == "BEJ":
+            holiday_cities = HolidayCities.CHINA
+        return holiday_cities
 
 class Currency:
     EUR = "EUR"
@@ -359,17 +379,17 @@ class Frequency:
     @staticmethod
     def convertFrequencyStr(freqStr):
         freq = Frequency.SEMI
-        if freqStr == "M":
+        if freqStr == "M" or freqStr == "MONTHLY":
             freq = Frequency.MONTHLY
-        elif freqStr == "D":
+        elif freqStr == "D"or freqStr == "DAILY":
             freq = Frequency.DAILY
-        elif freqStr == "W":
+        elif freqStr == "W"or freqStr == "WEEKLY":
             freq = Frequency.WEEKLY
-        elif freqStr == "S":
+        elif freqStr == "S"or freqStr == "SEMI":
             freq = Frequency.SEMI
-        elif freqStr == "Q":
+        elif freqStr == "Q" or freqStr == "QUARTERLY":
             freq = Frequency.QUARTERLY
-        elif freqStr == "A":
+        elif freqStr == "A" or freqStr == "ANNUAL":
             freq = Frequency.ANNUAL
         return freq
 
