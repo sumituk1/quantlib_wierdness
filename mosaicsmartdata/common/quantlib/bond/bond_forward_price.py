@@ -26,18 +26,41 @@ def bond_accrued(coup, start_date, end_date):
 
 
 # solve for clean_price from forward_price
-def cleanprice_from_forward(forward_price, par, coup, spot_settle_date, forward_date, freq,
-                            repo, prev_coupon_date, next_coupon_date, guess=100):
+def cleanprice_from_forward(forward_price,
+                            par,
+                            coupon,
+                            spot_settle_date,
+                            forward_date,
+                            frequency,
+                            day_count,
+                            repo,
+                            prev_coupon_date,
+                            next_coupon_date,
+                            guess=100):
     sch = CSchedule()
-    coupon = coup / 100 * par
+    coupon = coupon / 100 * par
+
+    if next_coupon_date is None:
+        raise ValueError("Next_coupon_date not passed in")
+    else:
+        if isinstance(next_coupon_date, dt.date):
+            next_coupon_date = dt.datetime.combine(next_coupon_date, dt.datetime.min.time())
+
+    # check next_coupon_date or issue_date
+    if prev_coupon_date is None:
+        raise ValueError("Prev_coupon_date not passed in")
+    else:
+        if isinstance(next_coupon_date, dt.date):
+            prev_coupon_date = dt.datetime.combine(prev_coupon_date, dt.datetime.min.time())
+
     accrued_fwd = 0
     accrued_t0 = bond_accrued(coupon, prev_coupon_date, spot_settle_date)
 
     # day fraction between spot_settle and forward date
-    dcf_fwd = sch.days_factor_2(spot_settle_date, forward_date, DayCountConv.ACT_360, freq)
+    dcf_fwd = sch.days_factor_2(spot_settle_date, forward_date, day_count, frequency)
 
     # day fraction between spot_settle and next coupon date
-    next_coupon_dcf = sch.days_factor_2(spot_settle_date, next_coupon_date, DayCountConv.ACT_360, freq)
+    next_coupon_dcf = sch.days_factor_2(spot_settle_date, next_coupon_date, DayCountConv.ACT_360, frequency)
 
     # check if there's a coupon cashflow occurring between settle_date and forward_date
     # accrued_fwd = bond_accrued(coupon, prev_coupon_date, forward_date)
@@ -145,16 +168,17 @@ def govbond_forwardprice(price,
     return forward_price
 
 
-def govbond_cleanprice_from_forwardprice(forward_price, spot_settle_date,
-                                         prev_coupon_date, next_coupon_date,
-                                         forward_date, coupon,
-                                         frequency, repo):
+def govbond_cleanprice_from_forwardprice(forward_price,
+                                         spot_settle_date,
+                                         prev_coupon_date,
+                                         next_coupon_date,
+                                         forward_date,
+                                         coupon,
+                                         day_count,
+                                         frequency,
+                                         repo,
+                                         par=100):
     # sch = CSchedule()
-    prev_coupon_date = datetime.strptime(prev_coupon_date, '%Y-%m-%d')
-    spot_settle_date = datetime.strptime(spot_settle_date, '%Y-%m-%d')
-    next_coupon_date = datetime.strptime(next_coupon_date, '%Y-%m-%d')
-    forward_date = datetime.strptime(forward_date, '%Y-%m-%d')
-    # maturity = datetime.strptime(maturity, '%Y-%m-%d')
 
     # convert frequency
     freq = Frequency.convertFrequencyStr(frequency)
@@ -162,10 +186,16 @@ def govbond_cleanprice_from_forwardprice(forward_price, spot_settle_date,
     # convert daycount
     # dc = DayCountConv.convertDayCountStr(daycount)
 
-    spot_clean_price = cleanprice_from_forward(forward_price, 100, coupon,
-                                               spot_settle_date, forward_date,
-                                               freq,repo, prev_coupon_date,
-                                               next_coupon_date)
+    spot_clean_price = cleanprice_from_forward(forward_price=forward_price,
+                                               par=par,
+                                               day_count=day_count,
+                                               coupon=coupon,
+                                               spot_settle_date=spot_settle_date,
+                                               forward_date=forward_date,
+                                               frequency=freq,
+                                               repo=repo,
+                                               prev_coupon_date=prev_coupon_date,
+                                               next_coupon_date=next_coupon_date)
 
     return spot_clean_price
 

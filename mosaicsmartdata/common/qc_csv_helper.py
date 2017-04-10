@@ -1,3 +1,4 @@
+
 import csv
 import datetime as dt
 from mosaicsmartdata.common.constants import *
@@ -72,6 +73,13 @@ def file_to_trade_list(fname):
                               trade_date=dt.datetime.strptime(x[14], "%Y.%m.%d"),
                               ccy=x[18],
                               trade_settle_date=dt.datetime.strptime(x[15], "%Y.%m.%d"),
+                              spot_settle_date=dt.datetime.strptime(x[25], "%Y.%m.%d"),
+                              maturity_date=dt.datetime.strptime(x[19], "%Y.%m.%d"),
+                              coupon=float(x[20]),
+                              holidayCities=x[21],
+                              coupon_frequency=Frequency.convertFrequencyStr(x[22]),
+                              day_count=DayCountConv.convertDayCountStr(x[23]),
+                              issue_date=dt.datetime.strptime(x[24], "%Y.%m.%d"),
                               duration=float(x[9]),
                               country_of_risk=x[26])
         trade_list.append(tr)

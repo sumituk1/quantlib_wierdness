@@ -1,6 +1,10 @@
 import datetime as dt
 import numpy as np
 from mosaicsmartdata.common import read_config
+from mosaicsmartdata.core.repo_singleton import *
+from mosaicsmartdata.common.quantlib.bond.bond_forward_price import *
+from mosaicsmartdata.common.quantlib.bond.bond_price import *
+import mosaicsmartdata.common.quantlib.bond.fixed_bond as bond
 from mosaicsmartdata.common.constants import *
 
 
@@ -74,6 +78,7 @@ class Quote(GenericParent):
 
 class Trade(GenericParent):
     def __init__(self, *args, **kwargs):
+        self.repo_rate = RepoSingleton()
         self.trade_id = None
         self.package_id = None
         self.package_size = 1
@@ -93,7 +98,8 @@ class Trade(GenericParent):
         self.delta = None
         self.tenor = None
         self.venue = None
-        self.country_of_risk = Country.US # default to US
+        self.holidayCities = None
+        self.country_of_risk = Country.US  # default to US
 
         # just paste this magic line in to assign the kwargs
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
@@ -133,7 +139,7 @@ class FixedIncomeTrade(Trade):
         self.maturity_date = None
         self.coupon = None
         self.coupon_frequency = None
-
+        self.day_count = None
 
         # the magic line to process the kwargs
         # other_args = self.apply_kwargs(self.__dict__,kwargs)
@@ -142,11 +148,43 @@ class FixedIncomeTrade(Trade):
         if self.delta is None:
             self.delta = self.duration * self.notional * 0.0001
 
+        # check if this is a non-standard trade
+        self.check_non_standard_trade()
+
     def markout_mults(self):
         return {'price': (1 / self.par_value) * self.notional,
                 'PV': self.delta,
                 'cents': 100.0,
                 'bps': (1.0 / self.duration / self.par_value) * 10000}
+
+    def check_non_standard_trade(self):
+        self.adj_traded_px = self.traded_px
+
+        if self.trade_settle_date > self.spot_settle_date and not self.paper_trade:
+            # trade_settle_date is a forward date. So calculate the price drop and adjust the traded_px
+            # create a new attribute called adj_spot_px
+            next_coupon_date = bond.getNextCouponDate(issue_date=self.issue_date,
+                                                      maturity_date=self.maturity_date,
+                                                      frequency=self.coupon_frequency,
+                                                      holidayCities=self.holidayCities,
+                                                      settle_date=self.trade_settle_date)
+
+            prev_coupon_date = bond.getLastCouponDate(issue_date=self.issue_date,
+                                                      maturity_date=self.maturity_date,
+                                                      frequency=self.coupon_frequency,
+                                                      holidayCities=self.holidayCities,
+                                                      settle_date=self.trade_settle_date)
+
+            self.adj_traded_px = govbond_cleanprice_from_forwardprice(forward_price=self.traded_px,
+                                                                      spot_settle_date=self.spot_settle_date,
+                                                                      prev_coupon_date=prev_coupon_date,
+                                                                      next_coupon_date=next_coupon_date,
+                                                                      forward_date=self.trade_settle_date,
+                                                                      coupon=self.coupon,
+                                                                      day_count=self.day_count,
+                                                                      frequency=self.coupon_frequency,
+                                                                      repo=self.repo_rate(ccy=self.ccy,
+                                                                                          date=self.trade_date))
 
 
 class FixedIncomeFuturesHedge(Trade):
@@ -164,6 +202,7 @@ class FixedIncomeFuturesHedge(Trade):
         self.par_value = 100
         self.maturity_date = None
         self.hedge_contracts = 0
+        self.adj_traded_px = self.traded_px
         # self.notional = 0.0
 
         # Futures delta should always be passed in
@@ -224,7 +263,7 @@ class FixedIncomeOTCHedge(Trade):
         self.hedge_contracts = 0.0
         self.par_value = 100
         self.maturity_date = None
-
+        self.adj_traded_px = self.traded_px
         # self.notional = 0.0
         # self.traded_px = None
         # set delta of hedge instrument

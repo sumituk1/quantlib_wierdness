@@ -1,6 +1,7 @@
 [DEFAULT]
 instrument_static = instrument_static.csv
 repo = repo.csv
+log_level=INFO
 
 [Rates-RiskPath]
 DaysForceClose = 2

@@ -1,5 +1,6 @@
 [DEFAULT]
-instrument_static = C:\Users\Sumit Sengupta\Documents\msq-domain\mosaicsmartdata\resources\instrument_static.csv
+instrument_static = instrument_static.csv
+log_level = INFO
 
 [Rates-RiskPath]
 DaysForceClose = 2

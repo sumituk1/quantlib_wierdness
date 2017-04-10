@@ -53,7 +53,7 @@ class MarkoutCalculatorPre:
             # self.generate_markout_requests(msg)
             for mk in self.lags_list:
                 mkmsg = MarkoutMessage2(trade=msg,
-                                        initial_price=msg.traded_px,
+                                        initial_price=msg.adj_traded_px,
                                         next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
                                         dt=mk)
                 if len(self.last_price[self.last_price['timestamp'] <= mkmsg.next_timestamp]['mid'].values) == 0:
