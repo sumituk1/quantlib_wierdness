@@ -3,7 +3,8 @@ import csv
 import datetime as dt
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.core.instrument_singleton import *
-from mosaicsmartdata.core.trade import Quote, FixedIncomeTrade
+from mosaicsmartdata.core.trade import FixedIncomeTrade
+from mosaicsmartdata.core.quote import Quote
 
 # converts a time precision in nano-seconds (kdb+) to a datetime object
 def parse_iso_timestamp(timestamp):

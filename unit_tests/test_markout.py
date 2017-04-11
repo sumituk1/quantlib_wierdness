@@ -479,30 +479,33 @@ class TestMarkouts(TestCase):
                 | op.flatten() > output_list
 
                 # do assertions
-                self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
+                self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 1, msg=None)
                 for mk_msg in output_list:
                     if mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '0':
-                        self.assertEquals(np.abs(mk_msg.bps_markout), 0.0, msg=None)
+                        self.assertEquals(np.round(mk_msg.bps_markout, 3), 1.285, msg=None)
                     elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '-900':
-                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.15)) / mk_msg.bps_markout), tolerance,
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 1.135) / mk_msg.bps_markout), tolerance,
                                              msg=None)
                     elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '-60':
-                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.022) / mk_msg.bps_markout), tolerance,
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 1.307) / mk_msg.bps_markout), tolerance,
                                              msg=None)
                     elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '60':
-                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0833)) / mk_msg.bps_markout), tolerance,
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 1.202) / mk_msg.bps_markout), tolerance,
                                              msg=None)
                     elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '300':
-                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.1333)) / mk_msg.bps_markout), tolerance,
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 1.151) / mk_msg.bps_markout), tolerance,
                                              msg=None)
                     elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '3600':
-                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.572)) / mk_msg.bps_markout), tolerance,
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.713) / mk_msg.bps_markout), tolerance,
                                              msg=None)
                     elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB0':
                         self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0722)) / mk_msg.bps_markout), tolerance,
                                              msg=None)
                     elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB1':
                         self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.844)) / mk_msg.bps_markout), tolerance,
+                                             msg=None)
+                    elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB2':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 1.138) / mk_msg.bps_markout), tolerance,
                                              msg=None)
         except Exception:
             raise Exception

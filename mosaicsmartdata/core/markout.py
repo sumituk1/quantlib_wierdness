@@ -3,7 +3,8 @@ import datetime as dt
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.common.read_config import *
 from mosaicsmartdata.core.markout_msg import *
-from mosaicsmartdata.core.trade import Trade, Quote
+from mosaicsmartdata.core.trade import Trade
+from mosaicsmartdata.core.quote import Quote
 
 
 class MarkoutCalculatorPre:
@@ -22,24 +23,24 @@ class MarkoutCalculatorPre:
         self.COB_time_utc = None
         self.max_lag = max_lag
 
-    def generate_markout_requests(self, msg):
-        if len(self.last_price) == 0:
-            # FOR COB mode, we will do a markout in the future once the COB is triggered
-            print(msg)
-            raise ValueError('A trade arrived before any quote data!')
-        else:
-            # for each markout lag in lags_list, create a markout_msg for this trade
-            for mk in self.lags_list:
-                mkmsg = MarkoutMessage2(trade=msg,
-                                        # trade_id=msg.trade_id,
-                                        # notional=msg.notional,
-                                        # sym=msg.sym,
-                                        # side=msg.side,
-                                        initial_price=msg.traded_px,
-                                        next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
-                                        dt=mk)
-                # print(mkmsg)
-                self.pending.append(mkmsg)
+    # def generate_markout_requests(self, msg):
+    #     if len(self.last_price) == 0:
+    #         # FOR COB mode, we will do a markout in the future once the COB is triggered
+    #         print(msg)
+    #         raise ValueError('A trade arrived before any quote data!')
+    #     else:
+    #         # for each markout lag in lags_list, create a markout_msg for this trade
+    #         for mk in self.lags_list:
+    #             mkmsg = MarkoutMessage2(trade=msg,
+    #                                     # trade_id=msg.trade_id,
+    #                                     # notional=msg.notional,
+    #                                     # sym=msg.sym,
+    #                                     # side=msg.side,
+    #                                     initial_price=msg.traded_px,
+    #                                     next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
+    #                                     dt=mk)
+    #             # print(mkmsg)
+    #             self.pending.append(mkmsg)
 
     def __call__(self, msg, COB_time_utc=None):
         self.last_timestamp = msg.timestamp
@@ -119,7 +120,7 @@ class MarkoutCalculatorPost:
                                             # notional=msg.notional,
                                             # sym=msg.sym,
                                             # side=msg.side,
-                                            initial_price=msg.traded_px,
+                                            initial_price=msg.adj_traded_px,
                                             next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
                                             dt=mk)
                 else:
