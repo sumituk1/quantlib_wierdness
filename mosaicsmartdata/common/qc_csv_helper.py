@@ -54,7 +54,7 @@ def file_to_trade_list(fname):
                               timestamp=parse_iso_timestamp(x[13]),
                               side=TradeSide.Ask if x[10] == "Ask" else TradeSide.Bid,
                               traded_px=float(x[7]),
-                              client_sys_key=x[17],
+                              client_sys_key=x[16],
                               tenor=float(x[5]),
                               trade_date=dt.datetime.strptime(x[14], "%Y.%m.%d"),
                               ccy=x[18],

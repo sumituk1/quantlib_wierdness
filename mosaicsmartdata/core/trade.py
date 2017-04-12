@@ -67,7 +67,6 @@ class FixedIncomeTrade(Trade):
         self.bid_px = None
         self.ask_px = None
         self.mid_px = None
-        self.on_repo = None
         self.duration = None
         self.trade_added_to_rp = False
         self.is_d2d_force_close = False
@@ -85,11 +84,16 @@ class FixedIncomeTrade(Trade):
         # other_args = self.apply_kwargs(self.__dict__,kwargs)
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
-        if self.delta is None:
-            self.delta = self.duration * self.notional * 0.0001
+        self.calc_trade_delta()
+        # if self.delta is None:
+        #     self.delta = self.duration * self.notional * 0.0001
 
         # check if this is a non-standard trade
         self.check_non_standard_trade()
+
+    def calc_trade_delta(self):
+        if self.delta is None:
+            self.delta = self.duration * self.notional * 0.0001
 
     def markout_mults(self):
         return {'price': (1 / self.par_value) * self.notional,
@@ -99,7 +103,8 @@ class FixedIncomeTrade(Trade):
 
     def check_non_standard_trade(self):
         self.adj_traded_px = self.traded_px
-
+        # if isinstance(self.trade_settle_date, dt.datetime):
+        #     self.trade_settle_date
         if self.trade_settle_date > self.spot_settle_date and not self.paper_trade:
             # trade_settle_date is a forward date. So calculate the price drop and adjust the traded_px
             # create a new attribute called adj_spot_px

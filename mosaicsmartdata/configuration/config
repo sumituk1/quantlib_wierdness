@@ -4,10 +4,10 @@ repo = repo.csv
 log_level=INFO
 
 [Rates-RiskPath]
-DaysForceClose = 2
+DaysForceClose = 3
 RiskPathClosureTol = 0.025
 ONRepo = 0.002
-IncludeCostOfCarry = True
+IncludeCostOfCarry = False
 MinHedgeDV01 = 500
 
 [GovtBond_Markout]

@@ -1,7 +1,8 @@
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.common.read_config import *
 from mosaicsmartdata.core.instrument_singleton import InstumentSingleton
-from mosaicsmartdata.core.trade import Quote, Trade, FixedIncomeFuturesHedge, FixedIncomeOTCHedge
+from mosaicsmartdata.core.quote import Quote
+from mosaicsmartdata.core.trade import Trade, FixedIncomeFuturesHedge, FixedIncomeOTCHedge
 
 
 class HedgeClass:

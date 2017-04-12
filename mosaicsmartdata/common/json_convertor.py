@@ -6,7 +6,8 @@ from collections import namedtuple
 import json
 import operator
 from mosaicsmartdata.core.instrument_singleton import *
-from mosaicsmartdata.core.trade import Quote, FixedIncomeTrade
+from mosaicsmartdata.core.quote import Quote
+from mosaicsmartdata.core.trade import FixedIncomeTrade
 
 # Load instrument static
 instrument_static = InstumentSingleton()
