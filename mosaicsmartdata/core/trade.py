@@ -4,16 +4,7 @@ from mosaicsmartdata.core.generic_parent import GenericParent
 from mosaicsmartdata.core.repo_singleton import *
 
 
-def to_dict(x):
-    my_dict = x.__dict__
-    my_dict['_class'] = str(type(x)).replace('\'', '').replace('>', '').split('.')[-1]
-    return my_dict
 
-
-# reflate the class back from a dict
-def from_dict(x):
-    atype = globals()[x.pop('_class')]
-    return atype(**x)
 
 
 class Trade(GenericParent):

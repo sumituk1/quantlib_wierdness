@@ -1,10 +1,10 @@
-import aiostreams.operators.operators as op
+import aiostreams.operators as op
 from common import qc_csv_helper
 import numpy as np
 from core.markout import GovtBondMarkoutCalculator
-from core.trade import Quote,Trade,FixedIncomeTrade
 from aiostreams.base import to_async_iterable
-import matplotlib.pyplot as plt
+
+
 # from unittest import TestCase
 
 def test():

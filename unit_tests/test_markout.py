@@ -1,11 +1,12 @@
-import logging
 import importlib
+import logging
+
 importlib.reload(logging)
 # logging.basicConfig(level = logging.INFO)
-from aiostreams.base import EventLoopContext, ExceptionLoggingContext
+from aiostreams.base import ExceptionLoggingContext
 from unittest import TestCase
 import numpy as np
-import aiostreams.operators.operators as op
+import aiostreams.operators as op
 from aiostreams.base import to_async_iterable
 from mosaicsmartdata.common import qc_csv_helper
 from mosaicsmartdata.common.read_config import Configurator

@@ -10,7 +10,7 @@ import numpy as np
 # import seaborn as sns
 import datetime as dt
 import matplotlib.pyplot as plt
-import aiostreams.operators.operators as op
+import aiostreams.operators as op
 from aiostreams.base import to_async_iterable
 from mosaicsmartdata.common import qc_csv_helper
 from mosaicsmartdata.core.markout import GovtBondMarkoutCalculator
