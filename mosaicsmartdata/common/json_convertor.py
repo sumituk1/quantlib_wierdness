@@ -13,6 +13,26 @@ from mosaicsmartdata.core.trade import FixedIncomeTrade
 instrument_static = InstumentSingleton()
 
 
+# Helper to convert config to json
+def create_country_hedge_dict(hedges, c_dict):
+    country = hedges['country_list']
+    countries_lst = []
+    countries_lst.extend(country.split(','))
+    ric_lst = []
+    for key in sorted(hedges.keys())[:-2]:
+        val = hedges[key]
+        for i in val.split(','):
+            ric_lst.append(i)
+
+    # for each country, create a dictionary
+    for c in countries_lst:
+        if c in c_dict.keys():
+            c_dict[c].extend(list(set(ric_lst)))
+        else:
+            c_dict[c] = list(set(ric_lst))
+            # return c_dict
+
+
 # converts a time precision in nano-seconds (kdb+) to a datetime object
 def parse_iso_timestamp(timestamp):
     ts, partial_seconds = timestamp.rsplit('.', 1)
@@ -146,242 +166,80 @@ def json_to_quote(json_message):
                   bid=bid_close)
     return quote
 
+
 # Converts the govtbond config section to a json string
 def govtbond_config_to_json():
     configurator = Configurator()
     out = dict()
 
     govtBondMarkout_dict = dict()
-
+    c_dict = dict()
     govtBondMarkout_dict['ustCob'] = configurator.get_data_given_section_and_key("GovtBond_Markout", "UST_COB")
     govtBondMarkout_dict['gbpCob'] = configurator.get_data_given_section_and_key("GovtBond_Markout", "GBP_COB")
     govtBondMarkout_dict['egbCob'] = configurator.get_data_given_section_and_key("GovtBond_Markout", "EGB_COB")
     lags_list_str = configurator.get_data_given_section_and_key("GovtBond_Markout", "lags_list")
     govtBondMarkout_dict['lags'] = [x for x in lags_list_str.split(',')]
     out["govtBondMarkout"] = govtBondMarkout_dict
-    #
-    # out['instrumentId'] = markout_message.trade.sym
-    # out['dateLocalDate'] = dt.datetime.strftime(markout_message.trade.trade_date, '%Y-%m-%d')
-    # out['cashflowDirection'] = "+" if markout_message.trade.side == TradeSide.Bid else "-"
-    # out['venueName'] = markout_message.trade.venue
-    # out['legMarkout'] = []
-    #
-    # # dict_evaluatedPricingSource = {'evaluatedPricingSource': 'INTERNAL'}
-    # # out['legMarkout'].append({'evaluatedPricingSource': 'INTERNAL'})
-    # # out['legMarkout']['evaluatedPricingSourceDimensionItem']['description'] = 'Internal'
-    # dict_markoutPeriod = {}
-    # if "COB" not in str(markout_message.dt):
-    #     dict_markoutPeriod['timeUnit'] = 'SECONDS'
-    #     dict_markoutPeriod['value'] = markout_message.dt
-    # elif "COB" in str(markout_message.dt):
-    #     dict_markoutPeriod['timeUnit'] = 'DAYS'
-    #     dict_markoutPeriod['value'] = markout_message.dt[-1]
-    #
-    # # set the UNHEDGED price/cents/bps
-    # # --------------------------------
-    # lst_markoutPrice = []
-    # attribs = [a for a in dir(markout_message) if not a.startswith('__') and 'markout' in a]
-    # mk_type = attribs[0][:-8]
-    # mults = markout_message.trade.markout_mults()
-    # if mk_type in mults:
-    #     for key, value in mults.items():
-    #         if key == 'bps':
-    #             val = markout_message.price_markout * value \
-    #                 if markout_message.price_markout is not None else np.nan
-    #             lst_markoutPrice.append({'priceType': 'UNHEDGED_INITIAL_EDGE', 'value': val})
-    #             # out['legMarkout']['markoutPrice'].append({'value' : val})
-    #         if key == 'cents':
-    #             val = markout_message.price_markout * value \
-    #                 if markout_message.price_markout is not None else np.nan
-    #             lst_markoutPrice.append({'priceType': 'UNHEDGED_SPREAD_PRICE', 'value': val})
-    # # set the HEDGED price/cents/bps
-    # # --------------------------------
-    # val = markout_message.hedged_bps if markout_message.hedged_bps is not None else np.nan
-    # lst_markoutPrice.append({'priceType': 'HEDGED_INITIAL_EDGE', 'value': val})
-    #
-    # val = markout_message.hedged_cents if markout_message.hedged_cents is not None else np.nan
-    # lst_markoutPrice.append({'priceType': 'HEDGED_SPREAD_PRICE', 'value': val})
-    #
-    # out['legMarkout'].append({'evaluatedPricingSource': 'INTERNAL',
-    #                           "markoutPeriod": dict_markoutPeriod,
-    #                           "markoutPrice": lst_markoutPrice})
-    # out['legMarkout']['markoutPrice'] = lst
+    countryOfIssueRicCodes_dict = dict()
 
     # ---- USD ------#
     try:
         # 1. get the countries list
-        countries_lst = []
         us_listed_hedges = \
             configurator.get_data_given_section("USD_GovtBond_Listed_Hedge_Mapper")
-        country = us_listed_hedges['country_list']
-        countries_lst.extend(country.split(','))
-        # countries_lst.append(country)
-
-        # 2. Now get the hedge rics
-        ric_lst = []
-        for key in sorted(us_listed_hedges.keys())[:-2]:
-            val = us_listed_hedges[key]
-            for i in val.split(','):
-                ric_lst.append(i)
-
-        # 3. for each country, create a dictionary
-        c_dict = dict()
-        for c in countries_lst:
-            c_dict[c] = list(set(ric_lst))
-            # dict_list.append(c_dict)
+        create_country_hedge_dict(us_listed_hedges, c_dict)
     except:
         pass
 
     try:
-        # 1. get the countries list
-        countries_lst = []
         us_cash_hedges = \
             configurator.get_data_given_section("USD_GovtBond_OTC_Hedge_Mapper")
-        country = us_cash_hedges['country_list']
-        countries_lst.extend(country.split(','))
-        # 2. Now get the hedge rics
-        ric_lst = []
-        for key in sorted(us_cash_hedges.keys())[:-2]:
-            val = us_cash_hedges[key]
-            for i in val.split(','):
-                ric_lst.append(i)
-
-        # 3. for each country, create a dictionary
-        for c in countries_lst:
-            if c in c_dict.keys():
-                c_dict[c].extend(list(set(ric_lst)))
-            else:
-                c_dict[c] = list(set(ric_lst))
-
+        create_country_hedge_dict(us_cash_hedges, c_dict)
     except:
         pass
 
     # ---- EGB core ------#
     try:
-        countries_lst = []
         egb_listed_hedges = \
             configurator.get_data_given_section("EGB_core_GovtBond_Listed_Hedge_Mapper")
-        country = egb_listed_hedges['country_list']
-        countries_lst.extend(country.split(','))
-        ric_lst = []
-        for key in sorted(egb_listed_hedges.keys())[:-2]:
-            val = egb_listed_hedges[key]
-            for i in val.split(','):
-                ric_lst.append(i)
-
-        # 3. for each country, create a dictionary
-        for c in countries_lst:
-            if c in c_dict.keys():
-                c_dict[c].extend(list(set(ric_lst)))
-            else:
-                c_dict[c] = list(set(ric_lst))
+        create_country_hedge_dict(egb_listed_hedges, c_dict)
     except:
         pass
 
     try:
-        countries_lst = []
         egb_cash_hedges = \
             configurator.get_data_given_section("EGB_core_GovtBond_OTC_Hedge_Mapper")
-        country = egb_cash_hedges['country_list']
-        countries_lst.extend(country.split(','))
-        ric_lst = []
-        for key in sorted(egb_cash_hedges.keys())[:-2]:
-            val = egb_cash_hedges[key]
-            for i in val.split(','):
-                ric_lst.append(i)
-
-        # 3. for each country, create a dictionary
-        for c in countries_lst:
-            if c in c_dict.keys():
-                c_dict[c].extend(list(set(ric_lst)))
-            else:
-                c_dict[c] = list(set(ric_lst))
+        create_country_hedge_dict(egb_cash_hedges, c_dict)
     except:
         pass
 
     # ---- EGB peri ------#
     try:
-        countries_lst = []
         egb_listed_hedges = \
             configurator.get_data_given_section("EGB_peri_GovtBond_Listed_Hedge_Mapper")
-        country = egb_listed_hedges['country_list']
-        countries_lst.extend(country.split(','))
-        ric_lst = []
-        for key in sorted(egb_listed_hedges.keys())[:-2]:
-            val = egb_listed_hedges[key]
-            for i in val.split(','):
-                ric_lst.append(i)
-
-        # 3. for each country, create a dictionary
-        for c in countries_lst:
-            if c in c_dict.keys():
-                c_dict[c].extend(list(set(ric_lst)))
-            else:
-                c_dict[c] = list(set(ric_lst))
+        create_country_hedge_dict(egb_listed_hedges, c_dict)
     except:
         pass
 
     try:
-        countries_lst = []
         egb_cash_hedges = \
             configurator.get_data_given_section("EGB_peri_GovtBond_OTC_Hedge_Mapper")
-        country = egb_cash_hedges['country_list']
-        countries_lst.extend(country.split(','))
-        ric_lst = []
-        for key in sorted(egb_cash_hedges.keys())[:-2]:
-            val = egb_cash_hedges[key]
-            for i in val.split(','):
-                ric_lst.append(i)
-
-        # 3. for each country, create a dictionary
-        for c in countries_lst:
-            if c in c_dict.keys():
-                c_dict[c].extend(list(set(ric_lst)))
-            else:
-                c_dict[c] = list(set(ric_lst))
+        create_country_hedge_dict(egb_cash_hedges, c_dict)
     except:
         pass
 
     # ---- GBP ------#
     try:
-        countries_lst = []
         gbp_listed_hedges = \
             configurator.get_data_given_section("GBP_GovtBond_Listed_Hedge_Mapper")
-        country = gbp_listed_hedges['country_list']
-        countries_lst.extend(country.split(','))
-        ric_lst = []
-        for key in sorted(gbp_listed_hedges.keys())[:-2]:
-            val = gbp_listed_hedges[key]
-            for i in val.split(','):
-                ric_lst.append(i)
-
-        # 3. for each country, create a dictionary
-        for c in countries_lst:
-            if c in c_dict.keys():
-                c_dict[c].extend(list(set(ric_lst)))
-            else:
-                c_dict[c] = list(set(ric_lst))
+        create_country_hedge_dict(gbp_listed_hedges, c_dict)
     except:
         pass
 
     try:
-        countries_lst = []
         gbp_cash_hedges = \
             configurator.get_data_given_section("GBP_GovtBond_OTC_Hedge_Mapper")
-        country = gbp_cash_hedges['country_list']
-        countries_lst.extend(country.split(','))
-        ric_lst = []
-        for key in sorted(gbp_cash_hedges.keys())[:-2]:
-            val = gbp_cash_hedges[key]
-            for i in val.split(','):
-                ric_lst.append(i)
-
-        # 3. for each country, create a dictionary
-        for c in countries_lst:
-            if c in c_dict.keys():
-                c_dict[c].extend(list(set(ric_lst)))
-            else:
-                c_dict[c] = list(set(ric_lst))
+        create_country_hedge_dict(gbp_cash_hedges, c_dict)
     except:
         pass
 
@@ -398,9 +256,11 @@ def govtbond_config_to_json():
 
     # govtBondHedgeMapper_dict["countriesOfIssue"] = (str_countries.lstrip(',') .rstrip(',')).split(",")
     # govtBondHedgeMapper_dict["ricCodes"] = list(set(ric_lst))
-    out["govtBondHedgeMapper"] = c_dict
+    countryOfIssueRicCodes_dict["countryOfIssueRicCodes"] = c_dict
+    out["govtBondHedgeMapper"] = countryOfIssueRicCodes_dict
     zz = json.dumps(out)
     return zz
+
 
 if __name__ == "__main__":
     json_message = '{"bondTrade": {"negotiationId": "123456789", "orderId": "123456789::venue::date::DE10YT_OTR_111::BUY",\
