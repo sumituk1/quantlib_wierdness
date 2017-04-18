@@ -13,6 +13,26 @@ from mosaicsmartdata.core.trade import FixedIncomeTrade
 instrument_static = InstumentSingleton()
 
 
+# Helper to convert config to json
+def create_country_hedge_dict(hedges, c_dict):
+    country = hedges['country_list']
+    countries_lst = []
+    countries_lst.extend(country.split(','))
+    ric_lst = []
+    for key in sorted(hedges.keys())[:-2]:
+        val = hedges[key]
+        for i in val.split(','):
+            ric_lst.append(i)
+
+    # for each country, create a dictionary
+    for c in countries_lst:
+        if c in c_dict.keys():
+            c_dict[c].extend(list(set(ric_lst)))
+        else:
+            c_dict[c] = list(set(ric_lst))
+            # return c_dict
+
+
 # converts a time precision in nano-seconds (kdb+) to a datetime object
 def parse_iso_timestamp(timestamp):
     ts, partial_seconds = timestamp.rsplit('.', 1)
@@ -147,6 +167,101 @@ def json_to_quote(json_message):
     return quote
 
 
+# Converts the govtbond config section to a json string
+def govtbond_config_to_json():
+    configurator = Configurator()
+    out = dict()
+
+    govtBondMarkout_dict = dict()
+    c_dict = dict()
+    govtBondMarkout_dict['ustCob'] = configurator.get_data_given_section_and_key("GovtBond_Markout", "UST_COB")
+    govtBondMarkout_dict['gbpCob'] = configurator.get_data_given_section_and_key("GovtBond_Markout", "GBP_COB")
+    govtBondMarkout_dict['egbCob'] = configurator.get_data_given_section_and_key("GovtBond_Markout", "EGB_COB")
+    lags_list_str = configurator.get_data_given_section_and_key("GovtBond_Markout", "lags_list")
+    govtBondMarkout_dict['lags'] = [x for x in lags_list_str.split(',')]
+    out["govtBondMarkout"] = govtBondMarkout_dict
+    countryOfIssueRicCodes_dict = dict()
+
+    # ---- USD ------#
+    try:
+        # 1. get the countries list
+        us_listed_hedges = \
+            configurator.get_data_given_section("USD_GovtBond_Listed_Hedge_Mapper")
+        create_country_hedge_dict(us_listed_hedges, c_dict)
+    except:
+        pass
+
+    try:
+        us_cash_hedges = \
+            configurator.get_data_given_section("USD_GovtBond_OTC_Hedge_Mapper")
+        create_country_hedge_dict(us_cash_hedges, c_dict)
+    except:
+        pass
+
+    # ---- EGB core ------#
+    try:
+        egb_listed_hedges = \
+            configurator.get_data_given_section("EGB_core_GovtBond_Listed_Hedge_Mapper")
+        create_country_hedge_dict(egb_listed_hedges, c_dict)
+    except:
+        pass
+
+    try:
+        egb_cash_hedges = \
+            configurator.get_data_given_section("EGB_core_GovtBond_OTC_Hedge_Mapper")
+        create_country_hedge_dict(egb_cash_hedges, c_dict)
+    except:
+        pass
+
+    # ---- EGB peri ------#
+    try:
+        egb_listed_hedges = \
+            configurator.get_data_given_section("EGB_peri_GovtBond_Listed_Hedge_Mapper")
+        create_country_hedge_dict(egb_listed_hedges, c_dict)
+    except:
+        pass
+
+    try:
+        egb_cash_hedges = \
+            configurator.get_data_given_section("EGB_peri_GovtBond_OTC_Hedge_Mapper")
+        create_country_hedge_dict(egb_cash_hedges, c_dict)
+    except:
+        pass
+
+    # ---- GBP ------#
+    try:
+        gbp_listed_hedges = \
+            configurator.get_data_given_section("GBP_GovtBond_Listed_Hedge_Mapper")
+        create_country_hedge_dict(gbp_listed_hedges, c_dict)
+    except:
+        pass
+
+    try:
+        gbp_cash_hedges = \
+            configurator.get_data_given_section("GBP_GovtBond_OTC_Hedge_Mapper")
+        create_country_hedge_dict(gbp_cash_hedges, c_dict)
+    except:
+        pass
+
+    # str_countries = ","
+    # for x in list(set(countries_lst)):
+    #     if ',' in x:
+    #         str_countries += ",".join(z for z in x.split(','))
+    #         str_countries += ","
+    #     else:
+    #         str_countries += x+","
+
+    # country_of_issue_dict["countriesOfIssue"] = (str_countries.lstrip(',') .rstrip(',')).split(",")
+    # ric_codes_dict["ricCodes"] = ric_lst
+
+    # govtBondHedgeMapper_dict["countriesOfIssue"] = (str_countries.lstrip(',') .rstrip(',')).split(",")
+    # govtBondHedgeMapper_dict["ricCodes"] = list(set(ric_lst))
+    countryOfIssueRicCodes_dict["countryOfIssueRicCodes"] = c_dict
+    out["govtBondHedgeMapper"] = countryOfIssueRicCodes_dict
+    zz = json.dumps(out)
+    return zz
+
+
 if __name__ == "__main__":
     json_message = '{"bondTrade": {"negotiationId": "123456789", "orderId": "123456789::venue::date::DE10YT_OTR_111::BUY",\
                    "packageId": "123456789::venue::date", "productClass": "GovtBond", "productClass1": "DE10YT",\
@@ -163,7 +278,7 @@ if __name__ == "__main__":
                    "couponFrequency": "ANNUAL",\
                    "maturityDate": "2047.01.18","venue": "BBGUST"}}'
 
-    print(json_to_trade(json_message=json_message))
+    # print(json_to_trade(json_message=json_message))
 
     msg = '{\
       "marketDataSnapshotFullRefreshList": [\
@@ -232,4 +347,7 @@ if __name__ == "__main__":
     }'
 
     quote = json_to_quote(msg)
-    print(quote)
+    # print(quote)
+
+    zz = govtbond_config_to_json()
+    print(zz)

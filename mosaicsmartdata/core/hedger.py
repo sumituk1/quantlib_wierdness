@@ -147,7 +147,6 @@ def load_config(country_of_risk, hedge_class):
     # For non US - look in specific Listed or Cash section for the country_list and match
     if hedge_class == HedgeClass.Listed:
         section = configurator.get_section_given_item_val(country_of_risk, "GovtBond_Listed_Hedge_Mapper")
-
     else:
         section = configurator.get_section_given_item_val(country_of_risk, "GovtBond_OTC_Hedge_Mapper")
     if section is not None:

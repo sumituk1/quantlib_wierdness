@@ -59,7 +59,7 @@ min_hedge_delta = 1000
 25 = US30YT=RR
 30 = US30YT=RR
 
-[EGB_core_GovtBond_LISTED_Hedge_Mapper]
+[EGB_core_GovtBond_Listed_Hedge_Mapper]
 country_list = DE,AT,FIN,NL,IE,SVN,FR,BE
 min_hedge_delta = 2000
 1 = FGBSc1
@@ -79,7 +79,7 @@ min_hedge_delta = 2000
 25 = FGBXc1
 30 = FGBXc1
 
-[EGB_peri_GovtBond_LISTED_Hedge_Mapper]
+[EGB_peri_GovtBond_Listed_Hedge_Mapper]
 country_list = IT,ES,GR
 min_hedge_delta = 500
 1 = FBTSc1
@@ -103,6 +103,30 @@ min_hedge_delta = 500
 20 = IT15YT=RR,IT30YT=RR
 25 = IT30YT=RR
 30 = IT30YT=RR
+
+[GBP_GovtBond_Listed_Hedge_Mapper]
+country_list = GB
+min_hedge_delta = 2000
+1 = FLGc1
+2 = FLGc1
+3 = FLGc1
+4 = FLGc1
+5 = FLGc1
+6 = FLGc1
+7= FLGc1
+8 = FLGc1
+9 = FLGc1
+10 = FLGc1
+11 = FLGc1
+12 = FLGc1
+15 = FLGc1
+
+[GBP_GovtBond_OTC_Hedge_Mapper]
+country_list = GB
+min_hedge_delta = 2000
+20 = GB30YT=RR
+25 = GB30YT=RR
+30 = GB30YT=RR
 
 [QuantLib-Calendar]
 
