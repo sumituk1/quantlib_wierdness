@@ -59,6 +59,27 @@ min_hedge_delta = 1000
 25 = US30YT=RR
 30 = US30YT=RR
 
+[USD_GovtBond_OTC_Hedge_Mapper_TEST]
+country_list = US
+min_hedge_delta = 1000
+1 = US2YT=RR
+2 = US2YT=RR
+3 = US2YT=RR,US5YT=RR
+4 = US5YT=RR
+5 = US5YT=RR
+6 = US5YT=RR,US10YT=RR
+7 = US10YT=RR,US30YT=RR
+8 = US10YT=RR
+9 = US10YT=RR
+10 = US10YT=RR
+11 = US10YT=RR
+12 = US10YT=RR
+15 = US10YT=RR,US30YT=RR
+20 = US30YT=RR
+25 = US30YT=RR
+30 = US30YT=RR
+
+
 [EGB_core_GovtBond_Listed_Hedge_Mapper]
 country_list = DE,AT,FIN,NL,IE,SVN,FR,BE
 min_hedge_delta = 2000
