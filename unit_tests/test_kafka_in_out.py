@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.ERROR)
 from aiostreams import ExceptionLoggingContext, run
 from unittest import TestCase
 from kafka import KafkaProducer, KafkaConsumer
-from aiostreams.kafka import AsyncKafkaSource, AsyncKafkaPublisher
+from aiostreams.kafka_utils import AsyncKafkaSource, AsyncKafkaPublisher
 import aiostreams.operators as op
 from mosaicsmartdata.common.json_convertor import *
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
