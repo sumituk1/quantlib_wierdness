@@ -41,24 +41,26 @@ class TestKafka(TestCase):
         logging.basicConfig(level=configurator.get_config_given_key('log_level'))
         try:
             with ExceptionLoggingContext():
+
                 topic = 'trade_sub_1'
                 topic2 = 'quote_sub_1'
 
                 a =[]
 
-                kprod2 = AsyncKafkaPublisher(topic,bootstrap_servers=kafka_host)
-                pipe1 = [json_message_in] > kprod2
+                if False:
+                    kprod2 = AsyncKafkaPublisher(topic,bootstrap_servers=kafka_host)
+                    pipe1 = [json_message_in] > kprod2
 
 
-                ksrc1 = AsyncKafkaSource(topic,bootstrap_servers=kafka_host, value_deserializer = 'json')
-                ksrc2 = AsyncKafkaSource(topic2,bootstrap_servers=kafka_host, value_deserializer = 'json')
-                pipe1a = ksrc1 | op.map(json_to_trade)
-                pipe1b = ksrc2 | op.map(json_to_quote)
+                    ksrc1 = AsyncKafkaSource(topic,bootstrap_servers=kafka_host, value_deserializer = 'json')
+                    ksrc2 = AsyncKafkaSource(topic2,bootstrap_servers=kafka_host, value_deserializer = 'json')
+                    pipe1a = ksrc1 | op.map(json_to_trade)
+                    pipe1b = ksrc2 | op.map(json_to_quote)
 
-                q_and_t = op.merge_sorted([ksrc1, ksrc2], lambda x: x.timestamp)
+                    q_and_t = op.merge_sorted([ksrc1, ksrc2], lambda x: x.timestamp)
 
 
-                run(pipe1a, pipe1b)
+                    run(pipe1a, pipe1b)
 
                 kprod = KafkaProducer(bootstrap_servers=kafka_host)
                 encoded = json_message_in.encode('utf-8')
