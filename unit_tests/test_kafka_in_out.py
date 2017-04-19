@@ -11,15 +11,16 @@ import logging
 
 importlib.reload(logging)
 logging.basicConfig(level=logging.ERROR)
-from aiostreams.base import ExceptionLoggingContext
+from aiostreams import ExceptionLoggingContext, run
 from unittest import TestCase
 from kafka import KafkaProducer, KafkaConsumer
+from aiostreams.kafka import AsyncKafkaSource, AsyncKafkaPublisher
+import aiostreams.operators as op
 from mosaicsmartdata.common.json_convertor import *
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
 from unit_tests import test_json_convertor
 
 kafka_host = '192.168.99.100:9092'  # Kafka on local Docker
-
 
 class TestKafka(TestCase):
     # Dump a json object into kafka and then read back and convert to Trade object
@@ -41,6 +42,24 @@ class TestKafka(TestCase):
         try:
             with ExceptionLoggingContext():
                 topic = 'trade_sub_1'
+                topic2 = 'quote_sub_1'
+
+                a =[]
+
+                kprod2 = AsyncKafkaPublisher(topic,bootstrap_servers=kafka_host)
+                pipe1 = [json_message_in] > kprod2
+
+
+                ksrc1 = AsyncKafkaSource(topic,bootstrap_servers=kafka_host, value_deserializer = 'json')
+                ksrc2 = AsyncKafkaSource(topic2,bootstrap_servers=kafka_host, value_deserializer = 'json')
+                pipe1a = ksrc1 | op.map(json_to_trade)
+                pipe1b = ksrc2 | op.map(json_to_quote)
+
+                q_and_t = op.merge_sorted([ksrc1, ksrc2], lambda x: x.timestamp)
+
+
+                run(pipe1a, pipe1b)
+
                 kprod = KafkaProducer(bootstrap_servers=kafka_host)
                 encoded = json_message_in.encode('utf-8')
                 kprod.send(topic, b'%s' % encoded)

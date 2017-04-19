@@ -36,14 +36,14 @@ class TestConfigurator(TestCase):
 
     def test_case_2(self):
 
-        configurator = Configurator('config_hedge_test_case_5')
+        configurator = Configurator('config')
 
         try:
             with ExceptionLoggingContext():
                 # Load the quotes data from csv
                 logging.basicConfig(level=configurator.get_config_given_key('log_level'))
 
-                zz = configurator.get_data_given_section('USD_GovtBond_OTC_Hedge_Mapper')
+                zz = configurator.get_data_given_section('USD_GovtBond_OTC_Hedge_Mapper_TEST')
                 tenor = 7
                 # extract the tenors - first 2 config are hedge specific different config
                 tenors_list = sorted([float(x) for x in (sorted([x for x in list(zz.keys())])[:-2])])
@@ -61,8 +61,8 @@ class TestConfigurator(TestCase):
             with ExceptionLoggingContext():
                 # Load the quotes data from csv
                 logging.basicConfig(level=configurator.get_config_given_key('log_level'))
-                zz = configurator.get_section_given_item_val("IT", "GovtBond_listed_Hedge_Mapper")
-                self.assertEquals(zz,'EGB_peri_GovtBond_LISTED_Hedge_Mapper', msg=None)
+                zz = configurator.get_section_given_item_val("IT", "GovtBond_Listed_Hedge_Mapper")
+                self.assertEquals(zz,'EGB_peri_GovtBond_Listed_Hedge_Mapper', msg=None)
                 zz = configurator.get_section_given_item_val("IT", "GovtBond_cash_Hedge_Mapper")
                 self.assertEquals(zz, None, msg=None)
                 zz = configurator.get_section_given_item_val("IT", "GovtBond_OTC_Hedge_Mapper")
