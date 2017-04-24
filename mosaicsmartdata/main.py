@@ -1,4 +1,7 @@
 import sys, getopt, logging
+from aiostreams import run
+from aiostreams.persist import KafkaPersister, SimplePersistencePolicy
+import random
 
 def get_pipelines():
     pipeline1 = src | ... | ... > ...
@@ -10,27 +13,29 @@ def get_pipeline_names():
 
 
 def main(argv):
-    if 'ID' in argv:
-        process_ID = argv['ID']
+    if 'id' in argv:
+        process_ID = argv['id']
     else:
-        process_ID = ''
+        process_ID = 'test_pid_'
 
     pipe_names = get_pipeline_names()
     pipe_UIDs = [process_ID + pname for pname in pipe_names]
     # set up persistence logic
-    if 'persist' in argv and argv['persist']:
-
-        persistence = KafkaPersistence(period = 600) # every 10 min
+    if 'load_persisted' in argv:
+        persister = KafkaPersister() # every 10 min
 
         try:
-            pipelines = persistence.load(pipe_UIDs)
+            pipelines = [persister.load(p) for p in pipe_UIDs]
         except: #
             pipelines = get_pipelines()
             logging.exception('couldn`t reflate pipelines') #TODO include exception details
-
+    else:
+        pipelines = get_pipelines()
+        
 
     for i,pipeline in enumerate(pipelines):
-        pipeline.persistence = persistence
+        pipeline.persister = persister
+        pipeline.persistence_policy = SimplePersistencePolicy()
         pipeline.id = pipe_UIDs[i]
 
     run(*pipelines)
