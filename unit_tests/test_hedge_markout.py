@@ -2,8 +2,8 @@ import logging
 import importlib
 importlib.reload(logging)
 # logging.basicConfig(level = logging.INFO)
-from aiostreams.base import EventLoopContext, ExceptionLoggingContext
-
+from aiostreams.base import EventLoopContext
+from aiostreams import ExceptionLoggingContext
 
 from unittest import TestCase
 import numpy as np

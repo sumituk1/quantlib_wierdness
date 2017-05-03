@@ -3,11 +3,10 @@ import logging
 
 importlib.reload(logging)
 # logging.basicConfig(level = logging.INFO)
-from aiostreams.base import ExceptionLoggingContext
 from unittest import TestCase
 import numpy as np
 import aiostreams.operators as op
-from aiostreams import run
+from aiostreams import run, ExceptionLoggingContext
 from mosaicsmartdata.common import qc_csv_helper
 from mosaicsmartdata.common.read_config import Configurator
 from mosaicsmartdata.common.constants import *

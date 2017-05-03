@@ -56,7 +56,7 @@ class AdaptiveEMA:
     def __call__(self, x):
         slow_sm = self.slow_ema(x)
         fast_sm = self.fast_ema(x)
-        jump = self.cusum(x)
+        jump = self.cusum(x-slow_sm)
         if jump:
             self.slow_ema.value = self.fast_ema.value
 

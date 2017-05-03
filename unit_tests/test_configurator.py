@@ -1,7 +1,7 @@
 import logging
 import importlib
 importlib.reload(logging)
-from aiostreams.base import ExceptionLoggingContext
+from aiostreams import ExceptionLoggingContext
 
 from unittest import TestCase
 from mosaicsmartdata.common.read_config import Configurator
