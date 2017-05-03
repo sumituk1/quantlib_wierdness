@@ -18,7 +18,7 @@ from aiostreams.kafka_utils import AsyncKafkaSource, AsyncKafkaPublisher
 import aiostreams.operators as op
 from mosaicsmartdata.common.json_convertor import *
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
-from unit_tests import test_json_convertor
+from unit_tests import json_convertor_tests
 
 kafka_host = '192.168.99.100:9092'  # Kafka on local Docker
 
@@ -184,7 +184,7 @@ class TestKafka(TestCase):
 
     # Dump a json markout message object into kafka.
     def test_case_3(self, plotFigure=False):
-        test = test_json_convertor.TestMarkouts()
+        test = json_convertor_tests.TestMarkouts()
         trade = test.test_case_1()
         # t = FixedIncomeTrade(trade_id=1, duration=20, notional=5)
 
