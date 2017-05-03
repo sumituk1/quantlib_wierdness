@@ -53,7 +53,7 @@ class TestHedgeMarkouts(TestCase):
                 for k, v in quotes_dict.items():
                     # quote_async_iter = to_async_iterable(quotes_dict[k])
                     # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = to_async_iterable(quotes_dict[k])
+                    quote_async_iter = quotes_dict[k]  #to_async_iterable(quotes_dict[k])
                     # trades_list_sym = []
                     # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
 
@@ -62,7 +62,7 @@ class TestHedgeMarkouts(TestCase):
                     # quote_trade_list.append(trade_async_iter)
 
                 output_list = []
-                trade_async_iter = to_async_iterable(trades_list)
+                trade_async_iter = trades_list#to_async_iterable(trades_list)
                 quote_trade_list.append(trade_async_iter)
                 joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
                 hedger = Hedger(my_hedge_calculator, product_class=ProductClass.GovtBond)
@@ -153,7 +153,7 @@ class TestHedgeMarkouts(TestCase):
                 for k, v in quotes_dict.items():
                     # quote_async_iter = to_async_iterable(quotes_dict[k])
                     # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = to_async_iterable(quotes_dict[k])
+                    quote_async_iter = quotes_dict[k] #to_async_iterable(quotes_dict[k])
                     # trades_list_sym = []
                     # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
 
@@ -162,7 +162,7 @@ class TestHedgeMarkouts(TestCase):
                     # quote_trade_list.append(trade_async_iter)
 
                 output_list = []
-                trade_async_iter = to_async_iterable(trades_list)
+                trade_async_iter = trades_list #to_async_iterable(trades_list)
                 quote_trade_list.append(trade_async_iter)
                 joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
                 hedger = Hedger(
@@ -327,7 +327,7 @@ class TestHedgeMarkouts(TestCase):
                 for k, v in quotes_dict.items():
                     # quote_async_iter = to_async_iterable(quotes_dict[k])
                     # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = to_async_iterable(quotes_dict[k])
+                    quote_async_iter = quotes_dict[k] #to_async_iterable()
                     # trades_list_sym = []
                     # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
 
@@ -336,7 +336,7 @@ class TestHedgeMarkouts(TestCase):
                     # quote_trade_list.append(trade_async_iter)
 
                 output_list = []
-                trade_async_iter = to_async_iterable(trades_list)
+                trade_async_iter = trades_list #to_async_iterable(trades_list)
                 quote_trade_list.append(trade_async_iter)
                 joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
                 hedger = Hedger(my_hedge_calculator, product_class=ProductClass.GovtBond)
@@ -436,7 +436,7 @@ class TestHedgeMarkouts(TestCase):
                 for k, v in quotes_dict.items():
                     # quote_async_iter = to_async_iterable(quotes_dict[k])
                     # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = to_async_iterable(quotes_dict[k])
+                    quote_async_iter = quotes_dict[k] #to_async_iterable(quotes_dict[k])
                     # trades_list_sym = []
                     # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
 
@@ -445,7 +445,7 @@ class TestHedgeMarkouts(TestCase):
                     # quote_trade_list.append(trade_async_iter)
 
                 output_list = []
-                trade_async_iter = to_async_iterable(trades_list)
+                trade_async_iter = trades_list# to_async_iterable(trades_list)
                 quote_trade_list.append(trade_async_iter)
                 joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
                 hedger = Hedger(my_hedge_calculator)
@@ -545,7 +545,7 @@ class TestHedgeMarkouts(TestCase):
                 for k, v in quotes_dict.items():
                     # quote_async_iter = to_async_iterable(quotes_dict[k])
                     # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = to_async_iterable(quotes_dict[k])
+                    quote_async_iter = quotes_dict[k]#to_async_iterable(quotes_dict[k])
                     # trades_list_sym = []
                     # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
 
@@ -554,7 +554,7 @@ class TestHedgeMarkouts(TestCase):
                     # quote_trade_list.append(trade_async_iter)
 
                 output_list = []
-                trade_async_iter = to_async_iterable(trades_list)
+                trade_async_iter = trades_list# to_async_iterable(trades_list)
                 quote_trade_list.append(trade_async_iter)
                 joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
                 hedger = Hedger(my_hedge_calculator, product_class=ProductClass.GovtBond)
