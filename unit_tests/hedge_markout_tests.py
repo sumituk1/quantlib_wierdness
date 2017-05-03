@@ -2,7 +2,7 @@ import logging
 import importlib
 importlib.reload(logging)
 # logging.basicConfig(level = logging.INFO)
-from aiostreams.base import EventLoopContext
+#from aiostreams.base import EventLoopContext
 from aiostreams import ExceptionLoggingContext
 
 from unittest import TestCase
@@ -11,7 +11,7 @@ import numpy as np
 import datetime as dt
 import matplotlib.pyplot as plt
 import aiostreams.operators as op
-from aiostreams.base import to_async_iterable
+#from aiostreams.base import to_async_iterable
 from mosaicsmartdata.common import qc_csv_helper
 from mosaicsmartdata.core.markout import GovtBondMarkoutCalculator
 from mosaicsmartdata.core.markout_basket_builder import *
