@@ -1,7 +1,7 @@
 from unittest import TestCase
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
-from mosaicsmartdata.core.trade import Quote, FixedIncomeTrade
-
+from mosaicsmartdata.core.trade import FixedIncomeTrade
+from mosaicsmartdata.core.quote import Quote
 
 class TestMarkoutMessage(TestCase):
     # Test for Sell in bps over intra-day to COB1
