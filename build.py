@@ -4,7 +4,6 @@ import sys
 sys.path.append('.')
 sys.path.append('../quant_container')
 
-
 use_plugin("python.core")
 use_plugin("python.unittest")
 use_plugin("python.coverage")
