@@ -1,8 +1,9 @@
 from pybuilder.core import use_plugin, init
-import sys
+import inspect, os, sys
 
-sys.path.append('.')
-sys.path.append('../quant_container')
+my_location = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+sys.path.append(my_location)
+sys.path.append(my_location + '/../quant_container')
 
 use_plugin("python.core")
 use_plugin("python.unittest")

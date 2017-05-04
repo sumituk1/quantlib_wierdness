@@ -1,9 +1,9 @@
-import os
-import sys
+import inspect, os, sys
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),"../configuration")))
 # import configparser
 from mosaicsmartdata.core.config_parser import *
-
+import mosaicsmartdata
+import glob
 
 class Borg:
     _shared = {}
@@ -21,14 +21,20 @@ class Configurator(Borg):
         # any class using that pattern will be a singleton
         super().__init__()
 
-        if 'config' not in self.__dict__:
-            self.config = ConfigParser()
-            pre = os.path.abspath(os.path.dirname(__file__) + '/' + '../configuration')
+        if 'config' not in self.__dict__:#'config' not in self.__dict__:
+            # have to do this weird scan so the test runs both in pyb and pycharm
+            root_location = mosaicsmartdata.__path__
+            if len(root_location) > 1:
+                root_location = [x for x in root_location if 'msq-domain' in x]
+            pre = root_location[0] + '/configuration'
             if fname is None:
                 configFilePath = os.path.join(pre, 'config')
             else:
                 configFilePath = os.path.join(pre, fname)
+            #print('****', glob.glob(configFilePath))
             # load the configuration data into memory
+
+            self.config = ConfigParser()
             self.config.read(configFilePath)
 
     def __call__(self, fname):
