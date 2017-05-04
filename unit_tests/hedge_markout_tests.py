@@ -3,7 +3,7 @@ import importlib
 importlib.reload(logging)
 # logging.basicConfig(level = logging.INFO)
 #from aiostreams.base import EventLoopContext
-from aiostreams import ExceptionLoggingContext
+from aiostreams import run,ExceptionLoggingContext
 
 from unittest import TestCase
 import numpy as np
@@ -74,6 +74,8 @@ class TestHedgeMarkouts(TestCase):
                 # 3. Aggregate all the markouts per package_id
                 leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
                 op.map(aggregate_markouts) > output_list
+                # run the pipe
+                run(leg_markout)
 
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
