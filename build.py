@@ -24,3 +24,4 @@ def initialize(project):
 
     project.set_property('dir_source_main_python','mosaicsmartdata')
     project.set_property('dir_source_unittest_python', 'unit_tests')
+    project.set_property('dir_source_main_scripts', 'scripts')
