@@ -3,6 +3,8 @@ import nbformat
 import os
 from nbconvert.preprocessors import ExecutePreprocessor
 from nbconvert.preprocessors.execute import CellExecutionError
+import inspect, os, sys
+my_location = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
 class TestMarkoutMessage(TestCase):
@@ -10,15 +12,15 @@ class TestMarkoutMessage(TestCase):
     def test_case_1(self):
         cwd = os.getcwd()
         print('***', cwd, '***')
-        nb = nbformat.read(open('.\\msq-domain\\mosaicsmartdata\\unit_tests\\Test_run.ipynb'), as_version=4)
+        nb = nbformat.read(open(my_location + '\\Test_run.ipynb'), as_version=4)
         ep = ExecutePreprocessor(timeout=600, kernel_name='python3')
 
         try:
-            out = ep.preprocess(nb, {'metadata': {'path': '.\\msq-domain\\mosaicsmartdata\\unit_tests'}})
+            out = ep.preprocess(nb, {'metadata': {'path':my_location}})
         except CellExecutionError:
             msg = 'Error executing the notebook "%s".\n\n'
             msg += 'See notebook "%s" for the traceback.'
             print(msg)
             raise
         finally:
-            nbformat.write(nb, open('.\\msq-domain\\mosaicsmartdata\\unit_tests\\Test_run_result.ipynb', mode='wt'))
+            nbformat.write(nb, open(my_location + '\\Test_run_result.ipynb', mode='wt'))

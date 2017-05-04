@@ -1,4 +1,4 @@
-
+import numpy as np
 from mosaicsmartdata.core.generic_parent import GenericParent
 from mosaicsmartdata.core.repo_singleton import *
 import mosaicsmartdata.common.quantlib.bond.fixed_bond as bond
@@ -97,20 +97,22 @@ class FixedIncomeTrade(Trade):
         self.adj_traded_px = self.traded_px
         # if isinstance(self.trade_settle_date, dt.datetime):
         #     self.trade_settle_date
-        if self.trade_settle_date > self.spot_settle_date and not self.paper_trade:
-            # trade_settle_date is a forward date. So calculate the price drop and adjust the traded_px
-            # create a new attribute called adj_spot_px
-            next_coupon_date = bond.getNextCouponDate(issue_date=self.issue_date,
-                                                      maturity_date=self.maturity_date,
-                                                      frequency=self.coupon_frequency,
-                                                      holidayCities=self.holidayCities,
-                                                      settle_date=self.trade_settle_date)
+        try:
+            if self.trade_settle_date > self.spot_settle_date and not self.paper_trade:
+                # trade_settle_date is a forward date. So calculate the price drop and adjust the traded_px
+                # create a new attribute called adj_spot_px
+                next_coupon_date = bond.getNextCouponDate(issue_date=self.issue_date,
+                                                          maturity_date=self.maturity_date,
+                                                          frequency=self.coupon_frequency,
+                                                          holidayCities=self.holidayCities,
+                                                          settle_date=self.trade_settle_date)
 
-            prev_coupon_date = bond.getLastCouponDate(issue_date=self.issue_date,
-                                                      maturity_date=self.maturity_date,
-                                                      frequency=self.coupon_frequency,
-                                                      holidayCities=self.holidayCities,
-                                                      settle_date=self.trade_settle_date)
+                prev_coupon_date = bond.getLastCouponDate(issue_date=self.issue_date,
+                                                          maturity_date=self.maturity_date,
+                                                          frequency=self.coupon_frequency,
+                                                          holidayCities=self.holidayCities,
+                                                          settle_date=self.trade_settle_date)
+
 
             self.adj_traded_px = govbond_cleanprice_from_forwardprice(forward_price=self.traded_px,
                                                                       spot_settle_date=self.spot_settle_date,
@@ -122,7 +124,9 @@ class FixedIncomeTrade(Trade):
                                                                       frequency=self.coupon_frequency,
                                                                       repo=self.repo_rate(ccy=self.ccy,
                                                                                           date=self.trade_date))
-
+        except:
+            pass
+            # TODO add proper logging here
     # except:
     #     def check_non_standard_trade(self):
     #         self.adj_traded_px = self.traded_px

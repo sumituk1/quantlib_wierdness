@@ -72,10 +72,10 @@ class TestHedgeMarkouts(TestCase):
                 # 2. Perform markouts of both underlying trade and the paper_trades
                 leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
                 # 3. Aggregate all the markouts per package_id
-                leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
+                leg_markout_final = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
                 op.map(aggregate_markouts) > output_list
                 # run the pipe
-                run(leg_markout)
+                run(leg_markout_final)
 
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
@@ -175,8 +175,10 @@ class TestHedgeMarkouts(TestCase):
                 # 2. Perform markouts of both underlying trade and the paper_trades
                 leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
                 # 3. Aggregate all the markouts per package_id
-                leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
+                task = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
                 op.map(aggregate_markouts) > output_list
+
+                run(task)
 
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
@@ -348,9 +350,9 @@ class TestHedgeMarkouts(TestCase):
                 # 2. Perform markouts of both underlying trade and the paper_trades
                 leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
                 # 3. Aggregate all the markouts per package_id
-                leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
+                task = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
                 op.map(aggregate_markouts) > output_list
-
+                run(task)
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
                 for mk_msg in output_list:
@@ -457,9 +459,9 @@ class TestHedgeMarkouts(TestCase):
                 # 2. Perform markouts of both underlying trade and the paper_trades
                 leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
                 # 3. Aggregate all the markouts per package_id
-                leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
+                task = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
                 op.map(aggregate_markouts) > output_list
-
+                run(task)
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
                 for mk_msg in output_list:
@@ -566,8 +568,10 @@ class TestHedgeMarkouts(TestCase):
                 # 2. Perform markouts of both underlying trade and the paper_trades
                 leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
                 # 3. Aggregate all the markouts per package_id
-                leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
+                task = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
                 op.map(aggregate_markouts) > output_list
+
+                run(task)
 
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
