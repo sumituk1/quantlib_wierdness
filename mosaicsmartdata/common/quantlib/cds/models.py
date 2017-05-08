@@ -1,39 +1,34 @@
 # from django.db import models
 
 
-class CDS():
-    valuation_date 
-    maturity_date
-    contract_spread
-    nominal
-    market_value
-    default_probability
-
-    term_structure_1m
-    term_structure_3m
-    term_structure_6m
-    term_structure_1y
-    term_structure_2y
-    term_structure_3y
-    term_structure_5y
-    term_structure_7y
-    term_structure_10y
-    term_structure_20y
-    term_structure_30y
-
-    result_npv
-    result_coupon_leg_bps
-    result_fair_spread
-    result_default_leg_npv
-    result_coupon_leg_npv
-    result_running_spread
-    result_implied_hazard_rate
-
-    def sanity_check(self):  # use this to calc npv...
-        return self.val_date < self.expiry_date
-
-    def __unicode__(self):  # Python 3: def __str__(self):
-        return str(self.pk)
+# class CDS():
+#     valuation_date
+#     maturity_date
+#     contract_spread
+#     nominal
+#     market_value
+#     default_probability
+#
+#     term_structure_1m
+#     term_structure_3m
+#     term_structure_6m
+#     term_structure_1y
+#     term_structure_2y
+#     term_structure_3y
+#     term_structure_5y
+#     term_structure_7y
+#     term_structure_10y
+#     term_structure_20y
+#     term_structure_30y
+#
+#     result_npv
+#     result_coupon_leg_bps
+#     result_fair_spread
+#     result_default_leg_npv
+#     result_coupon_leg_npv
+#     result_running_spread
+#     result_implied_hazard_rate
+#
 #
 #
 # class IRS(models.Model):

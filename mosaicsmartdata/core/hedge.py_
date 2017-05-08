@@ -1,8 +1,8 @@
 import numpy as np
 
-from common.constants import *
-from common.read_config import *
-from core.trade import *
+from mosaicsmartdata.common.constants import *
+from mosaicsmartdata.common.read_config import *
+from mosaicsmartdata.core.trade import *
 
 
 class Hedge:
