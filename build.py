@@ -19,8 +19,8 @@ default_task = "publish"
 def initialize(project):
     project.build_depends_on('cloudpickle')
     project.build_depends_on('aiokafka')
-    project.build_depends_on('kafka')
-    project.build_depends_on('kafka-python')
+    project.build_depends_on('kafka',version = "==1.3.1")
+#    project.build_depends_on('kafka-python')
     project.build_depends_on('mockito')
 
     project.set_property('dir_source_main_python','mosaicsmartdata')
