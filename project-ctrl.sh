@@ -53,6 +53,16 @@ function do_build_tag_push {
 	do_push
 }
 
+function do_build_dev_image {
+
+	# use this target if you need to build a new dev quant-container image quickly
+	# without tests for development against the msq-domain or another application
+	# that sits on top of this framework
+
+	pyb_skip_tests
+	build_image
+}
+
 function do_docker_link_source_run_bash {
 
 	docker run -it -v `pwd`:/code/msq-domain --entrypoint=/bin/bash nexus.mosaicsmartdata.com:8083/mosaicsmartdata/quant-container:latest
@@ -170,6 +180,9 @@ run_build)
    ;;
 ps)
    docker ps
+   ;;   
+build_dev_image)
+   do_build_dev_image
    ;;   
 pyb_skip_tests)
    do_pyb_skip_tests
