@@ -7,8 +7,7 @@ services:
       - zookeeper
     volumes:
       - ..:/code
-    command: "/bin/bash /code/quant-container/install-deps-and-integration-test.sh"
-    # command: "/bin/bash /code/quant-container/keep-alive.sh"
+    command: "/bin/bash /code/quant-container/project-ctrl.sh integration_test"
     ports:
       - "8888:8888"
       - "8000:8000"

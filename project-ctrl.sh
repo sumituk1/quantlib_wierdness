@@ -74,13 +74,76 @@ function do_pyb_run_integraton_tests {
 
 	# run from your host directly, requires docker-compose installed
 
-	docker-compose -f docker-compose.tests.yml down
-	docker-compose -f docker-compose.tests.yml up
+	docker-compose down
+	docker-compose up
 
 	# TODO
-	# docker-compose -f docker-compose.tests.yml up -d
-	# docker-compose -f docker-compose.tests.yml wait
+	# docker-compose up -d
+	# docker-compose wait
 	# validate results in container
+}
+
+function install_devtools {
+
+	# We need some dependencies as that is not part of the base image
+
+	apt-get update -y && apt-get install vim -y
+	pip install --upgrade pip && pip install pybuilder --ignore-installed
+}
+
+function do_pyb_build_all_from_source {
+
+	# Designed to be run from wthin the container
+
+	# This function is pretty custom and depends where in your path
+	# you linked your host directory because of line
+	# cd ../../../../msq-domain
+
+	install_devtools
+
+	# Run the build and tests with debug flag on to get some help
+
+	cd /code/quant-container
+	echo Installing dependencies
+	pyb install_dependencies
+	pyb --debug
+
+	# now install that package
+
+	cd target/dist/quant_container-1.0.dev0
+	python setup.py install
+
+	# and now try building msq-domain
+	cd /code/msq-domain
+	pyb install_dependencies
+	pyb --debug
+}
+
+function do_integration_test {
+
+	# Designed to be run from wthin the container
+
+	install_devtools
+
+	# Run the build and tests with debug flag on to get some help
+
+	cd /code/msq-domain
+	echo Installing dependencies
+	pyb install_dependencies
+	pyb --debug
+
+}
+
+function start_jupyter {
+
+	# Designed to be run from wthin the container
+
+	install_devtools
+
+	# Start jupyter
+
+	cd /code
+	jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
 }
 
 case "$1" in
@@ -114,6 +177,15 @@ pyb_skip_tests)
 pyb_run_integraton_tests)
    do_pyb_run_integraton_tests
    ;;
+pyb_build_all_from_source)
+  do_pyb_build_all_from_source
+  ;;
+integration_test)
+   do_integration_test
+   ;;   
+jupyter)
+   start_jupyter
+   ;;  
  *)
    echo "Usage: dockerctrl {build_image|tag_image|push_image|pull_image|btp_image|link_source|run_build|ps}" >&2
    echo
