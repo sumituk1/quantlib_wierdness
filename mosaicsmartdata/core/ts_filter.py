@@ -61,7 +61,7 @@ class AdaptiveEMA:
             self.slow_ema.value = self.fast_ema.value
 
 def load_data():
-    data = pd.read_excel("C:\\Sumit\\Mosaic\\Quant\\Quant Container\\Filter\\old_30yr_UST.xlsx",
+    data = pd.read_excel("C:/Sumit/Mosaic/Quant/Quant Container/Filter/old_30yr_UST.xlsx",
                          sheetname="GovtBond",
                          header=0,
                          skiprows=1,

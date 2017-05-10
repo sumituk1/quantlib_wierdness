@@ -22,7 +22,7 @@ class TestMarkouts(TestCase):
         tolerance = 5*1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-        datapath =  "..\\resources\\unhedged_markout_tests\\"
+        datapath =  "../resources/unhedged_markout_tests/"
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
@@ -98,7 +98,7 @@ class TestMarkouts(TestCase):
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-        datapath = "..\\resources\\unhedged_markout_tests\\"
+        datapath = "../resources/unhedged_markout_tests/"
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
@@ -165,7 +165,7 @@ class TestMarkouts(TestCase):
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-        datapath = "..\\resources\\unhedged_markout_tests\\"
+        datapath = "../resources/unhedged_markout_tests/"
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
@@ -234,7 +234,7 @@ class TestMarkouts(TestCase):
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-        datapath = "..\\resources\\unhedged_markout_tests\\"
+        datapath = "../resources/unhedged_markout_tests/"
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
@@ -303,7 +303,7 @@ class TestMarkouts(TestCase):
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-        datapath = "..\\resources\\unhedged_markout_tests\\"
+        datapath = "../resources/unhedged_markout_tests/"
         quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
         trade_files = "trades.csv"
 
@@ -374,7 +374,7 @@ class TestMarkouts(TestCase):
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-        datapath = "..\\resources\\unhedged_markout_tests\\"
+        datapath = "../resources/unhedged_markout_tests/"
         quote_files = ["912810QE1_quotes.csv"]
         trade_files = "trades_NaN_test.csv"
 
@@ -439,7 +439,7 @@ class TestMarkouts(TestCase):
     #     tolerance = 5 * 1e-2
     #     thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
     #     os.chdir(thisfiledir)
-    #     datapath = "..\\resources\\unhedged_markout_tests\\"
+    #     datapath = "../resources/unhedged_markout_tests/"
     #     quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
     #     trade_files = "trades_non_std.csv"
     #

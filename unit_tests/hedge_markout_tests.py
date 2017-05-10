@@ -1,6 +1,6 @@
 import logging
 import importlib
-importlib.reload(logging)
+#importlib.reload(logging)
 # logging.basicConfig(level = logging.INFO)
 #from aiostreams.base import EventLoopContext
 from aiostreams import run,ExceptionLoggingContext
@@ -9,7 +9,10 @@ from unittest import TestCase
 import numpy as np
 # import seaborn as sns
 import datetime as dt
-import matplotlib.pyplot as plt
+try: # matplotlib install on Docker turned out to be nontrivial, and we don't need it there anyway
+    import matplotlib.pyplot as plt
+except:
+    pass
 import aiostreams.operators as op
 #from aiostreams.base import to_async_iterable
 from mosaicsmartdata.common import qc_csv_helper
@@ -26,7 +29,7 @@ class TestHedgeMarkouts(TestCase):
     # Test hedge with Cash
     def test_case_1(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "..\\resources\\hedged_markout_tests\\"
+        datapath = "../resources/hedged_markout_tests/"
         quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv"]
         trade_files = "trades_hedge_test.csv"
 
@@ -127,7 +130,7 @@ class TestHedgeMarkouts(TestCase):
     # Test hedge with futures
     def test_case_2(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "..\\resources\\hedged_markout_tests\\"
+        datapath = "../resources/hedged_markout_tests/"
         quote_files = ["912828T91_quotes.csv",
                        "FVc1_quotes.csv", "TUc1_quotes.csv", "TYc1_quotes.csv", "USc1_quotes.csv"]
         trade_files = "trades_hedge_test.csv"
@@ -303,7 +306,7 @@ class TestHedgeMarkouts(TestCase):
     # Code should pick up the first one i.e. 10yr
     def test_case_5(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "..\\resources\\hedged_markout_tests\\"
+        datapath = "../resources/hedged_markout_tests/"
         quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv"]
         trade_files = "trades_hedge_test.csv"
 
@@ -411,7 +414,7 @@ class TestHedgeMarkouts(TestCase):
     # test BTP hedging rule
     def test_case_6(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "..\\resources\\hedged_markout_tests\\"
+        datapath = "../resources/hedged_markout_tests/"
         quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv",
                        "IT488903_quotes.csv", "IT15YT_RR_quotes.csv", "IT30YT_RR_quotes.csv", "FBTPc1_RR_quotes.csv"]
         trade_files = "trades_hedge_test_2.csv"
@@ -519,7 +522,7 @@ class TestHedgeMarkouts(TestCase):
     # test BTP Cash hedging rule
     def test_case_7(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "..\\resources\\hedged_markout_tests\\"
+        datapath = "../resources/hedged_markout_tests/"
         quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv",
                        "US5YT_RR_quotes.csv",
                        "IT488903_quotes.csv", "IT15YT_RR_quotes.csv", "IT30YT_RR_quotes.csv",

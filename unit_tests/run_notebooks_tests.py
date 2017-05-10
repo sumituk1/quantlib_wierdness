@@ -12,7 +12,7 @@ class TestMarkoutMessage(TestCase):
     def test_case_1(self):
         cwd = os.getcwd()
         print('***', cwd, '***')
-        nb = nbformat.read(open(my_location + '\\Test_run.ipynb'), as_version=4)
+        nb = nbformat.read(open(my_location + '/Test_run.ipynb'), as_version=4)
         ep = ExecutePreprocessor(timeout=600, kernel_name='python3')
 
         try:
@@ -23,4 +23,4 @@ class TestMarkoutMessage(TestCase):
             print(msg)
             raise
         finally:
-            nbformat.write(nb, open(my_location + '\\Test_run_result.ipynb', mode='wt'))
+            nbformat.write(nb, open(my_location + '/Test_run_result.ipynb', mode='wt'))

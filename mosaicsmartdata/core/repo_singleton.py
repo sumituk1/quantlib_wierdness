@@ -22,7 +22,7 @@ class RepoSingleton(Borg):
     def __call__(self, **kwargs):
         if 'data' not in self.__dict__:
             thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
-            self.data = pd.read_csv(thisfiledir + '\\..\\configuration\\' + self.repo_fname, header=0)
+            self.data = pd.read_csv(thisfiledir + '/../configuration/' + self.repo_fname, header=0)
         df_dict = dict()
         out_data_df = self.data[1:]
         out_data_us = out_data_df.iloc[:,:2]
