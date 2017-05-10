@@ -18,7 +18,7 @@ default_task = "publish"
 @init
 def initialize(project):
     project.build_depends_on('cloudpickle')
-    project.build_depends_on('aiokafka')
+    project.build_depends_on('aiokafka',version = "==0.2.1")
     project.build_depends_on('kafka',version = "==1.3.1")
 #    project.build_depends_on('kafka-python')
     project.build_depends_on('mockito')

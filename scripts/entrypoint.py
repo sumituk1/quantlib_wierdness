@@ -1,7 +1,7 @@
 import argparse
 import inspect, os, sys
 my_location = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.addpath(my_location + '\\..')
+sys.addpath(my_location + '/..')
 from aiostreams.main import main_function
 
 

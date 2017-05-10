@@ -16,11 +16,12 @@ from unittest import TestCase
 from kafka import KafkaProducer, KafkaConsumer
 from aiostreams.kafka_utils import AsyncKafkaSource, AsyncKafkaPublisher
 import aiostreams.operators as op
+from aiostreams.config import QCConfigProvider
 from mosaicsmartdata.common.json_convertor import *
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
 from unit_tests import json_convertor_tests
 
-kafka_host = '192.168.99.100:9092'  # Kafka on local Docker
+kafka_host = QCConfigProvider().kafka_broker  # Kafka on local Docker
 
 class TestKafka(TestCase):
     # Dump a json object into kafka and then read back and convert to Trade object
