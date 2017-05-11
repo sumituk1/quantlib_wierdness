@@ -137,7 +137,7 @@ function do_integration_test {
 
 	# Run the build and tests with debug flag on to get some help
 
-	cd /code/msq-domain
+	cd /code
 	echo Installing dependencies
 	pyb install_dependencies
 	pyb --debug
@@ -154,6 +154,16 @@ function start_jupyter {
 
 	cd /code
 	jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
+}
+
+function do_attach {
+
+	docker exec -it $1 /bin/bash
+}
+
+function do_attach_msq_domain {
+
+	do_attach msqdomain_myapp_1
 }
 
 case "$1" in
@@ -198,7 +208,10 @@ integration_test)
    ;;   
 jupyter)
    start_jupyter
-   ;;  
+   ;;
+attach_msq_domain)
+   do_attach_msq_domain
+   ;;     
  *)
    echo "Usage: dockerctrl {build_image|tag_image|push_image|pull_image|btp_image|link_source|run_build|ps}" >&2
    echo
