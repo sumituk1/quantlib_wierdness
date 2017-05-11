@@ -23,6 +23,6 @@ def initialize(project):
 #    project.build_depends_on('kafka-python')
     project.build_depends_on('mockito')
 
-    project.set_property('dir_source_main_python','mosaicsmartdata')
+    project.set_property('dir_source_main_python','src')
     project.set_property('dir_source_unittest_python', 'unit_tests')
     project.set_property('dir_source_main_scripts', 'scripts')
