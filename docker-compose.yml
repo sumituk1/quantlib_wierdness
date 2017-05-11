@@ -6,8 +6,8 @@ services:
       - kafka
       - zookeeper
     volumes:
-      - ..:/code
-    command: "/bin/bash /code/quant-container/project-ctrl.sh integration_test"
+      - .:/code
+    command: "/bin/bash /code/project-ctrl.sh integration_test"
     ports:
       - "8888:8888"
       - "8000:8000"
