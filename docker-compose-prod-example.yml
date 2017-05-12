@@ -21,6 +21,9 @@ services:
         - "9092:9092"
     links:
       - zookeeper
-    command: "/bin/bash /broker_helpers/configure_and_start_broker.sh"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: "kafka"
+      KAFKA_CREATE_TOPICS: "topic-a:1:1,topic-b:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     volumes:
-      - ./broker_helpers:/broker_helpers
+      - /var/run/docker.sock:/var/run/docker.sock

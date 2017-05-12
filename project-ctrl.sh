@@ -60,7 +60,7 @@ function do_build_dev_image {
 	# that sits on top of this framework
 
 	do_pyb_skip_tests
-	build_image
+	do_build
 }
 
 function do_docker_link_source_run_bash {
