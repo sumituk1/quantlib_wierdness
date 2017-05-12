@@ -1,5 +1,7 @@
+#!/bin/bash
+
 pwd
-./wait-for-it.sh -t 120 zookeeper:2181
+./broker_helpers/wait-for-it.sh -t 120 zookeeper:2181
 result=$?
 
 echo Zookeeper online result: ${result}

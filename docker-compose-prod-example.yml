@@ -5,9 +5,9 @@ services:
     depends_on:
       - kafka
       - zookeeper
+    command: "/bin/bash /broker_helpers/start-app.sh"
     volumes:
-      - .:/code
-    command: "/bin/bash /code/project-ctrl.sh integration_test"
+      - ./broker_helpers:/broker_helpers
     ports:
       - "8888:8888"
       - "8000:8000"
