@@ -17,11 +17,11 @@ default_task = "publish"
 
 @init
 def initialize(project):
-    project.build_depends_on('cloudpickle')
-    project.build_depends_on('aiokafka',version = "==0.2.1")
-    project.build_depends_on('kafka',version = "==1.3.1")
+    project.depends_on('cloudpickle')
+    project.depends_on('aiokafka',version = "==0.2.1")
+    project.depends_on('kafka',version = "==1.3.1")
 #    project.build_depends_on('kafka-python')
-    project.build_depends_on('mockito')
+    project.depends_on('mockito')
 
     project.set_property('dir_source_main_python','src')
     project.set_property('dir_source_unittest_python', 'unit_tests')
