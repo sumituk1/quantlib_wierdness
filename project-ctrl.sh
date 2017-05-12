@@ -59,7 +59,7 @@ function do_build_dev_image {
 	# without tests for development against the msq-domain or another application
 	# that sits on top of this framework
 
-	pyb_skip_tests
+	do_pyb_skip_tests
 	build_image
 }
 
@@ -77,6 +77,7 @@ function do_docker_link_source_run_pyb_build_without_tty {
 
 function do_pyb_skip_tests {
 
+    pyb install_dependencies
 	pyb -x run_unit_tests -x verify clean publish
 }
 
