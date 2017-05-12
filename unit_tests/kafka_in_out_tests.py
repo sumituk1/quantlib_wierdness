@@ -19,7 +19,6 @@ import aiostreams.operators as op
 from aiostreams.config import QCConfigProvider
 from mosaicsmartdata.common.json_convertor import *
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
-from unit_tests import json_convertor_tests
 
 kafka_host = QCConfigProvider().kafka_broker  # Kafka on local Docker
 
@@ -183,10 +182,22 @@ class TestKafka(TestCase):
         except Exception:
             raise Exception
 
+    # importing code from one unit test to another is a bad idea
+    def get_trade(self):
+        json_message = '{"bondTrade": {"negotiationId": "123456789", "orderId": "123456789::venue::date::DE10YT_OTR_111::BUY",\
+            "packageId": "123456789::venue::date", "productClass": "GovtBond", "productClass1": "DE10YT",\
+            "sym": "DE10YT=RR", "tenor": 30, "quantity": 1000000, "tradedPx": 1.5, "modifiedDuration": 18.0,\
+            "side": "Ask", "quantityDv01": 1800.0, "issueOldness": 1,"ccy": "USD", ' \
+           '"timestamp": "2017.01.16D14:05:00.600000000",\
+           "tradeDate": "2017.01.16", "settlementDate": "2017.01.18", "holidayCalendar": "NYC",\
+           "spotSettlementDate": "2017.01.18", "venue": "BBGUST","countryOfIssue": "US","dayCount": "ACT/ACT",' \
+           '"issueDate": "2016.10.31","coupon": 1.2,"couponFrequency": "ANNUAL","maturityDate": "2047.01.18"}}'
+        trade = json_to_trade(json_message=json_message)
+        return trade
+
     # Dump a json markout message object into kafka.
     def test_case_3(self, plotFigure=False):
-        test = json_convertor_tests.TestMarkouts()
-        trade = test.test_case_1()
+        trade = self.get_trade()
         # t = FixedIncomeTrade(trade_id=1, duration=20, notional=5)
 
         msg = MarkoutMessage2(dt=-900, trade=trade, price_markout=1, hedged_bps=0.34, hedged_cents=0.13,
