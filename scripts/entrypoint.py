@@ -1,9 +1,10 @@
+#!/usr/bin/env python
+
 import argparse
 import inspect, os, sys
-my_location = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.addpath(my_location + '/..')
 from aiostreams.main import main_function
 
+sys.stdout.write('Starting... !\n')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--id', help='process ID to use for caching/retrieval')
