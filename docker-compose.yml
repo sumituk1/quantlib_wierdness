@@ -7,7 +7,8 @@ services:
       - zookeeper
     volumes:
       - .:/code
-    command: "/bin/bash /code/project-ctrl.sh integration_test"
+    # command: "/bin/bash /code/project-ctrl.sh integration_test"
+    command: "/bin/bash /code/project-ctrl.sh jupyter"
     ports:
       - "8888:8888"
       - "8000:8000"
