@@ -6,6 +6,6 @@ pwd
 result=$?
 
 # Give the Kafka Service time to create the topics
-sleep 10
+sleep 15
 
 python /scripts/start-app.py
