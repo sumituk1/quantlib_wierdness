@@ -72,7 +72,7 @@ function do_docker_link_source_run_pyb_build_without_tty {
 
 	# design for build systems to run, locally you will need the -t flag
 
-	docker run -i -v `pwd`:/code/msq-domain --entrypoint=/bin/bash nexus.mosaicsmartdata.com:8083/mosaicsmartdata/quant-container:latest "/code/msq-domain/project-ctrl.sh integration_test"
+	docker run -i -v `pwd`:/code/msq-domain --entrypoint=/bin/bash nexus.mosaicsmartdata.com:8083/mosaicsmartdata/quant-container:latest "/code/msq-domain/msx.sh integration_test"
 }
 
 function do_pyb_skip_tests {
