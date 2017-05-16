@@ -7,10 +7,9 @@ import inspect, os, sys
 
 use_plugin("python.core")
 use_plugin("python.unittest")
-#use_plugin("python.coverage")
 use_plugin("python.install_dependencies")
 use_plugin("python.distutils")
-#use_plugin("python.flake8") # what is that?
+use_plugin('python.pycharm')
 
 name = "msq-domain"
 default_task = "publish"
@@ -20,7 +19,6 @@ def initialize(project):
     project.depends_on('cloudpickle')
     project.depends_on('aiokafka',version = "==0.2.1")
     project.depends_on('kafka',version = "==1.3.1")
-#    project.build_depends_on('kafka-python')
     project.depends_on('mockito')
 
     project.set_property('dir_source_main_python','src')
