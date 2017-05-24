@@ -5,7 +5,8 @@ from mosaicsmartdata.common.read_config import *
 from mosaicsmartdata.core.markout_msg import *
 from mosaicsmartdata.core.trade import Trade
 from mosaicsmartdata.core.quote import Quote
-
+import time
+size_threshold = 100 * 1000 # 100 kb before re-indexing kicks in
 
 class MarkoutCalculatorPre:
     '''
@@ -23,31 +24,13 @@ class MarkoutCalculatorPre:
         self.COB_time_utc = None
         self.max_lag = max_lag
 
-    # def generate_markout_requests(self, msg):
-    #     if len(self.last_price) == 0:
-    #         # FOR COB mode, we will do a markout in the future once the COB is triggered
-    #         print(msg)
-    #         raise ValueError('A trade arrived before any quote data!')
-    #     else:
-    #         # for each markout lag in lags_list, create a markout_msg for this trade
-    #         for mk in self.lags_list:
-    #             mkmsg = MarkoutMessage2(trade=msg,
-    #                                     # trade_id=msg.trade_id,
-    #                                     # notional=msg.notional,
-    #                                     # sym=msg.sym,
-    #                                     # side=msg.side,
-    #                                     initial_price=msg.traded_px,
-    #                                     next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
-    #                                     dt=mk)
-    #             # print(mkmsg)
-    #             self.pending.append(mkmsg)
-
     def __call__(self, msg, COB_time_utc=None):
+        # t0 = time.time()
         self.last_timestamp = msg.timestamp
         completed = []
+        # t_3 = time.time()
         # print(msg)
         if isinstance(msg, Trade):
-
             self.COB_time_utc = COB_time_utc
             # Egor - no need to generate markout_requests for pre as they already would have been
             # generated
@@ -73,22 +56,30 @@ class MarkoutCalculatorPre:
         elif not isinstance(msg, Quote):
             print(msg)
 
+        # print("MarkoutCalculatorPre(): time spent before timestamp check =%s "%(time.time()-t_3))
+
         if isinstance(msg, Quote) or hasattr(msg, 'mid'):
             # throw out stale Quotes which have a timestamp > min(abs(lags_list) if lags_list < 0
             # intra-day markout lags given
+            # t_3 = time.time()
             ix = len(self.last_price) + 1
             self.last_price.set_value(ix, 'mid', msg.mid)
             self.last_price.set_value(ix, 'timestamp', msg.timestamp)
-
+            # print("MarkoutCalculatorPre(): time spent appending Quote =%s " % (time.time() - t_3))
+            # t_3 = time.time()
             stale_timestamp = self.last_price['timestamp'].values[-1] - dt.timedelta(0, self.max_lag)
             # dt.timedelta(0, max([abs(float(x)) for x in self.lags_list]))
-
-            if len(self.last_price[self.last_price['timestamp'] <= stale_timestamp]) > 0:
-                # re-indexing is expensive!!
-                self.last_price.drop(self.last_price[self.last_price['timestamp'] < stale_timestamp].index,
-                                     inplace=True)
-                self.last_price.reset_index(drop=True, inplace=True)
-
+            # print("MarkoutCalculatorPre(): time spent calculating stale =%s " % (time.time() - t_3))
+            # t_3 = time.time()
+            if len(self.last_price) > size_threshold:
+                print("Re-indexing!!")
+                if len(self.last_price[self.last_price['timestamp'] <= stale_timestamp]) > 0:
+                    # re-indexing is expensive!!
+                    self.last_price.drop(self.last_price[self.last_price['timestamp'] < stale_timestamp].index,
+                                         inplace=True)
+                    self.last_price.reset_index(drop=True, inplace=True)
+            # print("MarkoutCalculatorPre(): time spent dropping & re-indexing=%s " % (time.time() - t_3))
+        # print("Total time spent in MarkoutCalculatorPre() = %s" % (time.time() - t0))
         return completed
 
 
@@ -144,6 +135,7 @@ class MarkoutCalculatorPost:
                 self.pending.append(mkmsg)
 
     def __call__(self, msg, COB_time_utc=None):
+        # t0 = time.time()
         self.last_timestamp = msg.timestamp
 
         if isinstance(msg, Trade):
@@ -168,7 +160,7 @@ class MarkoutCalculatorPost:
 
         if isinstance(msg, Quote) or hasattr(msg, 'mid'):
             self.last_price = msg.mid
-
+        # print("Time spent in MarkoutCalculatorPost() = %s"%(time.time()-t0))
         return completed
 
 
