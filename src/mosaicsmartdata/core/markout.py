@@ -6,7 +6,9 @@ from mosaicsmartdata.core.markout_msg import *
 from mosaicsmartdata.core.trade import Trade
 from mosaicsmartdata.core.quote import Quote
 import time
-size_threshold = 100 * 1000 # 100 kb before re-indexing kicks in
+
+size_threshold = 100 * 1000  # 100 kb before re-indexing kicks in
+
 
 class MarkoutCalculatorPre:
     '''
@@ -78,7 +80,7 @@ class MarkoutCalculatorPre:
                     self.last_price.drop(self.last_price[self.last_price['timestamp'] < stale_timestamp].index,
                                          inplace=True)
                     self.last_price.reset_index(drop=True, inplace=True)
-            # print("MarkoutCalculatorPre(): time spent dropping & re-indexing=%s " % (time.time() - t_3))
+                    # print("MarkoutCalculatorPre(): time spent dropping & re-indexing=%s " % (time.time() - t_3))
         # print("Total time spent in MarkoutCalculatorPre() = %s" % (time.time() - t0))
         return completed
 
@@ -185,7 +187,7 @@ class MarkoutCalculator:
         self.markout_calculator_post = MarkoutCalculatorPost(lags_list=post_lags)
         self.markout_calculator_pre = None
         if len(pre_lags) > 0:
-            self.markout_calculator_pre = MarkoutCalculatorPre(max_lag = self.max_lag, lags_list=pre_lags)
+            self.markout_calculator_pre = MarkoutCalculatorPre(max_lag=self.max_lag, lags_list=pre_lags)
 
     def generate_markout_requests(self, msg):
         self.markout_calculator_post.generate_markout_requests(msg)
@@ -238,4 +240,3 @@ class GovtBondMarkoutCalculator(MarkoutCalculator):
         # self.cob_mode = not [x for x in lags_list if "COB" not in x]
         # all properties that any trade can have belong in the superclass
         MarkoutCalculator.__init__(self, lags_list=lags_list)
-
