@@ -19,11 +19,6 @@ os.chdir(thisfiledir)
 
 
 class TestMarkouts(TestCase):
-    # 1. function to read files & importlib
-    # 2. to run the graph
-    #
-
-
     # def setUp(self):
         # self.config = QCConfigProvider()
 
@@ -54,6 +49,17 @@ class TestMarkouts(TestCase):
         quote_trade_list.append(trades_list)
         return quote_trade_list
 
+    # runs the graph and returns the output_list
+    def run_graph(self, quote_trade_list):
+        output_list = []
+        # run graph
+        # t0 = time.time()
+        joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
+        graph = joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) \
+                | op.flatten() > output_list
+        run(graph)
+        return output_list
+
     # Test for Sell in bps over intra-day to COB1
     def test_case_1(self, plotFigure=False):
         tolerance = 5 * 1e-2
@@ -65,27 +71,15 @@ class TestMarkouts(TestCase):
         try:
             with ExceptionLoggingContext():
                 # load the trade and quote data and merge
-                t0 = time.time()
                 quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/unhedged_markout_tests/",
                                                                     quote_file_list=["912810RB6_quotes.csv",
                                                                                      "DE10YT_RR_quotes.csv",
                                                                                      "US30YT_RR_quotes.csv"],
                                                                     trade_file="trades.csv")
-                t1 = time.time()
-                print("Time for data loading and merging: %s"%(t1-t0))
-                output_list = []
-
-                # run graph
-                t0 = time.time()
-                joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                graph = joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) \
-                        | op.flatten() > output_list
-                run(graph)
-                t1 = time.time()
-                print("Time for running graph:%s" % (t1 - t0))
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
 
                 # do assertions
-                t0 = time.time()
                 self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
                 for mk_msg in output_list:
                     if mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '0':
@@ -111,8 +105,7 @@ class TestMarkouts(TestCase):
                     elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB1':
                         self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.844)) / mk_msg.bps_markout),
                                              tolerance, msg=None)
-                t1 = time.time()
-                print("Time for running assertions:%s" % (t1 - t0))
+
         except Exception:
             raise Exception
 
@@ -121,46 +114,19 @@ class TestMarkouts(TestCase):
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-        datapath = "../resources/unhedged_markout_tests/"
-        quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
-        trade_files = "trades.csv"
 
         # create a singleton Configurator
         configurator = Configurator('config')
         try:
             with ExceptionLoggingContext():
-                # Load the quotes data from csv
-                logging.basicConfig(level=configurator.get_config_given_key('log_level'))
-                # Load the quotes data from csv
-                quotes_dict = dict()
-                for x in quote_files:
-                    sym, quote = qc_csv_helper.file_to_quote_list(datapath + x)
-                    quotes_dict[sym] = quote
-
-                # Now get the trades list from csv
-                trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
-
-                # Method 2 - go through each of the instruments,
-                # create a stream of quote per sym
-                quote_trade_list = []
-                for k, v in quotes_dict.items():
-                    # quote_async_iter = to_async_iterable(quotes_dict[k])
-                    # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = quotes_dict[k]  # to_async_iterable(quotes_dict[k])
-                    # trades_list_sym = []
-                    # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-
-                    # trade_async_iter = to_async_iterable(trades_list_sym)
-                    quote_trade_list.append(quote_async_iter)
-                    # quote_trade_list.append(trade_async_iter)
-
-                output_list = []
-                trade_async_iter = trades_list  # to_async_iterable(trades_list)
-                quote_trade_list.append(trade_async_iter)
-                joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                graph = joint_stream | op.map_by_group(lambda x: x.sym,
-                                                       GovtBondMarkoutCalculator()) | op.flatten() > output_list
-                run(graph)
+                # load the trade and quote data and merge
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/unhedged_markout_tests/",
+                                                                    quote_file_list=["912810RB6_quotes.csv",
+                                                                                     "DE10YT_RR_quotes.csv",
+                                                                                     "US30YT_RR_quotes.csv"],
+                                                                    trade_file="trades.csv")
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
                 # do assertions
                 self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
                 for mk_msg in output_list:
@@ -189,46 +155,23 @@ class TestMarkouts(TestCase):
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-        datapath = "../resources/unhedged_markout_tests/"
-        quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
-        trade_files = "trades.csv"
+        # datapath = "../resources/unhedged_markout_tests/"
+        # quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
+        # trade_files = "trades.csv"
 
         # Create a singleton configurator
         configurator = Configurator('config')
         try:
             with ExceptionLoggingContext():
-                # Load the quotes data from csv
-                logging.basicConfig(level=configurator.get_config_given_key('log_level'))
-                # Load the quotes data from csv
-                quotes_dict = dict()
-                for x in quote_files:
-                    sym, quote = qc_csv_helper.file_to_quote_list(datapath + x)
-                    quotes_dict[sym] = quote
+                # load the trade and quote data and merge
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/unhedged_markout_tests/",
+                                                                    quote_file_list=["912810RB6_quotes.csv",
+                                                                                     "DE10YT_RR_quotes.csv",
+                                                                                     "US30YT_RR_quotes.csv"],
+                                                                    trade_file="trades.csv")
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
 
-                # Now get the trades list from csv
-                trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
-
-                # Method 2 - go through each of the instruments,
-                # create a stream of quote per sym
-                quote_trade_list = []
-                for k, v in quotes_dict.items():
-                    # quote_async_iter = to_async_iterable(quotes_dict[k])
-                    # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = quotes_dict[k]  # to_async_iterable(quotes_dict[k])
-                    # trades_list_sym = []
-                    # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-
-                    # trade_async_iter = to_async_iterable(trades_list_sym)
-                    quote_trade_list.append(quote_async_iter)
-                    # quote_trade_list.append(trade_async_iter)
-
-                output_list = []
-                trade_async_iter = trades_list  # to_async_iterable(trades_list)
-                quote_trade_list.append(trade_async_iter)
-                joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                graph = joint_stream | op.map_by_group(lambda x: x.sym,
-                                                       GovtBondMarkoutCalculator()) | op.flatten() > output_list
-                run(graph)
                 # do assertions
                 self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
 
@@ -259,46 +202,25 @@ class TestMarkouts(TestCase):
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-        datapath = "../resources/unhedged_markout_tests/"
-        quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
-        trade_files = "trades.csv"
+        t0 = time.time()
+        # datapath = "../resources/unhedged_markout_tests/"
+        # quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
+        # trade_files = "trades.csv"
 
         # Create a singleton configurator
         configurator = Configurator('config')
         try:
             with ExceptionLoggingContext():
-                # Load the quotes data from csv
-                logging.basicConfig(level=configurator.get_config_given_key('log_level'))
-                # Load the quotes data from csv
-                quotes_dict = dict()
-                for x in quote_files:
-                    sym, quote = qc_csv_helper.file_to_quote_list(datapath + x)
-                    quotes_dict[sym] = quote
+                # load the trade and quote data and merge
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/unhedged_markout_tests/",
+                                                                    quote_file_list=["912810RB6_quotes.csv",
+                                                                                     "DE10YT_RR_quotes.csv",
+                                                                                     "US30YT_RR_quotes.csv"],
+                                                                    trade_file="trades.csv")
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
 
-                # Now get the trades list from csv
-                trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
-
-                # Method 2 - go through each of the instruments,
-                # create a stream of quote per sym
-                quote_trade_list = []
-                for k, v in quotes_dict.items():
-                    # quote_async_iter = to_async_iterable(quotes_dict[k])
-                    # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = quotes_dict[k]  # to_async_iterable(quotes_dict[k])
-                    # trades_list_sym = []
-                    # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-
-                    # trade_async_iter = to_async_iterable(trades_list_sym)
-                    quote_trade_list.append(quote_async_iter)
-                    # quote_trade_list.append(trade_async_iter)
-
-                output_list = []
-                trade_async_iter = trades_list  # to_async_iterable(trades_list)
-                quote_trade_list.append(trade_async_iter)
-                joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                graph = joint_stream | op.map_by_group(lambda x: x.sym,
-                                                       GovtBondMarkoutCalculator()) | op.flatten() > output_list
-                run(graph)
+                print("time taken=%s"%(time.time()-t0))
                 # do assertions
                 self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
 
@@ -326,53 +248,32 @@ class TestMarkouts(TestCase):
 
     # ONLY COB markouts. Make sure the config file has only got COB0, COB1 and COB2 in lags_list
     def test_case_5(self, plotFigure=False):
+        t0 = time.time()
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-        datapath = "../resources/unhedged_markout_tests/"
-        quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
-        trade_files = "trades.csv"
+        # datapath = "../resources/unhedged_markout_tests/"
+        # quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
+        # trade_files = "trades.csv"
 
         # Create a singleton configurator
         configurator = Configurator('config')
         try:
             with ExceptionLoggingContext():
-                # Load the quotes data from csv
-                logging.basicConfig(level=configurator.get_config_given_key('log_level'))
-                # Load the quotes data from csv
-                quotes_dict = dict()
-                for x in quote_files:
-                    sym, quote = qc_csv_helper.file_to_quote_list(datapath + x)
-                    quotes_dict[sym] = quote
+                # load the trade and quote data and merge
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/unhedged_markout_tests/",
+                                                                    quote_file_list=["912810RB6_quotes.csv",
+                                                                                     "DE10YT_RR_quotes.csv",
+                                                                                     "US30YT_RR_quotes.csv"],
+                                                                    trade_file="trades.csv")
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
 
-                # Now get the trades list from csv
-                trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
+                print("time taken=%s" % (time.time() - t0))
 
-                # Method 2 - go through each of the instruments,
-                # create a stream of quote per sym
-                quote_trade_list = []
-                for k, v in quotes_dict.items():
-                    # quote_async_iter = to_async_iterable(quotes_dict[k])
-                    # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = quotes_dict[k]  # to_async_iterable(quotes_dict[k])
-                    # trades_list_sym = []
-                    # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-
-                    # trade_async_iter = to_async_iterable(trades_list_sym)
-                    quote_trade_list.append(quote_async_iter)
-                    # quote_trade_list.append(trade_async_iter)
-
-                output_list = []
-                trade_async_iter = trades_list  # to_async_iterable(trades_list)
-                quote_trade_list.append(trade_async_iter)
-                joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                graph = joint_stream | op.map_by_group(lambda x: x.sym,
-                                                       GovtBondMarkoutCalculator(lags_list=['COB0', 'COB1', 'COB2'])) \
-                        | op.flatten() > output_list
-                run(graph)
                 # do assertions
                 self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
-                self.assertEquals(len(output_list), 9, msg=None)
+                self.assertEquals(len(output_list), 9*3, msg=None)
                 for mk_msg in output_list:
                     if mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB0':
                         self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.072) / mk_msg.bps_markout),
@@ -397,50 +298,27 @@ class TestMarkouts(TestCase):
 
     # test NaN
     def test_case_6(self, plotFigure=False):
+        t0 = time.time()
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-        datapath = "../resources/unhedged_markout_tests/"
-        quote_files = ["912810QE1_quotes.csv"]
-        trade_files = "trades_NaN_test.csv"
+        # datapath = "../resources/unhedged_markout_tests/"
+        # quote_files = ["912810QE1_quotes.csv"]
+        # trade_files = "trades_NaN_test.csv"
 
         # Create a singleton configurator
         configurator = Configurator('config')
 
         try:
             with ExceptionLoggingContext():
-                # Load the quotes data from csv
-                logging.basicConfig(level=configurator.get_config_given_key('log_level'))
-                # Load the quotes data from csv
-                quotes_dict = dict()
-                for x in quote_files:
-                    sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Unhedged)
-                    quotes_dict[sym] = quote
+                # load the trade and quote data and merge
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/unhedged_markout_tests/",
+                                                                    quote_file_list=["912810QE1_quotes.csv"],
+                                                                    trade_file="trades_NaN_test.csv")
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
 
-                # Now get the trades list from csv
-                trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
-
-                # Method 2 - go through each of the instruments,
-                # create a stream of quote per sym
-                quote_trade_list = []
-                for k, v in quotes_dict.items():
-                    # quote_async_iter = to_async_iterable(quotes_dict[k])
-                    # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = quotes_dict[k]  # to_async_iterable(quotes_dict[k])
-                    # trades_list_sym = []
-                    # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-
-                    # trade_async_iter = to_async_iterable(trades_list_sym)
-                    quote_trade_list.append(quote_async_iter)
-                    # quote_trade_list.append(trade_async_iter)
-
-                output_list = []
-                trade_async_iter = trades_list  # to_async_iterable(trades_list)
-                quote_trade_list.append(trade_async_iter)
-                joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                graph = joint_stream | op.map_by_group(lambda x: x.sym,
-                                                       GovtBondMarkoutCalculator()) | op.flatten() > output_list
-                run(graph)
+                print("time taken=%s" % (time.time() - t0))
                 # do assertions
                 self.assertEquals(len(output_list), 6, msg=None)
                 for mk_msg in output_list:

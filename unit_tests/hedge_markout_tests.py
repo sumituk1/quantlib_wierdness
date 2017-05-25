@@ -4,7 +4,7 @@ import importlib
 # logging.basicConfig(level = logging.INFO)
 #from aiostreams.base import EventLoopContext
 from aiostreams import run,ExceptionLoggingContext
-
+import time
 from unittest import TestCase
 import numpy as np
 # import seaborn as sns
@@ -26,59 +26,97 @@ os.chdir(thisfiledir)
 
 
 class TestHedgeMarkouts(TestCase):
-    # Test hedge with Cash
-    def test_case_1(self, plotFigure=False):
-        tolerance = 5 * 1e-2
-        datapath = "../resources/hedged_markout_tests/"
-        quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv"]
-        trade_files = "trades_hedge_test.csv"
+    # function to read the quotes and trade file and merge them to a iterable list
+    def read_and_merge_quotes_trade(self, datapath, quote_file_list, trade_file):
+        # get the trades list from csv
+        trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_file)
 
+        # Load the quotes data from csv
+        quotes_dict = dict()
+        for x in quote_file_list:
+            sym, quote = qc_csv_helper.file_to_quote_list(datapath + x,
+                                                          markout_mode=MarkoutMode.Unhedged)
+            quotes_dict[sym] = quote
+
+        # now merge the quote and the trade list
+        quote_trade_list = []
+        for k, v in quotes_dict.items():
+            # quote_async_iter = to_async_iterable(quotes_dict[k])
+            # quote_trade_list.append(quote_async_iter)
+            quote_async_iter = quotes_dict[k]  # to_async_iterable(quotes_dict[k])
+            # trades_list_sym = []
+            # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
+
+            # trade_async_iter = to_async_iterable(trades_list_sym)
+            quote_trade_list.append(quote_async_iter)
+
+        quote_trade_list.append(trades_list)
+        return quote_trade_list
+
+    # runs the graph and returns the output_list
+    def run_graph(self, quote_trade_list):
+        output_list = []
+
+        joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
+        hedger = Hedger(my_hedge_calculator, product_class=ProductClass.GovtBond)
+
+        # 1. set up initla hedges at point of trade
+        new_trades = joint_stream | op.map(hedger) | op.flatten()
+        # 2. Perform markouts of both underlying trade and the paper_trades
+        leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
+        # 3. Aggregate all the markouts per package_id
+        leg_markout_final = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt),
+                                                          MarkoutBasketBuilder()) | op.flatten() | \
+                            op.map(aggregate_markouts) > output_list
+        # run the pipe
+        run(leg_markout_final)
+        return output_list
+
+    # Test hedge with Cash
+    def test_case_1(self, plotFigure=True):
+        tolerance = 5 * 1e-2
+        t0 = time.time()
         # Create a singleton configurator and instrument_static
         configurator = Configurator('config')
-        instrument_static = InstumentSingleton()
+        instrument_static = InstumentSingleton() # required for hedge instrument duration
 
         try:
             with ExceptionLoggingContext():
-                # Load the quotes data from csv
-                logging.basicConfig(level=configurator.get_config_given_key('log_level'))
-                # Load the quotes data from csv
-                quotes_dict = dict()
-                for x in quote_files:
-                    sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Hedged)
-                    quotes_dict[sym] = quote
+                # # Load the quotes data from csv
+                # logging.basicConfig(level=configurator.get_config_given_key('log_level'))
+                # # Load the quotes data from csv
+                # quotes_dict = dict()
+                # for x in quote_files:
+                #     sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Hedged)
+                #     quotes_dict[sym] = quote
+                #
+                # # Now get the trades list from csv
+                # trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
+                #
+                # # Method 2 - go through each of the instruments,
+                # # create a stream of quote per sym
+                # quote_trade_list = []
+                # for k, v in quotes_dict.items():
+                #     # quote_async_iter = to_async_iterable(quotes_dict[k])
+                #     # quote_trade_list.append(quote_async_iter)
+                #     quote_async_iter = quotes_dict[k]  #to_async_iterable(quotes_dict[k])
+                #     # trades_list_sym = []
+                #     # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
+                #
+                #     # trade_async_iter = to_async_iterable(trades_list_sym)
+                #     quote_trade_list.append(quote_async_iter)
+                #     # quote_trade_list.append(trade_async_iter)
 
-                # Now get the trades list from csv
-                trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
+                # load the trade and quote data and merge
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/hedged_markout_tests/",
+                                                                    quote_file_list=["912828T91_quotes.csv",
+                                                                                     "US30YT_RR_quotes.csv",
+                                                                                     "US10YT_RR_quotes.csv",
+                                                                                     "US5YT_RR_quotes.csv"],
+                                                                    trade_file="trades_hedge_test.csv")
 
-                # Method 2 - go through each of the instruments,
-                # create a stream of quote per sym
-                quote_trade_list = []
-                for k, v in quotes_dict.items():
-                    # quote_async_iter = to_async_iterable(quotes_dict[k])
-                    # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = quotes_dict[k]  #to_async_iterable(quotes_dict[k])
-                    # trades_list_sym = []
-                    # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-
-                    # trade_async_iter = to_async_iterable(trades_list_sym)
-                    quote_trade_list.append(quote_async_iter)
-                    # quote_trade_list.append(trade_async_iter)
-
-                output_list = []
-                trade_async_iter = trades_list#to_async_iterable(trades_list)
-                quote_trade_list.append(trade_async_iter)
-                joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                hedger = Hedger(my_hedge_calculator, product_class=ProductClass.GovtBond)
-
-                # 1. set up initla hedges at point of trade
-                new_trades = joint_stream | op.map(hedger) | op.flatten()
-                # 2. Perform markouts of both underlying trade and the paper_trades
-                leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
-                # 3. Aggregate all the markouts per package_id
-                leg_markout_final = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
-                op.map(aggregate_markouts) > output_list
-                # run the pipe
-                run(leg_markout_final)
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
 
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
@@ -110,6 +148,8 @@ class TestHedgeMarkouts(TestCase):
                     elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB2':
                         self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.42919)) / mk_msg.hedged_bps), tolerance, msg=None)
                         self.assertLessEqual(np.abs((mk_msg.hedged_cents - 37.8219) / mk_msg.hedged_cents), tolerance, msg=None)
+
+                print("Time taken: %s"%(time.time() - t0))
                 # plot figure
                 if plotFigure:
                     fig, ax = plt.subplots()
@@ -130,10 +170,7 @@ class TestHedgeMarkouts(TestCase):
     # Test hedge with futures
     def test_case_2(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "../resources/hedged_markout_tests/"
-        quote_files = ["912828T91_quotes.csv",
-                       "FVc1_quotes.csv", "TUc1_quotes.csv", "TYc1_quotes.csv", "USc1_quotes.csv"]
-        trade_files = "trades_hedge_test.csv"
+        t0 = time.time()
 
         # Create a singleton configurator
         configurator = Configurator('config')
@@ -141,47 +178,58 @@ class TestHedgeMarkouts(TestCase):
 
         try:
             with ExceptionLoggingContext():
-                # Load the quotes data from csv
-                logging.basicConfig(level=configurator.get_config_given_key('log_level'))
-                # Load the quotes data from csv
-                quotes_dict = dict()
-                for x in quote_files:
-                    sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Hedged)
-                    quotes_dict[sym] = quote
+                # # Load the quotes data from csv
+                # logging.basicConfig(level=configurator.get_config_given_key('log_level'))
+                # # Load the quotes data from csv
+                # quotes_dict = dict()
+                # for x in quote_files:
+                #     sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Hedged)
+                #     quotes_dict[sym] = quote
+                #
+                # # Now get the trades list from csv
+                # trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
+                #
+                # # Method 2 - go through each of the instruments,
+                # # create a stream of quote per sym
+                # quote_trade_list = []
+                # for k, v in quotes_dict.items():
+                #     # quote_async_iter = to_async_iterable(quotes_dict[k])
+                #     # quote_trade_list.append(quote_async_iter)
+                #     quote_async_iter = quotes_dict[k] #to_async_iterable(quotes_dict[k])
+                #     # trades_list_sym = []
+                #     # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
+                #
+                #     # trade_async_iter = to_async_iterable(trades_list_sym)
+                #     quote_trade_list.append(quote_async_iter)
+                #     # quote_trade_list.append(trade_async_iter)
+                #
+                # output_list = []
+                # trade_async_iter = trades_list #to_async_iterable(trades_list)
+                # quote_trade_list.append(trade_async_iter)
+                # joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
+                # hedger = Hedger(
+                #     my_hedge_calculator)  # <- No need to pass in Futures specifically, as thats the first be default
+                #
+                # # 1. set up initla hedges at point of trade
+                # new_trades = joint_stream | op.map(hedger) | op.flatten()
+                # # 2. Perform markouts of both underlying trade and the paper_trades
+                # leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
+                # # 3. Aggregate all the markouts per package_id
+                # task = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
+                # op.map(aggregate_markouts) > output_list
+                #
+                # run(task)
 
-                # Now get the trades list from csv
-                trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/hedged_markout_tests/",
+                                                                    quote_file_list=["912828T91_quotes.csv",
+                                                                                     "FVc1_quotes.csv",
+                                                                                     "TUc1_quotes.csv",
+                                                                                     "TYc1_quotes.csv",
+                                                                                     "USc1_quotes.csv"],
+                                                                    trade_file="trades_hedge_test.csv")
 
-                # Method 2 - go through each of the instruments,
-                # create a stream of quote per sym
-                quote_trade_list = []
-                for k, v in quotes_dict.items():
-                    # quote_async_iter = to_async_iterable(quotes_dict[k])
-                    # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = quotes_dict[k] #to_async_iterable(quotes_dict[k])
-                    # trades_list_sym = []
-                    # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-
-                    # trade_async_iter = to_async_iterable(trades_list_sym)
-                    quote_trade_list.append(quote_async_iter)
-                    # quote_trade_list.append(trade_async_iter)
-
-                output_list = []
-                trade_async_iter = trades_list #to_async_iterable(trades_list)
-                quote_trade_list.append(trade_async_iter)
-                joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                hedger = Hedger(
-                    my_hedge_calculator)  # <- No need to pass in Futures specifically, as thats the first be default
-
-                # 1. set up initla hedges at point of trade
-                new_trades = joint_stream | op.map(hedger) | op.flatten()
-                # 2. Perform markouts of both underlying trade and the paper_trades
-                leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
-                # 3. Aggregate all the markouts per package_id
-                task = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
-                op.map(aggregate_markouts) > output_list
-
-                run(task)
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
 
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
@@ -231,6 +279,8 @@ class TestHedgeMarkouts(TestCase):
                                              msg=None)
                         self.assertLessEqual(np.abs((mk_msg.hedged_cents - 22.196) / mk_msg.hedged_cents), tolerance,
                                              msg=None)
+
+                print("Time elapsed=%s"%(time.time()-t0))
                 # plot figure
                 if plotFigure:
                     fig, ax = plt.subplots()
@@ -302,13 +352,13 @@ class TestHedgeMarkouts(TestCase):
         beta = extract_beta(hedge_quote_sym, trade_duration, hedge_sym_arr, lastquotes)
         self.assertEquals(np.round(beta, 3), 0.964, msg=None)
 
-    # Test hedge where a 7y has got a 10yr and 30yr specified as a hedge (Enable config_2.txt)
+    # Test hedge where a 7y has got a 10yr and 30yr specified as a hedge (Enable config_hedge_test_case_5)
     # Code should pick up the first one i.e. 10yr
     def test_case_5(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "../resources/hedged_markout_tests/"
-        quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv"]
-        trade_files = "trades_hedge_test.csv"
+        # datapath = "../resources/hedged_markout_tests/"
+        # quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv"]
+        # trade_files = "trades_hedge_test.csv"
 
         # Create a singleton configurator
         configurator = Configurator('config_hedge_test_case_5')
@@ -316,46 +366,16 @@ class TestHedgeMarkouts(TestCase):
 
         try:
             with ExceptionLoggingContext():
-                # Load the quotes data from csv
-                logging.basicConfig(level=configurator.get_config_given_key('log_level'))
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/hedged_markout_tests/",
+                                                                    quote_file_list=["912828T91_quotes.csv",
+                                                                                     "US30YT_RR_quotes.csv",
+                                                                                     "US10YT_RR_quotes.csv",
+                                                                                     "US5YT_RR_quotes.csv"],
+                                                                    trade_file="trades_hedge_test.csv")
 
-                # Load the quotes data from csv
-                quotes_dict = dict()
-                for x in quote_files:
-                    sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Hedged)
-                    quotes_dict[sym] = quote
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
 
-                # Now get the trades list from csv
-                trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
-
-                # Method 2 - go through each of the instruments,
-                # create a stream of quote per sym
-                quote_trade_list = []
-                for k, v in quotes_dict.items():
-                    # quote_async_iter = to_async_iterable(quotes_dict[k])
-                    # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = quotes_dict[k] #to_async_iterable()
-                    # trades_list_sym = []
-                    # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-
-                    # trade_async_iter = to_async_iterable(trades_list_sym)
-                    quote_trade_list.append(quote_async_iter)
-                    # quote_trade_list.append(trade_async_iter)
-
-                output_list = []
-                trade_async_iter = trades_list #to_async_iterable(trades_list)
-                quote_trade_list.append(trade_async_iter)
-                joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                hedger = Hedger(my_hedge_calculator, product_class=ProductClass.GovtBond)
-
-                # 1. set up initla hedges at point of trade
-                new_trades = joint_stream | op.map(hedger) | op.flatten()
-                # 2. Perform markouts of both underlying trade and the paper_trades
-                leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
-                # 3. Aggregate all the markouts per package_id
-                task = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
-                op.map(aggregate_markouts) > output_list
-                run(task)
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
                 for mk_msg in output_list:
@@ -414,10 +434,10 @@ class TestHedgeMarkouts(TestCase):
     # test BTP hedging rule
     def test_case_6(self, plotFigure=False):
         tolerance = 5 * 1e-2
-        datapath = "../resources/hedged_markout_tests/"
-        quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv",
-                       "IT488903_quotes.csv", "IT15YT_RR_quotes.csv", "IT30YT_RR_quotes.csv", "FBTPc1_RR_quotes.csv"]
-        trade_files = "trades_hedge_test_2.csv"
+        # datapath = "../resources/hedged_markout_tests/"
+        # quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv", "US5YT_RR_quotes.csv",
+        #                "IT488903_quotes.csv", "IT15YT_RR_quotes.csv", "IT30YT_RR_quotes.csv", "FBTPc1_RR_quotes.csv"]
+        # trade_files = "trades_hedge_test_2.csv"
 
         # Create a singleton configurator
         configurator = Configurator('config')
@@ -425,46 +445,20 @@ class TestHedgeMarkouts(TestCase):
 
         try:
             with ExceptionLoggingContext():
-                # Load the quotes data from csv
-                logging.basicConfig(level=configurator.get_config_given_key('log_level'))
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/hedged_markout_tests/",
+                                                                    quote_file_list=["912828T91_quotes.csv",
+                                                                                     "US30YT_RR_quotes.csv",
+                                                                                     "US10YT_RR_quotes.csv",
+                                                                                     "US5YT_RR_quotes.csv",
+                                                                                     "IT488903_quotes.csv",
+                                                                                     "IT15YT_RR_quotes.csv",
+                                                                                     "IT30YT_RR_quotes.csv",
+                                                                                     "FBTPc1_RR_quotes.csv"],
+                                                                    trade_file="trades_hedge_test_2.csv")
 
-                # Load the quotes data from csv
-                quotes_dict = dict()
-                for x in quote_files:
-                    sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Hedged)
-                    quotes_dict[sym] = quote
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
 
-                # Now get the trades list from csv
-                trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
-
-                # Method 2 - go through each of the instruments,
-                # create a stream of quote per sym
-                quote_trade_list = []
-                for k, v in quotes_dict.items():
-                    # quote_async_iter = to_async_iterable(quotes_dict[k])
-                    # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = quotes_dict[k] #to_async_iterable(quotes_dict[k])
-                    # trades_list_sym = []
-                    # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-
-                    # trade_async_iter = to_async_iterable(trades_list_sym)
-                    quote_trade_list.append(quote_async_iter)
-                    # quote_trade_list.append(trade_async_iter)
-
-                output_list = []
-                trade_async_iter = trades_list# to_async_iterable(trades_list)
-                quote_trade_list.append(trade_async_iter)
-                joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                hedger = Hedger(my_hedge_calculator)
-
-                # 1. set up initla hedges at point of trade
-                new_trades = joint_stream | op.map(hedger) | op.flatten()
-                # 2. Perform markouts of both underlying trade and the paper_trades
-                leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
-                # 3. Aggregate all the markouts per package_id
-                task = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
-                op.map(aggregate_markouts) > output_list
-                run(task)
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
                 for mk_msg in output_list:
@@ -520,14 +514,15 @@ class TestHedgeMarkouts(TestCase):
             raise Exception
 
     # test BTP Cash hedging rule
-    def test_case_7(self, plotFigure=False):
+    def test_case_7(self, plotFigure=True):
         tolerance = 5 * 1e-2
-        datapath = "../resources/hedged_markout_tests/"
-        quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv",
-                       "US5YT_RR_quotes.csv",
-                       "IT488903_quotes.csv", "IT15YT_RR_quotes.csv", "IT30YT_RR_quotes.csv",
-                       "FBTPc1_RR_quotes.csv"]
-        trade_files = "trades_hedge_test_2.csv"
+        t0 = time.time()
+        # datapath = "../resources/hedged_markout_tests/"
+        # quote_files = ["912828T91_quotes.csv", "US30YT_RR_quotes.csv", "US10YT_RR_quotes.csv",
+        #                "US5YT_RR_quotes.csv",
+        #                "IT488903_quotes.csv", "IT15YT_RR_quotes.csv", "IT30YT_RR_quotes.csv",
+        #                "FBTPc1_RR_quotes.csv"]
+        # trade_files = "trades_hedge_test_2.csv"
 
         # Create a singleton configurator
         configurator = Configurator('config')
@@ -535,49 +530,23 @@ class TestHedgeMarkouts(TestCase):
 
         try:
             with ExceptionLoggingContext():
-                # Load the quotes data from csv
-                logging.basicConfig(level=configurator.get_config_given_key('log_level'))
-                # Load the quotes data from csv
-                quotes_dict = dict()
-                for x in quote_files:
-                    sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Hedged)
-                    quotes_dict[sym] = quote
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/hedged_markout_tests/",
+                                                                    quote_file_list=["912828T91_quotes.csv",
+                                                                                     "US30YT_RR_quotes.csv",
+                                                                                     "US10YT_RR_quotes.csv",
+                                                                                     "US5YT_RR_quotes.csv",
+                                                                                     "IT488903_quotes.csv",
+                                                                                     "IT15YT_RR_quotes.csv",
+                                                                                     "IT30YT_RR_quotes.csv",
+                                                                                     "FBTPc1_RR_quotes.csv"],
+                                                                    trade_file="trades_hedge_test_2.csv")
 
-                # Now get the trades list from csv
-                trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
-
-                # Method 2 - go through each of the instruments,
-                # create a stream of quote per sym
-                quote_trade_list = []
-                for k, v in quotes_dict.items():
-                    # quote_async_iter = to_async_iterable(quotes_dict[k])
-                    # quote_trade_list.append(quote_async_iter)
-                    quote_async_iter = quotes_dict[k]#to_async_iterable(quotes_dict[k])
-                    # trades_list_sym = []
-                    # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-
-                    # trade_async_iter = to_async_iterable(trades_list_sym)
-                    quote_trade_list.append(quote_async_iter)
-                    # quote_trade_list.append(trade_async_iter)
-
-                output_list = []
-                trade_async_iter = trades_list# to_async_iterable(trades_list)
-                quote_trade_list.append(trade_async_iter)
-                joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                hedger = Hedger(my_hedge_calculator, product_class=ProductClass.GovtBond)
-
-                # 1. set up initla hedges at point of trade
-                new_trades = joint_stream | op.map(hedger) | op.flatten()
-                # 2. Perform markouts of both underlying trade and the paper_trades
-                leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
-                # 3. Aggregate all the markouts per package_id
-                task = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
-                op.map(aggregate_markouts) > output_list
-
-                run(task)
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
 
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
+                print("Time elapsed = %s"%(time.time()-t0))
                 # for mk_msg in output_list:
                 #     if mk_msg.trade_id == 123 and mk_msg.dt == '-900':
                 #         self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.869) / mk_msg.hedged_bps), tolerance, msg=None)
