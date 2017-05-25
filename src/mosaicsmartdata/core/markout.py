@@ -41,6 +41,7 @@ class MarkoutCalculatorPre:
                 mkmsg = MarkoutMessage2(trade=msg,
                                         initial_price=msg.adj_traded_px,
                                         next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
+                                        timestamp=msg.timestamp,
                                         dt=mk)
                 if len(self.last_price[self.last_price['timestamp'] <= mkmsg.next_timestamp]['mid'].values) == 0:
                     # TODO: empty Quote mid for lagged time. Log this
@@ -54,8 +55,11 @@ class MarkoutCalculatorPre:
                     mkmsg.price_markout *= -1
 
                 completed.append(mkmsg)
-
-        elif not isinstance(msg, Quote):
+        elif isinstance(msg, Quote):
+            # update the pending markout_messages with the new timestamp
+            for x in self.pending:
+                x.timestamp = msg.timestamp
+        else: # if not isinstance(msg, Quote):
             print(msg)
 
         # print("MarkoutCalculatorPre(): time spent before timestamp check =%s "%(time.time()-t_3))
@@ -145,7 +149,12 @@ class MarkoutCalculatorPost:
             self.generate_markout_requests(msg)
             # elif isinstance(msg, Quote) or hasattr(msg, 'mid'):
             # self.last_price = msg.mid
-        elif not isinstance(msg, Quote):
+        elif isinstance(msg,Quote):
+            # update the pending markout_messages with the new timestamp
+            for x in self.pending:
+                x.timestamp = msg.timestamp
+            # [(lambda x: x.timestamp = msg.timestamp)(x) for x in self.pending]
+        else: # if not isinstance(msg, Quote):
             print(msg)
         # determine which pending markout requests we can complete now
 
@@ -176,6 +185,7 @@ class MarkoutCalculator:
 
     def __init__(self, lags_list, instr=None):
         self.COB_time_utc = None
+        self.timestamp = None
         # self.configurator = configurator
         pre_lags = [x for x in lags_list if x[0] == '-']
         post_lags = [x for x in lags_list if not x[0] == '-']

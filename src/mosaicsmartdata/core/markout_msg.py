@@ -23,6 +23,7 @@ class MarkoutMessage2(GenericParent):
         self.hedged_cents = None
         self.hedged_price = None
         self.hedged_bps = None
+        self.timestamp = None # used to hold the ticking of the clock from Quotes message
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
