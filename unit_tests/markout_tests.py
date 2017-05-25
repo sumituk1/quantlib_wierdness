@@ -12,6 +12,9 @@ from mosaicsmartdata.common.read_config import Configurator
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.core.markout import GovtBondMarkoutCalculator
 import time
+import datetime as dt
+from mosaicsmartdata.core.quote import Quote
+from mosaicsmartdata.core.trade import Trade,FixedIncomeTrade
 import os, inspect
 
 thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
@@ -49,14 +52,19 @@ class TestMarkouts(TestCase):
         quote_trade_list.append(trades_list)
         return quote_trade_list
 
-    # runs the graph and returns the output_list
-    def run_graph(self, quote_trade_list):
+    # create the graph
+    def create_graph(self, quote_trade_list):
         output_list = []
         # run graph
         # t0 = time.time()
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
         graph = joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) \
                 | op.flatten() > output_list
+        return graph,output_list
+
+    # runs the graph and returns the output_list
+    def run_graph(self, quote_trade_list):
+        graph,output_list = self.create_graph(quote_trade_list)
         run(graph)
         return output_list
 
@@ -296,8 +304,90 @@ class TestMarkouts(TestCase):
         except Exception:
             raise Exception
 
-    # test NaN
+    # Same as test_case_5. But uses a Kafka Persistence every COB
     def test_case_6(self, plotFigure=False):
+        t0 = time.time()
+        tolerance = 5 * 1e-2
+        thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+        os.chdir(thisfiledir)
+
+        # Create a singleton configurator
+        configurator = Configurator('config')
+        try:
+            with ExceptionLoggingContext():
+                # load the trade and quote data and merge
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/unhedged_markout_tests/",
+                                                                    quote_file_list=["912810RB6_quotes.csv",
+                                                                                     "DE10YT_RR_quotes.csv",
+                                                                                     "US30YT_RR_quotes.csv"],
+                                                                    trade_file="trades.csv")
+                graph,output_list = self.create_graph(quote_trade_list)
+                graph.id = 'my_nice_graph_3'
+
+                # create a pp
+                class pp:
+                    # implement a COB persist policy
+                    # def __init__(self, cob_ts):
+                    #     self.cob = cob_ts
+                    #     self.last_timestamp = None
+
+                    def __call__(self, msg):
+                        # get the COB time per ccy
+                        self.COB_time_utc_eur = \
+                            configurator.get_data_given_section_and_key("GovtBond_Markout","EGB_COB")
+                        self.COB_time_utc_ust = \
+                            configurator.get_data_given_section_and_key("GovtBond_Markout","UST_COB")
+                        self.COB_time_utc_gbp = \
+                            configurator.get_data_given_section_and_key("GovtBond_Markout","GBP_COB")
+                        if msg.trade.ccy == Currency.EUR:
+                            self.COB_time_utc = self.COB_time_utc_eur
+                        elif msg.trade.ccy == Currency.USD:
+                            self.COB_time_utc = self.COB_time_utc_ust
+                        elif msg.trade.ccy == Currency.GBP:
+                            self.COB_time_utc = self.COB_time_utc_gbp
+                        # now convert the str_time to time object
+                        self.COB_time_utc = dt.datetime.strptime(self.COB_time_utc, "%H:%M:%S").time()
+
+                        if msg.timestamp > self.COB_time_utc:
+                            return True
+                        else:
+                            return False
+
+                graph.persistence_policy = pp()
+                # run the graph
+                output_list = run(graph)
+                #
+                # output_list = self.run_graph(quote_trade_list)
+
+                print("time taken=%s" % (time.time() - t0))
+
+                # do assertions
+                self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
+                self.assertEquals(len(output_list), 9 * 3, msg=None)
+                for mk_msg in output_list:
+                    if mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB0':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.072) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+                    elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB1':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.844) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+                    elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB2':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-1.138)) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+                    elif mk_msg.trade_id == "UST30Y_OTR_111111" and mk_msg.dt == 'COB0':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-1.128)) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+                    elif mk_msg.trade_id == "UST30Y_OTR_111111" and mk_msg.dt == 'COB1':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-9.85)) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+                    elif mk_msg.trade_id == "UST30Y_OTR_111111" and mk_msg.dt == 'COB2':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-13.41)) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+        except Exception:
+            raise Exception
+
+    # test NaN
+    def test_case_7(self, plotFigure=False):
         t0 = time.time()
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
@@ -338,81 +428,3 @@ class TestMarkouts(TestCase):
                                              tolerance, msg=None)
         except Exception:
             raise Exception
-
-            # Test for Non-standard settlement trades
-            # def test_case_7(self, plotFigure=False):
-            #     tolerance = 5 * 1e-2
-            #     thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
-            #     os.chdir(thisfiledir)
-            #     datapath = "../resources/unhedged_markout_tests/"
-            #     quote_files = ["912810RB6_quotes.csv", "DE10YT_RR_quotes.csv", "US30YT_RR_quotes.csv"]
-            #     trade_files = "trades_non_std.csv"
-            #
-            #     # Load the configuration file
-            #     configurator = Configurator('config')
-            #
-            #     try:
-            #         with ExceptionLoggingContext():
-            #             # Load the quotes data from csv
-            #             logging.basicConfig(level= configurator.get_config_given_key('log_level'))
-            #             quotes_dict = dict()
-            #             for x in quote_files:
-            #                 sym, quote = qc_csv_helper.file_to_quote_list(datapath + x,
-            #                                                               markout_mode=MarkoutMode.Unhedged)
-            #                 quotes_dict[sym] = quote
-            #
-            #             # Now get the trades list from csv
-            #             trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
-            #
-            #             # Method 2 - go through each of the instruments,
-            #             # create a stream of quote per sym
-            #             quote_trade_list = []
-            #             for k, v in quotes_dict.items():
-            #                 # quote_async_iter = to_async_iterable(quotes_dict[k])
-            #                 # quote_trade_list.append(quote_async_iter)
-            #                 quote_async_iter = to_async_iterable(quotes_dict[k])
-            #                 # trades_list_sym = []
-            #                 # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-            #
-            #                 # trade_async_iter = to_async_iterable(trades_list_sym)
-            #                 quote_trade_list.append(quote_async_iter)
-            #                 # quote_trade_list.append(trade_async_iter)
-            #
-            #             output_list = []
-            #             trade_async_iter = to_async_iterable(trades_list)
-            #             quote_trade_list.append(trade_async_iter)
-            #             joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-            #             joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) \
-            #             | op.flatten() > output_list
-            #
-            #             # do assertions
-            #             self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 1, msg=None)
-            #             for mk_msg in output_list:
-            #                 if mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '0':
-            #                     self.assertEquals(np.round(mk_msg.bps_markout, 3), 1.285, msg=None)
-            #                 elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '-900':
-            #                     self.assertLessEqual(np.abs((mk_msg.bps_markout - 1.135) / mk_msg.bps_markout), tolerance,
-            #                                          msg=None)
-            #                 elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '-60':
-            #                     self.assertLessEqual(np.abs((mk_msg.bps_markout - 1.307) / mk_msg.bps_markout), tolerance,
-            #                                          msg=None)
-            #                 elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '60':
-            #                     self.assertLessEqual(np.abs((mk_msg.bps_markout - 1.202) / mk_msg.bps_markout), tolerance,
-            #                                          msg=None)
-            #                 elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '300':
-            #                     self.assertLessEqual(np.abs((mk_msg.bps_markout - 1.151) / mk_msg.bps_markout), tolerance,
-            #                                          msg=None)
-            #                 elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '3600':
-            #                     self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.713) / mk_msg.bps_markout), tolerance,
-            #                                          msg=None)
-            #                 elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB0':
-            #                     self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0722)) / mk_msg.bps_markout), tolerance,
-            #                                          msg=None)
-            #                 elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB1':
-            #                     self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.844)) / mk_msg.bps_markout), tolerance,
-            #                                          msg=None)
-            #                 elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB2':
-            #                     self.assertLessEqual(np.abs((mk_msg.bps_markout - 1.138) / mk_msg.bps_markout), tolerance,
-            #                                          msg=None)
-            #     except Exception:
-            #         raise Exception
