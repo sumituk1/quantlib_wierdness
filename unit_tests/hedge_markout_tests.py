@@ -514,7 +514,7 @@ class TestHedgeMarkouts(TestCase):
             raise Exception
 
     # test BTP Cash hedging rule
-    def test_case_7(self, plotFigure=True):
+    def test_case_7(self, plotFigure=False):
         tolerance = 5 * 1e-2
         t0 = time.time()
         # datapath = "../resources/hedged_markout_tests/"
