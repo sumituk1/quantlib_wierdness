@@ -5,6 +5,7 @@ importlib.reload(logging)
 # logging.basicConfig(level = logging.INFO)
 from unittest import TestCase
 import numpy as np
+import math
 import aiostreams.operators as op
 from aiostreams import run, ExceptionLoggingContext
 from mosaicsmartdata.common import qc_csv_helper
@@ -413,9 +414,9 @@ class TestMarkouts(TestCase):
                 self.assertEquals(len(output_list), 6, msg=None)
                 for mk_msg in output_list:
                     if mk_msg.trade_id == "222" and mk_msg.dt == '-900':
-                        self.assertEquals(mk_msg.bps_markout, "NaN", msg=None)
+                        self.assertTrue(math.isnan(mk_msg.bps_markout), msg=None)
                     elif mk_msg.trade_id == "222" and mk_msg.dt == '-60':
-                        self.assertEquals(mk_msg.bps_markout, "NaN", msg=None)
+                        self.assertTrue(math.isnan(mk_msg.bps_markout), msg=None)
                     elif mk_msg.trade_id == "222" and mk_msg.dt == '0':
                         self.assertEquals(mk_msg.bps_markout, 0.0, msg=None)
                     elif mk_msg.trade_id == "222" and mk_msg.dt == '60':
@@ -433,4 +434,4 @@ if __name__ == '__main__':
     #    unittest.main()
     k= TestMarkouts()
     k.setUp()
-    k.test_case_7()
+    k.test_case_1()

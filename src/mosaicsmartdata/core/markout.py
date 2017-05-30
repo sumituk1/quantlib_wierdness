@@ -32,13 +32,14 @@ class PriceBuffer:
         self.time[self.last - 1] = timestamp
         self.value[self.last - 1] = value
         if timestamp == datetime.datetime(2017,1,16,13,50,0):
-            print('aaaa') # to set breakpoint here ;)
+            print('') # to set breakpoint here ;)
 
-
-
-    def get_last_price_before(self, timestamp):
-        filter_ = self.time <= timestamp
-        nicedata = self.value[filter_]
+    def get_last_price_before(self, timestamp, cutoff_timestamp = None):
+        if cutoff_timestamp:
+            filter_ = np.logical_and(self.time <= timestamp, self.time > cutoff_timestamp)
+        else:
+            filter_ = self.time <= timestamp
+        nicedata = self.value[np.array(filter_)]
         if len(nicedata) > 0:
             return nicedata[-1]
         else:
@@ -85,14 +86,16 @@ class MarkoutCalculatorPre:
                                         timestamp=msg.timestamp,
                                         dt=mk)
                 if mkmsg.trade_id == '222' and mk == '-900':
-                    print('aaa') # to set breakpoint here
+                    print('') # to set breakpoint here
                 # if len(self.last_price[self.last_price['timestamp'] <= mkmsg.next_timestamp]['mid'].values) == 0:
-                #     # TODO: empty Quote mid for lagged time. Log this
                 #     mkmsg.price_markout = None
                 # else:
                 #     mkmsg.final_price = self.last_price[self.last_price['timestamp'] <=
                 #                                         mkmsg.next_timestamp]['mid'].values[-1]
-                mkmsg.final_price = self.buffer.get_last_price_before(mkmsg.next_timestamp)
+
+                # if price more than 24 hours before desired, treat it as stale
+                cutoff_timestamp = mkmsg.next_timestamp + dt.timedelta(0,-24*60*60)
+                mkmsg.final_price = self.buffer.get_last_price_before(mkmsg.next_timestamp,cutoff_timestamp)
                 if mkmsg.final_price is np.NaN:
                     logging.getLogger(__name__).warning('Saw a NaN final price in pre-markouts')
                 mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)
