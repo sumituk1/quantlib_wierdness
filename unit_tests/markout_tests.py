@@ -114,7 +114,7 @@ class TestMarkouts(TestCase):
                         self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.844)) / mk_msg.bps_markout),
                                              tolerance, msg=None)
 
-        except Exception:
+        except ValueError:# Exception:
             raise Exception
 
     # Test for Sell in cents over intra-day to COB1
@@ -355,9 +355,9 @@ class TestMarkouts(TestCase):
 
                 graph.persistence_policy = pp()
                 # run the graph
-                output_list = run(graph)
+                run(graph)
                 #
-                # output_list = self.run_graph(quote_trade_list)
+                output_list = graph.sink
 
                 print("time taken=%s" % (time.time() - t0))
 
@@ -428,3 +428,9 @@ class TestMarkouts(TestCase):
                                              tolerance, msg=None)
         except Exception:
             raise Exception
+
+if __name__ == '__main__':
+    #    unittest.main()
+    k= TestMarkouts()
+    k.setUp()
+    k.test_case_7()

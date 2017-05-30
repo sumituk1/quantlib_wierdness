@@ -11,10 +11,10 @@ import logging
 
 importlib.reload(logging)
 logging.basicConfig(level=logging.ERROR)
-from aiostreams import ExceptionLoggingContext, run
+from aiostreams import ExceptionLoggingContext, run, AsyncKafkaPublisher
 from unittest import TestCase
 from kafka import KafkaProducer, KafkaConsumer
-from aiostreams.kafka_utils import AsyncKafkaSource, AsyncKafkaPublisher
+from aiostreams.kafka_utils import AsyncKafkaSource
 import aiostreams.operators as op
 from aiostreams.config import QCConfigProvider
 from mosaicsmartdata.common.json_convertor import *

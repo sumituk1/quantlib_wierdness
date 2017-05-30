@@ -1,5 +1,10 @@
 import pandas as pd
 import datetime as dt
+from copy import  copy
+import logging
+import pandas as pd
+
+import datetime
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.common.read_config import *
 from mosaicsmartdata.core.markout_msg import *
@@ -8,6 +13,41 @@ from mosaicsmartdata.core.quote import Quote
 import time
 
 size_threshold = 100 * 1000  # 100 kb before re-indexing kicks in
+class PriceBuffer:
+    def __init__(self, buf_incr = 10000):
+        self.buf_incr = buf_incr
+        self.value = np.zeros(0)
+        self.time = pd.Series(np.zeros(0))
+        self.last = 0
+
+    def add_point(self, timestamp, value):
+        self.last +=1
+        if self.last > len(self.value):
+            extra_buffer = np.zeros(self.buf_incr)
+            extra_buffer[:] = np.NaN
+            self.value = np.concatenate([self.value, extra_buffer], axis = 0)
+            extra_time = pd.Series(np.zeros(self.buf_incr))
+            extra_time[:] = datetime.datetime(2100, 1, 1,1,1,1) # far in the future
+            self.time = pd.concat([self.time, extra_time], axis = 0)
+        self.time[self.last - 1] = timestamp
+        self.value[self.last - 1] = value
+        if timestamp == datetime.datetime(2017,1,16,13,50,0):
+            print('aaaa') # to set breakpoint here ;)
+
+
+
+    def get_last_price_before(self, timestamp):
+        filter_ = self.time <= timestamp
+        nicedata = self.value[filter_]
+        if len(nicedata) > 0:
+            return nicedata[-1]
+        else:
+            return np.NaN
+
+    def throw_away_before(self, timestamp):
+        filter_ = self.time < timestamp
+        self.value = copy(self.value[filter_])
+        self.time = copy(self.time[filter_])
 
 
 class MarkoutCalculatorPre:
@@ -21,7 +61,8 @@ class MarkoutCalculatorPre:
     def __init__(self, lags_list, max_lag, instr=None):
         self.pending = []
         self.lags_list = lags_list
-        self.last_price = pd.DataFrame(columns=['mid', 'timestamp']).reset_index()
+        self.buffer = PriceBuffer()
+        #self.last_price = pd.DataFrame(columns=['mid', 'timestamp']).reset_index()
         self.last_timestamp = None
         self.COB_time_utc = None
         self.max_lag = max_lag
@@ -43,13 +84,18 @@ class MarkoutCalculatorPre:
                                         next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
                                         timestamp=msg.timestamp,
                                         dt=mk)
-                if len(self.last_price[self.last_price['timestamp'] <= mkmsg.next_timestamp]['mid'].values) == 0:
-                    # TODO: empty Quote mid for lagged time. Log this
-                    mkmsg.price_markout = None
-                else:
-                    mkmsg.final_price = self.last_price[self.last_price['timestamp'] <=
-                                                        mkmsg.next_timestamp]['mid'].values[-1]
-                    mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)
+                if mkmsg.trade_id == '222' and mk == '-900':
+                    print('aaa') # to set breakpoint here
+                # if len(self.last_price[self.last_price['timestamp'] <= mkmsg.next_timestamp]['mid'].values) == 0:
+                #     # TODO: empty Quote mid for lagged time. Log this
+                #     mkmsg.price_markout = None
+                # else:
+                #     mkmsg.final_price = self.last_price[self.last_price['timestamp'] <=
+                #                                         mkmsg.next_timestamp]['mid'].values[-1]
+                mkmsg.final_price = self.buffer.get_last_price_before(mkmsg.next_timestamp)
+                if mkmsg.final_price is np.NaN:
+                    logging.getLogger(__name__).warning('Saw a NaN final price in pre-markouts')
+                mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)
 
                 if (mkmsg.side == TradeSide.Ask) and (not mkmsg.price_markout is None):
                     mkmsg.price_markout *= -1
@@ -68,22 +114,26 @@ class MarkoutCalculatorPre:
             # throw out stale Quotes which have a timestamp > min(abs(lags_list) if lags_list < 0
             # intra-day markout lags given
             # t_3 = time.time()
-            ix = len(self.last_price) + 1
-            self.last_price.set_value(ix, 'mid', msg.mid)
-            self.last_price.set_value(ix, 'timestamp', msg.timestamp)
+            # ix = len(self.last_price) + 1
+            self.buffer.add_point(msg.timestamp, msg.mid)
+            if len(self.buffer.time) > size_threshold:
+                stale_timestamp = self.buffer.time[self.buffer.last - 1] - dt.timedelta(0, self.max_lag)
+                self.buffer.throw_away_before(stale_timestamp)
+            # self.last_price.set_value(ix, 'mid', msg.mid)
+            # self.last_price.set_value(ix, 'timestamp', msg.timestamp)
             # print("MarkoutCalculatorPre(): time spent appending Quote =%s " % (time.time() - t_3))
             # t_3 = time.time()
-            stale_timestamp = self.last_price['timestamp'].values[-1] - dt.timedelta(0, self.max_lag)
+            #stale_timestamp = self.last_price['timestamp'].values[-1] - dt.timedelta(0, self.max_lag)
             # dt.timedelta(0, max([abs(float(x)) for x in self.lags_list]))
             # print("MarkoutCalculatorPre(): time spent calculating stale =%s " % (time.time() - t_3))
             # t_3 = time.time()
-            if len(self.last_price) > size_threshold:
-                print("Re-indexing!!")
-                if len(self.last_price[self.last_price['timestamp'] <= stale_timestamp]) > 0:
-                    # re-indexing is expensive!!
-                    self.last_price.drop(self.last_price[self.last_price['timestamp'] < stale_timestamp].index,
-                                         inplace=True)
-                    self.last_price.reset_index(drop=True, inplace=True)
+            # if len(self.last_price) > size_threshold:
+            #     print("Re-indexing!!")
+            #     if len(self.last_price[self.last_price['timestamp'] <= stale_timestamp]) > 0:
+            #         # re-indexing is expensive!!
+            #         self.last_price.drop(self.last_price[self.last_price['timestamp'] < stale_timestamp].index,
+            #                              inplace=True)
+            #         self.last_price.reset_index(drop=True, inplace=True)
                     # print("MarkoutCalculatorPre(): time spent dropping & re-indexing=%s " % (time.time() - t_3))
         # print("Total time spent in MarkoutCalculatorPre() = %s" % (time.time() - t0))
         return completed
