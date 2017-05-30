@@ -8,6 +8,7 @@ import numpy as np
 import math
 import aiostreams.operators as op
 from aiostreams import run, ExceptionLoggingContext
+from aiostreams import KafkaPersister
 from mosaicsmartdata.common import qc_csv_helper
 from mosaicsmartdata.common.read_config import Configurator
 from mosaicsmartdata.common.constants import *
@@ -349,7 +350,8 @@ class TestMarkouts(TestCase):
                         # now convert the str_time to time object
                         self.COB_time_utc = dt.datetime.strptime(self.COB_time_utc, "%H:%M:%S").time()
 
-                        if msg.timestamp > self.COB_time_utc:
+                        if msg.timestamp.time() > self.COB_time_utc:
+                            print("raising true")
                             return True
                         else:
                             return False
@@ -360,7 +362,13 @@ class TestMarkouts(TestCase):
                 #
                 output_list = graph.sink
 
-                print("time taken=%s" % (time.time() - t0))
+                with ExceptionLoggingContext():
+                    # run(asyncio.sleep(1)) # so Kafka has time to propagate
+                    loaded = KafkaPersister().load('my_nice_graph_3')
+                    print(loaded)
+                    run(loaded)
+                    print(loaded.sink)
+                    self.assertEqual(graph.sink, loaded.sink)
 
                 # do assertions
                 self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
