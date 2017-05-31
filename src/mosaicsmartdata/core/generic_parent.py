@@ -7,12 +7,22 @@ if False:
     from mosaicsmartdata.common.quantlib.bond.bond_price import *
     import mosaicsmartdata.common.quantlib.bond.fixed_bond as bond
     from mosaicsmartdata.common.constants import *
-
+import cloudpickle
 
 class GenericParent:
     def __init__(self, *args, **kwargs):
         if len(kwargs):
             raise ValueError('Unknown arguments:', kwargs)
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
     def apply_kwargs(self, goodargs, kwargs):
         # print('Entering apply_kwargs', self, goodargs, kwargs)

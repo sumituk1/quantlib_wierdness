@@ -23,6 +23,6 @@ class Quote(GenericParent):
         elif str(item) == 'mid':
             return 0.5 * (self.bid + self.ask)
         else:
-            if str(item) not in ['__deepcopy__', '__getstate__']:
-                raise ValueError('This object doesn\'t have attribute \"' + item + '\"')
+            if True: #str(item) not in ['__deepcopy__', '__getstate__']:
+                raise AttributeError('This object doesn\'t have attribute \"' + item + '\"')
 

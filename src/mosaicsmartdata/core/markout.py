@@ -14,8 +14,9 @@ import time
 
 size_threshold = 100 * 1000  # 100 kb before re-indexing kicks in
 class PriceBuffer:
-    def __init__(self, buf_incr = 10000):
+    def __init__(self, buf_incr = 10000, max_lag = None):
         self.buf_incr = buf_incr
+        self.max_lag = max_lag
         self.value = np.zeros(0)
         self.time = pd.Series(np.zeros(0))
         self.last = 0
@@ -31,24 +32,44 @@ class PriceBuffer:
             self.time = pd.concat([self.time, extra_time], axis = 0)
         self.time[self.last - 1] = timestamp
         self.value[self.last - 1] = value
-        if timestamp == datetime.datetime(2017,1,16,13,50,0):
-            print('') # to set breakpoint here ;)
 
     def get_last_price_before(self, timestamp, cutoff_timestamp = None):
         if cutoff_timestamp:
-            filter_ = np.logical_and(self.time <= timestamp, self.time > cutoff_timestamp)
+            filter_ = np.logical_and(np.array(self.time <= timestamp), np.array(self.time > cutoff_timestamp))
         else:
-            filter_ = self.time <= timestamp
-        nicedata = self.value[np.array(filter_)]
+            filter_ = np.array(self.time <= timestamp)
+        nicedata = self.value[filter_]
         if len(nicedata) > 0:
             return nicedata[-1]
         else:
             return np.NaN
 
     def throw_away_before(self, timestamp):
-        filter_ = self.time < timestamp
-        self.value = copy(self.value[filter_])
+        filter_ = self.time >= timestamp
+        oldlen = len(self.value)
+        self.value = copy(self.value[np.array(filter_)])
         self.time = copy(self.time[filter_])
+        if self.last == oldlen:
+            self.last = len(self.value)# both arrays just full
+        else:
+            inds = np.array(range(oldlen))
+            new_inds = inds[np.array(filter_)]
+            for i, ind in enumerate(new_inds):
+                if ind ==self.last:
+                    self.last = i
+                    break
+            if self.last > len(self.value):
+                raise RuntimeError('Error in price buffer!')
+
+    def __getstate__(self):
+        # trim all unneeded data before saving
+        if self.last > 0: # if there's any data in the buffer
+            max_lookback = self.time[self.last - 1] + dt.timedelta(seconds=self.max_lag)
+            self.throw_away_before(max_lookback)
+            self.value = np.array(self.value[:self.last])
+            self.time = pd.Series(np.array(self.time[:self.last]))
+        state = self.__dict__.copy()
+        return state
 
 
 class MarkoutCalculatorPre:
@@ -62,7 +83,7 @@ class MarkoutCalculatorPre:
     def __init__(self, lags_list, max_lag, instr=None):
         self.pending = []
         self.lags_list = lags_list
-        self.buffer = PriceBuffer()
+        self.buffer = PriceBuffer(max_lag=max_lag)
         #self.last_price = pd.DataFrame(columns=['mid', 'timestamp']).reset_index()
         self.last_timestamp = None
         self.COB_time_utc = None
@@ -243,7 +264,8 @@ class MarkoutCalculator:
         pre_lags = [x for x in lags_list if x[0] == '-']
         post_lags = [x for x in lags_list if not x[0] == '-']
         if len([x for x in lags_list if "COB" not in x]) > 0:
-            self.max_lag = max([abs(float(x)) for x in lags_list if "COB" not in x])
+            # this is the biggest backward-looking lag
+            self.max_lag = min([float(x) for x in lags_list if "COB" not in x])
         else:
             self.max_lag = None
         # always do a post trade

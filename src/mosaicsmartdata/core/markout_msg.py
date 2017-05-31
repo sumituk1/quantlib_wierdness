@@ -39,7 +39,9 @@ class MarkoutMessage2(GenericParent):
             if mk_type in mults:
                 return self.price_markout * mults[mk_type] if not self.price_markout is None else "NaN"
         else:
-            raise ValueError('This object doesn\'t understand ' + item)
+            raise AttributeError('This object doesn\'t have attribute' + item)
+
+
 
     def __str__(self):
         out = ""
