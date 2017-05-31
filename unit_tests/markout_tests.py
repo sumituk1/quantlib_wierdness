@@ -327,6 +327,14 @@ class TestMarkouts(TestCase):
 
                 # create a pp
                 class pp:
+                    def __init__(self):
+                        self.COB_time_utc_eur = \
+                            configurator.get_data_given_section_and_key("GovtBond_Markout", "EGB_COB")
+                        self.COB_time_utc_ust = \
+                            configurator.get_data_given_section_and_key("GovtBond_Markout", "UST_COB")
+                        self.COB_time_utc_gbp = \
+                            configurator.get_data_given_section_and_key("GovtBond_Markout", "GBP_COB")
+
                     # implement a COB persist policy
                     # def __init__(self, cob_ts):
                     #     self.cob = cob_ts
@@ -334,12 +342,6 @@ class TestMarkouts(TestCase):
 
                     def __call__(self, msg):
                         # get the COB time per ccy
-                        self.COB_time_utc_eur = \
-                            configurator.get_data_given_section_and_key("GovtBond_Markout","EGB_COB")
-                        self.COB_time_utc_ust = \
-                            configurator.get_data_given_section_and_key("GovtBond_Markout","UST_COB")
-                        self.COB_time_utc_gbp = \
-                            configurator.get_data_given_section_and_key("GovtBond_Markout","GBP_COB")
                         if msg.trade.ccy == Currency.EUR:
                             self.COB_time_utc = self.COB_time_utc_eur
                         elif msg.trade.ccy == Currency.USD:
