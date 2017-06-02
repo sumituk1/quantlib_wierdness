@@ -71,7 +71,8 @@ class FixedIncomeTrade(Trade):
         self.coupon = None
         self.coupon_frequency = None
         self.day_count = None
-
+        self.package_size = None  # package_size of the trade executed
+        self.leg_no = None  # -1 would be the package leg . 0/1/2/3 are the leg_Nos
         # the magic line to process the kwargs
         # other_args = self.apply_kwargs(self.__dict__,kwargs)
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
