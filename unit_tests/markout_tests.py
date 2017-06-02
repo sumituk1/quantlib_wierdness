@@ -338,7 +338,7 @@ class TestMarkouts(TestCase):
                         configurator.get_data_given_section_and_key("GovtBond_Markout", "UST_COB")
                     self.COB_time_utc_gbp = \
                         configurator.get_data_given_section_and_key("GovtBond_Markout", "GBP_COB")
-
+                    self.num_calls = 0
                 # implement a COB persist policy
                 # def __init__(self, cob_ts):
                 #     self.cob = cob_ts
@@ -354,17 +354,18 @@ class TestMarkouts(TestCase):
                         self.COB_time_utc = self.COB_time_utc_gbp
                     # now convert the str_time to time object
                     self.COB_time_utc = dt.datetime.strptime(self.COB_time_utc, "%H:%M:%S").time()
-                    if msg.timestamp is None:
-                        print('weird timestamp!')
                     if msg.timestamp.time() > self.COB_time_utc:
+                        # only make one snapshot per day
                         if not (self.last_date_persisted == msg.timestamp.date()):
                             self.last_date_persisted = msg.timestamp.date()
                             print('COB!!!', msg.timestamp)
-                            return True
+                            self.num_calls += 1
+                            # only snapshot the first 2 COBs so the reflated graph still has days to run
+                            if self.num_calls < 3:
+                                print('persisting...')
+                                return True
                         else:
                             print(msg.timestamp)
-                            return False
-                    else:
                         return False
 
             graph.persistence_policy = pp()
@@ -381,7 +382,7 @@ class TestMarkouts(TestCase):
             print(loaded.last_msg.timestamp)
             run(loaded)
             #print(loaded.sink)
-            #self.assertEqual(graph.sink[0].__dict__, loaded.sink[0].__dict__)
+            self.assertEqual(graph.sink, loaded.sink)
 
         # do assertions
         self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
