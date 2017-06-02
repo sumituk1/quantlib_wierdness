@@ -51,7 +51,8 @@ class RepoSingleton(Borg):
         return output
 
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        # it's a singleton, so checking class is enough
+        return self.__class__ == other.__class__
 
             # def __str__(self):  # just for the illustration below, could be anything else
     #     return str(self.__dict__)
