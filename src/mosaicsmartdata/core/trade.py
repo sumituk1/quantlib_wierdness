@@ -5,9 +5,6 @@ import mosaicsmartdata.common.quantlib.bond.fixed_bond as bond
 from mosaicsmartdata.common.quantlib.bond.bond_forward_price import govbond_cleanprice_from_forwardprice
 
 
-
-
-
 class Trade(GenericParent):
     def __init__(self, *args, **kwargs):
         self.repo_rate = RepoSingleton()
@@ -44,6 +41,7 @@ class Trade(GenericParent):
 
         def markout_mults(self):
             return {'price': 1, 'PV': self.delta}
+
 
 class FixedIncomeTrade(Trade):
     # Attributes with default parameter.
@@ -113,7 +111,6 @@ class FixedIncomeTrade(Trade):
                                                           holidayCities=self.holidayCities,
                                                           settle_date=self.trade_settle_date)
 
-
                 self.adj_traded_px = govbond_cleanprice_from_forwardprice(forward_price=self.traded_px,
                                                                           spot_settle_date=self.spot_settle_date,
                                                                           prev_coupon_date=prev_coupon_date,
@@ -127,9 +124,11 @@ class FixedIncomeTrade(Trade):
         except:
             pass
             # TODO add proper logging here
-    # except:
-    #     def check_non_standard_trade(self):
-    #         self.adj_traded_px = self.traded_px
+            # except:
+            #     def check_non_standard_trade(self):
+            #         self.adj_traded_px = self.traded_px
+
+
 class FixedIncomeFuturesHedge(Trade):
     def __init__(self, *args, **kwargs):
         # self.package_id = None
@@ -242,16 +241,19 @@ class FixedIncomeOTCHedge(Trade):
                 'cents': 100.0,
                 'bps': (1.0 / self.duration / self.par_value) * 10000}
 
+
 ''' Interest Rate Swap product
 Specific changes:
 1. markout_mults - Since Swaps is yield based so no need to do price to yield conversion'''
-class InterestRateSwap(FixedIncomeTrade):
 
+
+class InterestRateSwap(FixedIncomeTrade):
     def markout_mults(self):
         return {'price': (1 / self.par_value) * self.notional,
-                'PV': self.delta,
-                'cents': 100.0,
+                'PV': (1.0 / self.par_value) * 10000 * self.delta,
+                # 'cents': 100.0,
                 'bps': (1.0 / self.par_value) * 10000}
+
 
 if __name__ == '__main__':
     date_0 = dt.datetime(2017, 1, 2)
