@@ -6,6 +6,7 @@ importlib.reload(logging)
 from unittest import TestCase
 import numpy as np
 import math
+import asyncio
 import aiostreams.operators as op
 from aiostreams import run, ExceptionLoggingContext
 from aiostreams import KafkaPersister
@@ -312,88 +313,100 @@ class TestMarkouts(TestCase):
         tolerance = 5 * 1e-2
         thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         os.chdir(thisfiledir)
-
+        logging.getLogger().setLevel('INFO')
+        logging.getLogger().info("test")
         # Create a singleton configurator
         configurator = Configurator('config')
-        try:
-            with ExceptionLoggingContext():
-                # load the trade and quote data and merge
-                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/unhedged_markout_tests/",
-                                                                    quote_file_list=["912810RB6_quotes.csv",
-                                                                                     "DE10YT_RR_quotes.csv",
-                                                                                     "US30YT_RR_quotes.csv"],
-                                                                    trade_file="trades.csv")
-                graph,output_list = self.create_graph(quote_trade_list)
-                graph.id = 'my_nice_graph_3'
+        #try:
+        with ExceptionLoggingContext():
+            # load the trade and quote data and merge
+            quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/unhedged_markout_tests/",
+                                                                quote_file_list=["912810RB6_quotes.csv",
+                                                                                 "DE10YT_RR_quotes.csv",
+                                                                                 "US30YT_RR_quotes.csv"],
+                                                                trade_file="trades.csv")
+            graph,output_list = self.create_graph(quote_trade_list)
+            graph.id = 'my_nice_graph_3'
 
-                # create a pp
-                class pp:
-                    # implement a COB persist policy
-                    # def __init__(self, cob_ts):
-                    #     self.cob = cob_ts
-                    #     self.last_timestamp = None
+            # create a pp
+            class pp:
+                def __init__(self):
+                    self.last_date_persisted = None
+                    self.COB_time_utc_eur = \
+                        configurator.get_data_given_section_and_key("GovtBond_Markout", "EGB_COB")
+                    self.COB_time_utc_ust = \
+                        configurator.get_data_given_section_and_key("GovtBond_Markout", "UST_COB")
+                    self.COB_time_utc_gbp = \
+                        configurator.get_data_given_section_and_key("GovtBond_Markout", "GBP_COB")
 
-                    def __call__(self, msg):
-                        # get the COB time per ccy
-                        self.COB_time_utc_eur = \
-                            configurator.get_data_given_section_and_key("GovtBond_Markout","EGB_COB")
-                        self.COB_time_utc_ust = \
-                            configurator.get_data_given_section_and_key("GovtBond_Markout","UST_COB")
-                        self.COB_time_utc_gbp = \
-                            configurator.get_data_given_section_and_key("GovtBond_Markout","GBP_COB")
-                        if msg.trade.ccy == Currency.EUR:
-                            self.COB_time_utc = self.COB_time_utc_eur
-                        elif msg.trade.ccy == Currency.USD:
-                            self.COB_time_utc = self.COB_time_utc_ust
-                        elif msg.trade.ccy == Currency.GBP:
-                            self.COB_time_utc = self.COB_time_utc_gbp
-                        # now convert the str_time to time object
-                        self.COB_time_utc = dt.datetime.strptime(self.COB_time_utc, "%H:%M:%S").time()
+                # implement a COB persist policy
+                # def __init__(self, cob_ts):
+                #     self.cob = cob_ts
+                #     self.last_timestamp = None
 
-                        if msg.timestamp.time() > self.COB_time_utc:
-                            print("raising true")
+                def __call__(self, msg):
+                    # get the COB time per ccy
+                    if msg.trade.ccy == Currency.EUR:
+                        self.COB_time_utc = self.COB_time_utc_eur
+                    elif msg.trade.ccy == Currency.USD:
+                        self.COB_time_utc = self.COB_time_utc_ust
+                    elif msg.trade.ccy == Currency.GBP:
+                        self.COB_time_utc = self.COB_time_utc_gbp
+                    # now convert the str_time to time object
+                    self.COB_time_utc = dt.datetime.strptime(self.COB_time_utc, "%H:%M:%S").time()
+                    if msg.timestamp is None:
+                        print('weird timestamp!')
+                    if msg.timestamp.time() > self.COB_time_utc:
+                        if not (self.last_date_persisted == msg.timestamp.date()):
+                            self.last_date_persisted = msg.timestamp.date()
+                            print('COB!!!', msg.timestamp)
                             return True
                         else:
+                            print(msg.timestamp)
                             return False
+                    else:
+                        return False
 
-                graph.persistence_policy = pp()
-                # run the graph
-                run(graph)
-                #
-                output_list = graph.sink
+            graph.persistence_policy = pp()
+            # run the graph
+            run(graph)
+            #run(asyncio.sleep(1))
+            output_list = graph.sink
+            print('inital run completed')
 
-                with ExceptionLoggingContext():
-                    # run(asyncio.sleep(1)) # so Kafka has time to propagate
-                    loaded = KafkaPersister().load('my_nice_graph_3')
-                    print(loaded)
-                    run(loaded)
-                    print(loaded.sink)
-                    self.assertEqual(graph.sink, loaded.sink)
+        with ExceptionLoggingContext():
+            print('starting load attempt')
+            # run(asyncio.sleep(1)) # so Kafka has time to propagate
+            loaded = KafkaPersister().load('my_nice_graph_3')
+            print(loaded.last_msg.timestamp)
+            run(loaded)
+            #print(loaded.sink)
+            #self.assertEqual(graph.sink[0].__dict__, loaded.sink[0].__dict__)
 
-                # do assertions
-                self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
-                self.assertEquals(len(output_list), 9 * 3, msg=None)
-                for mk_msg in output_list:
-                    if mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB0':
-                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.072) / mk_msg.bps_markout),
-                                             tolerance, msg=None)
-                    elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB1':
-                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.844) / mk_msg.bps_markout),
-                                             tolerance, msg=None)
-                    elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB2':
-                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-1.138)) / mk_msg.bps_markout),
-                                             tolerance, msg=None)
-                    elif mk_msg.trade_id == "UST30Y_OTR_111111" and mk_msg.dt == 'COB0':
-                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-1.128)) / mk_msg.bps_markout),
-                                             tolerance, msg=None)
-                    elif mk_msg.trade_id == "UST30Y_OTR_111111" and mk_msg.dt == 'COB1':
-                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-9.85)) / mk_msg.bps_markout),
-                                             tolerance, msg=None)
-                    elif mk_msg.trade_id == "UST30Y_OTR_111111" and mk_msg.dt == 'COB2':
-                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-13.41)) / mk_msg.bps_markout),
-                                             tolerance, msg=None)
-        except Exception:
-            raise Exception
+        # do assertions
+        self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
+        self.assertEquals(len(output_list), 9 * 3, msg=None)
+        for mk_msg in output_list:
+            if mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB0':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.072) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB1':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.844) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_999" and mk_msg.dt == 'COB2':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-1.138)) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == "UST30Y_OTR_111111" and mk_msg.dt == 'COB0':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-1.128)) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == "UST30Y_OTR_111111" and mk_msg.dt == 'COB1':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-9.85)) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == "UST30Y_OTR_111111" and mk_msg.dt == 'COB2':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-13.41)) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+        # except Exception:
+        #     raise Exception
 
     # test NaN
     def test_case_7(self, plotFigure=False):
@@ -442,4 +455,4 @@ if __name__ == '__main__':
     #    unittest.main()
     k= TestMarkouts()
     k.setUp()
-    k.test_case_1()
+    k.test_case_6()

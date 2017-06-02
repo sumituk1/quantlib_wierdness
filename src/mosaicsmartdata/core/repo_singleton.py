@@ -50,7 +50,10 @@ class RepoSingleton(Borg):
 
         return output
 
-    # def __str__(self):  # just for the illustration below, could be anything else
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+            # def __str__(self):  # just for the illustration below, could be anything else
     #     return str(self.__dict__)
 
 if __name__ == "__main__":
