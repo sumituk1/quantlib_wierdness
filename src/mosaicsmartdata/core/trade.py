@@ -45,7 +45,6 @@ class Trade(GenericParent):
         def markout_mults(self):
             return {'price': 1, 'PV': self.delta}
 
-
 class FixedIncomeTrade(Trade):
     # Attributes with default parameter.
     # # Instrument Static
@@ -115,16 +114,16 @@ class FixedIncomeTrade(Trade):
                                                           settle_date=self.trade_settle_date)
 
 
-            self.adj_traded_px = govbond_cleanprice_from_forwardprice(forward_price=self.traded_px,
-                                                                      spot_settle_date=self.spot_settle_date,
-                                                                      prev_coupon_date=prev_coupon_date,
-                                                                      next_coupon_date=next_coupon_date,
-                                                                      forward_date=self.trade_settle_date,
-                                                                      coupon=self.coupon,
-                                                                      day_count=self.day_count,
-                                                                      frequency=self.coupon_frequency,
-                                                                      repo=self.repo_rate(ccy=self.ccy,
-                                                                                          date=self.trade_date))
+                self.adj_traded_px = govbond_cleanprice_from_forwardprice(forward_price=self.traded_px,
+                                                                          spot_settle_date=self.spot_settle_date,
+                                                                          prev_coupon_date=prev_coupon_date,
+                                                                          next_coupon_date=next_coupon_date,
+                                                                          forward_date=self.trade_settle_date,
+                                                                          coupon=self.coupon,
+                                                                          day_count=self.day_count,
+                                                                          frequency=self.coupon_frequency,
+                                                                          repo=self.repo_rate(ccy=self.ccy,
+                                                                                              date=self.trade_date))
         except:
             pass
             # TODO add proper logging here
@@ -243,6 +242,16 @@ class FixedIncomeOTCHedge(Trade):
                 'cents': 100.0,
                 'bps': (1.0 / self.duration / self.par_value) * 10000}
 
+''' Interest Rate Swap product
+Specific changes:
+1. markout_mults - Since Swaps is yield based so no need to do price to yield conversion'''
+class InterestRateSwap(FixedIncomeTrade):
+
+    def markout_mults(self):
+        return {'price': (1 / self.par_value) * self.notional,
+                'PV': self.delta,
+                'cents': 100.0,
+                'bps': (1.0 / self.par_value) * 10000}
 
 if __name__ == '__main__':
     date_0 = dt.datetime(2017, 1, 2)
