@@ -3,7 +3,7 @@ import csv
 import datetime as dt
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.core.instrument_singleton import *
-from mosaicsmartdata.core.trade import FixedIncomeTrade
+from mosaicsmartdata.core.trade import *
 from mosaicsmartdata.core.quote import Quote
 
 # converts a time precision in nano-seconds (kdb+) to a datetime object
@@ -71,6 +71,42 @@ def file_to_trade_list(fname):
         trade_list.append(tr)
     return trade_list
 
+
+# Create a Trade object by reading data from csv.
+# In the future, this will come from Kafka
+def file_to_swaps_trade_list(fname):
+    trade_list = []
+    with open(fname, 'r') as f:
+        reader = csv.reader(f)
+        my_list = list(reader)
+
+    # convert them to Trade objects, assuming first row is headers
+    for x in my_list[1:]:
+        tr = InterestRateSwap(trade_id=x[1],
+                              sym=x[4],
+                              notional=float(x[6]), # mandatory notional
+                              timestamp=parse_iso_timestamp(x[13]),
+                              side=TradeSide.Ask if x[10] == "Ask" else TradeSide.Bid,
+                              traded_px=float(x[7]), # has to have a traded_px
+                              client_sys_key=x[16],
+                              tenor=float(x[5]), # has to have a tenor
+                              trade_date=dt.datetime.strptime(x[14], "%Y.%m.%d"),
+                              ccy=x[18],
+                              trade_settle_date=dt.datetime.strptime(x[15], "%Y.%m.%d"),
+                              spot_settle_date=dt.datetime.strptime(x[25], "%Y.%m.%d"),
+                              maturity_date=dt.datetime.strptime(x[19], "%Y.%m.%d"),
+                              coupon=float(x[20]) if x[20] != "" else None, # optional coupon
+                              holidayCities=x[21],
+                              coupon_frequency=Frequency.convertFrequencyStr(x[22]),
+                              day_count=DayCountConv.convertDayCountStr(x[23]),
+                              issue_date=dt.datetime.strptime(x[24], "%Y.%m.%d") if x[24]!= "" else None,
+                              duration=float(x[9]), # mandatory duration
+                              country_of_risk=x[26],
+                              package_size=float(x[27]),
+                              leg_no=float(x[28]),
+                              )
+        trade_list.append(tr)
+    return trade_list
 
 if __name__ == "__main__":
     ts = "2017.03.21D11:19:45.605345678"
