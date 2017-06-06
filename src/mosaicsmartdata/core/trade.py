@@ -10,7 +10,7 @@ class Trade(GenericParent):
         self.repo_rate = RepoSingleton()
         self.trade_id = None
         self.package_id = None
-        self.package_size = 1
+        # self.package_size = None
         self.paper_trade = False
         self.sym = None
         self.timestamp = None
@@ -28,6 +28,7 @@ class Trade(GenericParent):
         self.tenor = None
         self.venue = None
         self.holidayCities = None
+        self.factor_risk = None
         self.country_of_risk = Country.US  # default to US
 
         # just paste this magic line in to assign the kwargs

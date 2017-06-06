@@ -21,7 +21,7 @@ class Configurator(Borg):
         # any class using that pattern will be a singleton
         super().__init__()
 
-        if 'config' not in self.__dict__:#'config' not in self.__dict__:
+        if fname not in self.__dict__:#'config' not in self.__dict__:
             # have to do this weird scan so the test runs both in pyb and pycharm
             root_location = mosaicsmartdata.__path__
             if len(root_location) > 1:

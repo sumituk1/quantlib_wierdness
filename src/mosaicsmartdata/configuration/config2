@@ -10,7 +10,7 @@ ONRepo = 0.002
 IncludeCostOfCarry = False
 MinHedgeDV01 = 500
 
-[GovtBond_Markout]
+[Swaps_Markout]
 lags_list_3 = 0,COB0,COB1,COB2
 lags_list = -900,-60,0,60,300,3600,COB0,COB1,COB2
 lags_list_2 = 0,60
@@ -19,20 +19,6 @@ GBP_COB = 17:00:00
 EGB_COB = 16:30:00
 markout_mode = unhedged
 
-[Swaps_Markout]
-lags_list_1 = 0,COB0,COB1,COB2
-lags_list = -900,-60,0,60,300,3600,COB0,COB1,COB2
-lags_list_2 = 0,60
-UST_COB = 22:00:00
-GBP_COB = 17:00:00
-EGB_COB = 16:30:00
-markout_mode = unhedged
-
-[Factor_loadings]
-eig_vector = eig_vec__20140531_20170515.csv
-eig_value = eig_value__20140531_20170515.csv
-annual_mult = 250
-tenor_list = 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 25, 30, 40, 50
 
 [USD_GovtBond_Listed_Hedge_Mapper]
 country_list = US
