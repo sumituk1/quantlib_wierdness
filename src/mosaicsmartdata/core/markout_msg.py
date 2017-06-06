@@ -23,6 +23,8 @@ class MarkoutMessage2(GenericParent):
         self.hedged_cents = None
         self.hedged_price = None
         self.hedged_bps = None
+        self.factor_PV_markout = None # todo: check with Egor if there's a better way
+        self.factor_bps_markout = None  # todo: check with Egor if there's a better way
         self.timestamp = None # used to hold the ticking of the clock from Quotes message
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
@@ -76,11 +78,14 @@ class MarkoutMessage2(GenericParent):
                 out += " " + item + ":" + str(self.__dict__[item])
             else:
                 mk_type = str(item)[:-8]
-                mults = self.trade.markout_mults()
-                if mk_type in mults:
-                    for key, value in mults.items():
-                        out += " " + key + ":" + str(self.price_markout * value
-                                                     if not self.price_markout is None else "NaN")
+                if self.factor_PV_markout is None:
+                    # if Mkt_Msg is stamped with a factor PV markout, then no need to calculate returns at the leg level.
+                    # Leg level markouts should be calculated using MarkoutCalculator()
+                    mults = self.trade.markout_mults()
+                    if mk_type in mults:
+                        for key, value in mults.items():
+                            out += " " + key + ":" + str(self.price_markout * value
+                                                         if not self.price_markout is None else "NaN")
 
         return out
         # return self.price_markout * mults[mk_type]
