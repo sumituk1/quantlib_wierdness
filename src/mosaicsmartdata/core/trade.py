@@ -10,7 +10,7 @@ class Trade(GenericParent):
         self.repo_rate = RepoSingleton()
         self.trade_id = None
         self.package_id = None
-        # self.package_size = None
+        self.package_size = None
         self.paper_trade = False
         self.sym = None
         self.timestamp = None
@@ -60,7 +60,6 @@ class FixedIncomeTrade(Trade):
         self.duration = None
         self.trade_added_to_rp = False
         self.is_d2d_force_close = False
-        self.duration = None
         self.beta = dict()  # for hedging using multiple assets
         self.par_value = 100
         self.spot_settle_date = None
@@ -132,7 +131,7 @@ class FixedIncomeTrade(Trade):
             #         self.adj_traded_px = self.traded_px
 
 
-class FixedIncomeFuturesHedge(FixedIncomeTrade):
+class FixedIncomeFuturesHedge(Trade):
     def __init__(self, *args, **kwargs):
         # self.package_id = None
         self.min_hedge_delta = 1000  # in relevant ccy
@@ -140,6 +139,9 @@ class FixedIncomeFuturesHedge(FixedIncomeTrade):
         self.duration = None  # <- hedge trade attribute for the time being
         self.trade_delta = None  # <- hedge trade_delta attribute for the time being
         self.trade_beta = dict()
+        self.package_size = None  # package_size of the trade executed
+        self.leg_no = None  # -1 would be the package leg . 0/1/2/3 are the leg_Nos
+        self.price_type = None
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
         # self.notional = 100000  # for futures
@@ -192,7 +194,7 @@ Handle OTC related hedge calcs
 """
 
 
-class FixedIncomeOTCHedge(FixedIncomeTrade):
+class FixedIncomeOTCHedge(Trade):
     def __init__(self, *args, **kwargs):
         # self.package_id = None
         self.min_hedge_delta = 1000  # in relevant ccy
@@ -201,6 +203,9 @@ class FixedIncomeOTCHedge(FixedIncomeTrade):
         self.trade_delta = None  # <- hedge trade_delta attribute for the time being
         self.trade_beta = dict()
         # self.settle_date = None
+        self.package_size = None  # package_size of the trade executed
+        self.leg_no = None  # -1 would be the package leg . 0/1/2/3 are the leg_Nos
+        self.price_type = None
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
         self.notional = 1  # for OTC bonds
@@ -209,6 +214,7 @@ class FixedIncomeOTCHedge(FixedIncomeTrade):
         self.par_value = 100
         self.maturity_date = None
         self.adj_traded_px = self.traded_px
+
         # self.notional = 0.0
         # self.traded_px = None
         # set delta of hedge instrument

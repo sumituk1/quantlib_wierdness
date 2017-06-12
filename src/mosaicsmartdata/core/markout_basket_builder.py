@@ -14,7 +14,7 @@ class MarkoutBasketBuilder:
         else:
             return []
 
-
+'''Calculates aggregated markouts for Unhedged trade and Hedge (paper-trade)'''
 def aggregate_markouts(hedge_markout_msgs):
     # extract the non -paper trade
     trade_mk_msg = [x for x in hedge_markout_msgs if not x.paper_trade][0]
@@ -25,6 +25,7 @@ def aggregate_markouts(hedge_markout_msgs):
     trade_mk_msg.hedged_bps = trade_mk_msg.hedged_price / trade_mk_msg.trade.delta
     return trade_mk_msg
 
+''' Aggregates the markouts of individual non-paper trades '''
 def aggregate_multi_leg_markouts(mkt_msgs):
     # 1. calculate the net $ PV
     net_PV = 0.0
@@ -34,12 +35,20 @@ def aggregate_multi_leg_markouts(mkt_msgs):
 
     [trade_lst.append(x.trade) for x in mkt_msgs]
     mkmsg = mkt_msgs[0]
+
+    # stamp the net_PV of the package on the new mkt_msg
     mkmsg.factor_PV_markout = net_PV
+
+    # stamp the factor_bps_mo of the package on the new mkt_msg
     mkmsg.factor_bps_markout = net_PV/mkt_msgs[0].trade.factor_risk.total_factor_risk
+
     # mkmsg.is_package = True
     mkmsg.final_price = None
     mkmsg.next_timestamp = None
     mkmsg.initial_price = None
+    if mkt_msgs.trade.package_size == 1:
+        # include the hedged markouts
+        aggregate_markouts(mkt_msgs)
     # mkmsg.price_markout = None
     # generate_package_mkt_msg(x.dt, net_PV)
     # mkmsg = MarkoutMessage2(trade=trade_lst,

@@ -123,22 +123,27 @@ def my_hedge_calculator(msg,
     configurator = Configurator()
     msg_processed = False
 
-    if product_class is not None:
-        # caller passed in specific hedge class to hedge the underlying
-        if product_class == ProductClass.BondFutures:
-            hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes)
-        elif product_class == ProductClass.GovtBond:
-            hedge_trades, msg_processed = perform_cash_hedge(msg, lastquotes)
-            # msg_processed = True  # TODO: currently we support ONLY Futures OR Cash hedging
+    if msg.package_size == 1 or msg.package_size is None:
 
-    # No specific hedge class passed in. So walk the config and try and do the hedging, starting with Futures
-    if not msg_processed:
-        hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes)
-        # hedge_trades.append(hedge_trades_futures)
-    if not msg_processed:
-        # No futures hedging performed. So check to see if Cash hedging can be performed
-        hedge_trades, _ = perform_cash_hedge(msg, lastquotes)
-        # hedge_trades.append(hedge_trades_cash)
+        if product_class is not None:
+            # caller passed in specific hedge class to hedge the underlying
+            if product_class == ProductClass.BondFutures:
+                hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes)
+            elif product_class == ProductClass.GovtBond:
+                hedge_trades, msg_processed = perform_cash_hedge(msg, lastquotes)
+                # msg_processed = True  # TODO: currently we support ONLY Futures OR Cash hedging
+
+        # No specific hedge class passed in. So walk the config and try and do the hedging, starting with Futures
+        if not msg_processed:
+            hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes)
+            # hedge_trades.append(hedge_trades_futures)
+        if not msg_processed:
+            # No futures hedging performed. So check to see if Cash hedging can be performed
+            hedge_trades, _ = perform_cash_hedge(msg, lastquotes)
+    else:
+        # for multi-legs, no duration hedge is performed.
+        # todo: extend to higher order hedges
+        hedge_trades = []
     return hedge_trades
 
 
@@ -233,9 +238,10 @@ def perform_cash_hedge(msg, lastquotes):
                         FixedIncomeOTCHedge(trade_id=msg.trade_id + "_OTC_HEDGE_" + str(i),
                                             package_id=msg.package_id,
                                             sym=hedge_sym_arr[i],
+                                            duration=instrument_static(sym=hedge_quote.sym)['duration'],
                                             paper_trade=True,
-                                            notional=1,  # <- typically futures notional is 100000
-                                            delta=None,  # <-- TODO:ALWAYS pass in Futures delta
+                                            notional=1,  # <- Cash notional is 1
+                                            delta=None,
                                             timestamp=msg.timestamp,
                                             side=TradeSide.Ask if msg.side == TradeSide.Bid else TradeSide.Bid,
                                             traded_px=hedge_quote.ask if msg.side == TradeSide.Ask else hedge_quote.bid,
@@ -245,8 +251,7 @@ def perform_cash_hedge(msg, lastquotes):
                                             trade_delta=msg.delta,
                                             trade_settle_date=msg.trade_settle_date,
                                             min_hedge_delta=min_hedge_delta,
-                                            trade_beta=msg.beta,
-                                            duration=instrument_static(sym=hedge_quote.sym)['duration'])
+                                            trade_beta=msg.beta)
                     hedge_trades.append(hedge_otc_trade)
         except Exception as e:
             msg_processed = False
