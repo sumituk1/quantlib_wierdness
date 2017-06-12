@@ -10,7 +10,7 @@ class Trade(GenericParent):
         self.repo_rate = RepoSingleton()
         self.trade_id = None
         self.package_id = None
-        self.package_size = None
+        # self.package_size = None # todo: package_size is an attribute of FICC trade?
         self.paper_trade = False
         self.sym = None
         self.timestamp = None
@@ -69,9 +69,10 @@ class FixedIncomeTrade(Trade):
         self.coupon_frequency = None
         self.float_coupon_frequency = None
         self.day_count = None
-        self.package_size = None  # package_size of the trade executed
-        self.leg_no = None  # -1 would be the package leg . 0/1/2/3 are the leg_Nos
+        self.leg_no = None
         self.price_type = None
+        self.package_size = None  # package_size of the trade executed
+
         # the magic line to process the kwargs
         # other_args = self.apply_kwargs(self.__dict__,kwargs)
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
