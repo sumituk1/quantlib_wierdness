@@ -178,8 +178,12 @@ class MarkoutCalculatorPost:
         self.last_timestamp = None
         self.COB_time_utc = None
 
+    def only_cob_markouts(self):
+        out = [True if "COB" in x else False for x in self.lags_list]
+        return out
+
     def generate_markout_requests(self, msg):
-        if self.last_price is None:
+        if self.last_price is None and not self.only_cob_markouts():
             print(msg)
             raise ValueError('A trade arrived before any quote data!')
         else:
@@ -237,8 +241,16 @@ class MarkoutCalculatorPost:
 
         for x in completed:
             x.final_price = self.last_price
-            x.price_markout = (x.final_price - x.initial_price)
-            # x.cents_markout = (x.final_price - x.initial_price)
+            if x.trade.price_type == PriceType.Upfront and x.dt == "0":
+                # Handle upfront_fee at point of trade
+                x.price_markout = (x.final_price + x.initial_price)
+
+                # Reset the traded_px to be the current NPV of the swap for later markouts
+                for y in self.pending:
+                    if y not in completed:
+                        y.initial_price = x.final_price
+            else:
+                x.price_markout = (x.final_price - x.initial_price)
 
             if x.side == TradeSide.Ask:
                 x.price_markout *= -1

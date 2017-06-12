@@ -93,17 +93,19 @@ def file_to_swaps_trade_list(fname):
                               trade_date=dt.datetime.strptime(x[14], "%Y.%m.%d"),
                               ccy=x[18],
                               trade_settle_date=dt.datetime.strptime(x[15], "%Y.%m.%d"),
-                              spot_settle_date=dt.datetime.strptime(x[25], "%Y.%m.%d"),
+                              spot_settle_date=dt.datetime.strptime(x[26], "%Y.%m.%d"),
                               maturity_date=dt.datetime.strptime(x[19], "%Y.%m.%d"),
                               coupon=float(x[20]) if x[20] != "" else None, # optional coupon
                               holidayCities=x[21],
                               coupon_frequency=Frequency.convertFrequencyStr(x[22]),
-                              day_count=DayCountConv.convertDayCountStr(x[23]),
-                              issue_date=dt.datetime.strptime(x[24], "%Y.%m.%d") if x[24]!= "" else None,
+                              float_coupon_frequency=Frequency.convertFrequencyStr(x[23]),
+                              day_count=DayCountConv.convertDayCountStr(x[24]),
+                              issue_date=dt.datetime.strptime(x[25], "%Y.%m.%d") if x[25] != "" else None,
                               duration=float(x[9]), # mandatory duration
-                              country_of_risk=x[26],
-                              package_size=float(x[27]),
-                              leg_no=float(x[28]),
+                              country_of_risk=x[27],
+                              package_size=float(x[28]),
+                              leg_no=float(x[29]),
+                              price_type= PriceType.convert_price_type(x[30]) if x[30]!= "" else None,
                               )
         trade_list.append(tr)
     return trade_list

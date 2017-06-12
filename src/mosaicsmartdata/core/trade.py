@@ -68,9 +68,11 @@ class FixedIncomeTrade(Trade):
         self.maturity_date = None
         self.coupon = None
         self.coupon_frequency = None
+        self.float_coupon_frequency = None
         self.day_count = None
         self.package_size = None  # package_size of the trade executed
         self.leg_no = None  # -1 would be the package leg . 0/1/2/3 are the leg_Nos
+        self.price_type = None
         # the magic line to process the kwargs
         # other_args = self.apply_kwargs(self.__dict__,kwargs)
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
@@ -130,7 +132,7 @@ class FixedIncomeTrade(Trade):
             #         self.adj_traded_px = self.traded_px
 
 
-class FixedIncomeFuturesHedge(Trade):
+class FixedIncomeFuturesHedge(FixedIncomeTrade):
     def __init__(self, *args, **kwargs):
         # self.package_id = None
         self.min_hedge_delta = 1000  # in relevant ccy
@@ -190,7 +192,7 @@ Handle OTC related hedge calcs
 """
 
 
-class FixedIncomeOTCHedge(Trade):
+class FixedIncomeOTCHedge(FixedIncomeTrade):
     def __init__(self, *args, **kwargs):
         # self.package_id = None
         self.min_hedge_delta = 1000  # in relevant ccy
@@ -250,10 +252,16 @@ Specific changes:
 
 class InterestRateSwap(FixedIncomeTrade):
     def markout_mults(self):
-        return {'price': (1 / self.par_value) * self.notional,
-                'PV': (1.0 / self.par_value) * 10000 * self.delta,
-                # 'cents': 100.0,
-                'bps': (1.0 / self.par_value) * 10000}
+        if self.price_type == PriceType.Upfront:
+            return {'price': (1 / self.par_value) * self.notional,
+                    'PV': 1.0, # (1.0 / self.par_value) * 10000 * self.delta,
+                    # 'cents': 100.0,
+                    'bps': (1.0 / self.delta)}
+        else:
+            return {'price': (1 / self.par_value) * self.notional,
+                    'PV': (1.0 / self.par_value) * 10000 * self.delta,
+                    # 'cents': 100.0,
+                    'bps': (1.0 / self.par_value) * 10000}
 
 
 if __name__ == '__main__':

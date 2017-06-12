@@ -38,8 +38,13 @@ class MarkoutMessage2(GenericParent):
         elif str(item)[-8:] == '_markout':
             mk_type = str(item)[:-8]
             mults = self.trade.markout_mults()
+
             if mk_type in mults:
                 return self.price_markout * mults[mk_type] if not self.price_markout is None else "NaN"
+            # if self.trade.package_size == 1:
+            #     mults = self.trade.markout_mults()
+            #     if mk_type in mults:
+            #         return self.price_markout * mults[mk_type] if not self.price_markout is None else "NaN"
         else:
             raise AttributeError('This object doesn\'t have attribute' + item)
 
@@ -78,8 +83,9 @@ class MarkoutMessage2(GenericParent):
                 out += " " + item + ":" + str(self.__dict__[item])
             else:
                 mk_type = str(item)[:-8]
-                if self.factor_PV_markout is None:
-                    # if Mkt_Msg is stamped with a factor PV markout, then no need to calculate returns at the leg level.
+                if self.trade.package_size == 1:
+                    # Only do markouts if package_size = 1,
+                    # For package level markouts, factor_PV or factor_bps
                     # Leg level markouts should be calculated using MarkoutCalculator()
                     mults = self.trade.markout_mults()
                     if mk_type in mults:

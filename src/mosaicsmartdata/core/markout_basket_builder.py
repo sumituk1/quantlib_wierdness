@@ -36,10 +36,11 @@ def aggregate_multi_leg_markouts(mkt_msgs):
     mkmsg = mkt_msgs[0]
     mkmsg.factor_PV_markout = net_PV
     mkmsg.factor_bps_markout = net_PV/mkt_msgs[0].trade.factor_risk.total_factor_risk
+    # mkmsg.is_package = True
     mkmsg.final_price = None
     mkmsg.next_timestamp = None
     mkmsg.initial_price = None
-    mkmsg.price_markout = None
+    # mkmsg.price_markout = None
     # generate_package_mkt_msg(x.dt, net_PV)
     # mkmsg = MarkoutMessage2(trade=trade_lst,
     #                         # trade_id=mkt_msgs[0].trade.trade_id + "_PKG",

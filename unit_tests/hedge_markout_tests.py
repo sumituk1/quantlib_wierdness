@@ -60,7 +60,7 @@ class TestHedgeMarkouts(TestCase):
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
         hedger = Hedger(my_hedge_calculator, product_class=ProductClass.GovtBond)
 
-        # 1. set up initla hedges at point of trade
+        # 1. set up initial hedges at point of trade
         new_trades = joint_stream | op.map(hedger) | op.flatten()
         # 2. Perform markouts of both underlying trade and the paper_trades
         leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()

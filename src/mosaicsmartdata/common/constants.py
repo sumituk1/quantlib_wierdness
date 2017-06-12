@@ -440,3 +440,31 @@ class ProductClass:
     FXForwards = 5
     FXNDF = 6
     BondFutures = 7
+
+'''This captures the type of RFQ deal. Possible values being:
+-Upfront (this is for off-market. The traded_px will have the upfront fee)
+-Basis ( This is the basis quoted for a basis swap or the spread quoted on the package leg of a Swap Spread)
+-Price (typically on the outright legs)
+-Spread (typically on the package leg)
+-Discount ( typically the Bond leg of a Swap spread) - Will be excluded from Swap calculator
+'''
+class PriceType:
+    Upfront = 1
+    Basis = 2
+    Price = 3
+    Spread = 4
+    Discount = 5
+
+    @staticmethod
+    def convert_price_type(price_type_str):
+        # dcf = DayCountConv.ACT_ACT
+        if str.upper(price_type_str) == "UPFRONT":
+            return PriceType.Upfront
+        elif str.upper(price_type_str) == "BASIS":
+            return PriceType.Basis
+        elif str.upper(price_type_str) == "PRICE":
+            return PriceType.Price
+        elif str.upper(price_type_str) == "SPREAD":
+            return PriceType.Spread
+        elif str.upper(price_type_str) == "DISCOUNT":
+            return PriceType.Discount
