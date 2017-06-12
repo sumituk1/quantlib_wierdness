@@ -178,48 +178,6 @@ class TestHedgeMarkouts(TestCase):
 
         try:
             with ExceptionLoggingContext():
-                # # Load the quotes data from csv
-                # logging.basicConfig(level=configurator.get_config_given_key('log_level'))
-                # # Load the quotes data from csv
-                # quotes_dict = dict()
-                # for x in quote_files:
-                #     sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Hedged)
-                #     quotes_dict[sym] = quote
-                #
-                # # Now get the trades list from csv
-                # trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
-                #
-                # # Method 2 - go through each of the instruments,
-                # # create a stream of quote per sym
-                # quote_trade_list = []
-                # for k, v in quotes_dict.items():
-                #     # quote_async_iter = to_async_iterable(quotes_dict[k])
-                #     # quote_trade_list.append(quote_async_iter)
-                #     quote_async_iter = quotes_dict[k] #to_async_iterable(quotes_dict[k])
-                #     # trades_list_sym = []
-                #     # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-                #
-                #     # trade_async_iter = to_async_iterable(trades_list_sym)
-                #     quote_trade_list.append(quote_async_iter)
-                #     # quote_trade_list.append(trade_async_iter)
-                #
-                # output_list = []
-                # trade_async_iter = trades_list #to_async_iterable(trades_list)
-                # quote_trade_list.append(trade_async_iter)
-                # joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-                # hedger = Hedger(
-                #     my_hedge_calculator)  # <- No need to pass in Futures specifically, as thats the first be default
-                #
-                # # 1. set up initla hedges at point of trade
-                # new_trades = joint_stream | op.map(hedger) | op.flatten()
-                # # 2. Perform markouts of both underlying trade and the paper_trades
-                # leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
-                # # 3. Aggregate all the markouts per package_id
-                # task = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt), MarkoutBasketBuilder()) | op.flatten() | \
-                # op.map(aggregate_markouts) > output_list
-                #
-                # run(task)
-
                 quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/hedged_markout_tests/",
                                                                     quote_file_list=["912828T91_quotes.csv",
                                                                                      "FVc1_quotes.csv",
