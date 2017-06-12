@@ -153,16 +153,17 @@ class FixedIncomeFuturesHedge(Trade):
         self.adj_traded_px = self.traded_px
         # self.notional = 0.0
 
-        # Futures delta should always be passed in
+        # First calculate the delta of a single Futures contract
         if self.delta is None:
             # futures delta per contract_size or notional
             self.delta = FixedIncomeFuturesHedge.calculate_futures_delta(contract_size=self.notional,
                                                                          futures_duration=self.duration)
-        # self.package_id = None
-        # self.trade_beta = dict()
-        # self.trade_delta = None
         self.calculate_hedge_contracts()
         self.calculate_initial_hedge_cost()
+
+        # now reset the delta of the hedge contract
+        self.delta = FixedIncomeFuturesHedge.calculate_futures_delta(contract_size=self.notional,
+                                                                     futures_duration=self.duration)
 
     def calculate_hedge_contracts(self):
         if self.trade_delta > self.min_hedge_delta:
@@ -226,9 +227,8 @@ class FixedIncomeOTCHedge(Trade):
         self.calculate_hedge_contracts()
         self.calculate_initial_hedge_cost()
 
-    # def __call__(self):
-    #     self.calculate_hedge_contracts()
-    #     self.calculate_initial_hedge_cost()
+        # now reset the hedge delta
+        self.delta = self.duration * self.notional * 0.0001
 
     def calculate_hedge_contracts(self):
         if self.trade_delta > self.min_hedge_delta:

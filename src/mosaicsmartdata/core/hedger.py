@@ -3,6 +3,8 @@ from mosaicsmartdata.common.read_config import *
 from mosaicsmartdata.core.instrument_singleton import InstumentSingleton
 from mosaicsmartdata.core.quote import Quote
 import logging
+import datetime as dt
+from mosaicsmartdata.common.quantlib.bond import fixed_bond
 from mosaicsmartdata.core.trade import Trade, FixedIncomeFuturesHedge, FixedIncomeOTCHedge
 
 
@@ -235,13 +237,19 @@ def perform_cash_hedge(msg, lastquotes):
                                                                   lastquotes=lastquotes)
                         # msg.beta[hedge_sym_arr[i]] = 1 / num_hedges
                     hedge_otc_trade = \
-                        FixedIncomeOTCHedge(trade_id=msg.trade_id + "_OTC_HEDGE_" + str(i),
+                        FixedIncomeOTCHedge(trade_id=msg.trade_id, # + "_OTC_HEDGE_" + str(i),
                                             package_id=msg.package_id,
                                             sym=hedge_sym_arr[i],
                                             duration=instrument_static(sym=hedge_quote.sym)['duration'],
                                             paper_trade=True,
                                             notional=1,  # <- Cash notional is 1
                                             delta=None,
+                                            tenor=\
+                                                fixed_bond.calculateYearFrac(DayCountConv.ACT_360,
+                                                                             msg.trade_settle_date,
+                                                                             dt.datetime.strptime
+                                                                             (instrument_static(sym=hedge_quote.sym)
+                                                                              ['maturity'], "%Y.%m.%d")),
                                             timestamp=msg.timestamp,
                                             side=TradeSide.Ask if msg.side == TradeSide.Bid else TradeSide.Bid,
                                             traded_px=hedge_quote.ask if msg.side == TradeSide.Ask else hedge_quote.bid,
@@ -313,12 +321,18 @@ def perform_futures_hedge(msg, lastquotes):
                                                                   lastquotes=lastquotes)
                     # now construct the hedge
                     hedge_listed_trade = \
-                        FixedIncomeFuturesHedge(trade_id=msg.trade_id + "_LISTED_HEDGE_" + str(i),
+                        FixedIncomeFuturesHedge(trade_id=msg.trade_id , # + "_LISTED_HEDGE_" + str(i),
                                                 package_id=msg.package_id,
                                                 sym=hedge_sym_arr[i],
                                                 duration=instrument_static(sym=hedge_quote.sym)['duration'],
                                                 paper_trade=True,
                                                 notional=contract_size,
+                                                tenor= \
+                                                    fixed_bond.calculateYearFrac(DayCountConv.ACT_360,
+                                                                                 msg.trade_settle_date,
+                                                                                 dt.datetime.strptime
+                                                                                 (instrument_static(sym=hedge_quote.sym)
+                                                                                  ['maturity'], "%Y.%m.%d")),
                                                 trade_delta=msg.delta,  # <-- underlying trade_delta to be hedged
                                                 timestamp=msg.timestamp,
                                                 side=TradeSide.Ask if msg.side == TradeSide.Bid else TradeSide.Bid,

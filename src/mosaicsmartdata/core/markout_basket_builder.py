@@ -18,11 +18,18 @@ class MarkoutBasketBuilder:
 def aggregate_markouts(hedge_markout_msgs):
     # extract the non -paper trade
     trade_mk_msg = [x for x in hedge_markout_msgs if not x.paper_trade][0]
-    # mults = trade_mk_msg.trade.markout_mults()
 
-    trade_mk_msg.hedged_cents = sum([x.price_markout * x.trade.markout_mults()['cents'] for x in hedge_markout_msgs])
-    trade_mk_msg.hedged_price = sum([x.price_markout * x.trade.markout_mults()['price'] for x in hedge_markout_msgs])
-    trade_mk_msg.hedged_bps = trade_mk_msg.hedged_price / trade_mk_msg.trade.delta
+    ## for certain products like Swaps, cents markout is not applicable
+    try:
+        trade_mk_msg.hedged_cents = sum([x.price_markout * x.trade.markout_mults()['cents'] for x in hedge_markout_msgs])
+    except Exception:
+        pass
+    try:
+        trade_mk_msg.hedged_price = sum([x.price_markout * x.trade.markout_mults()['price'] for x in hedge_markout_msgs])
+        trade_mk_msg.hedged_bps = trade_mk_msg.hedged_price / trade_mk_msg.trade.delta
+    except Exception:
+        pass
+
     return trade_mk_msg
 
 ''' Aggregates the markouts of individual non-paper trades of a package'''
@@ -48,9 +55,13 @@ def aggregate_multi_leg_markouts(mkt_msgs):
     mkmsg.initial_price = None
     legs_count = 0
     hedge_legs_count = 0
+
     # find out if the package is a multi-leg and if a hedge exists
+    # for a hedge, need to calculate the hedged markout
     for x in mkt_msgs:
         if not x.trade.paper_trade:
+            x.factor_PV_markout = mkmsg.factor_PV_markout
+            x.factor_bps_markout = mkmsg.factor_bps_markout
             legs_count += 1
         if x.trade.paper_trade:
             hedge_legs_count += 1
