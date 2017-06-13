@@ -1,4 +1,5 @@
 import numpy as np
+from mosaicsmartdata.core.trade import InterestRateSwap, FixedIncomeTrade
 from mosaicsmartdata.core.markout_msg import *
 
 class MarkoutBasketBuilder:
@@ -24,8 +25,15 @@ def aggregate_markouts(hedge_markout_msgs):
         trade_mk_msg.hedged_cents = sum([x.price_markout * x.trade.markout_mults()['cents'] for x in hedge_markout_msgs])
     except Exception:
         pass
+
     try:
-        trade_mk_msg.hedged_price = sum([x.price_markout * x.trade.markout_mults()['price'] for x in hedge_markout_msgs])
+        for x in hedge_markout_msgs:
+            if isinstance(x.trade, InterestRateSwap):
+                trade_mk_msg.hedged_price = sum(filter(None,[trade_mk_msg.hedged_price,
+                                                             x.price_markout * x.trade.markout_mults()['PV']]))
+            else:
+                trade_mk_msg.hedged_price = sum(filter(None,[trade_mk_msg.hedged_price,
+                                                             x.price_markout * x.trade.markout_mults()['price']]))
         trade_mk_msg.hedged_bps = trade_mk_msg.hedged_price / trade_mk_msg.trade.delta
     except Exception:
         pass
