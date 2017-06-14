@@ -40,16 +40,20 @@ class Hedger:
             return [msg]
 
         elif isinstance(msg, Trade):
-            hedges = self.hedge_calculator(msg,
-                                           self.last_quotes,
-                                           # self.instrument_static,
-                                           # self.configurator,
-                                           self.product_class)
-            # want to send the original trade on as well
-            package = hedges + [msg]
-            for x in package:
-                x.package_size = len(package)
-            return package
+            if msg.package_size == 1 or msg.package_size is None:
+                # Create a hedge only if it's a single leg. Higher risk factors are not hedged yet!!
+                hedges = self.hedge_calculator(msg,
+                                               self.last_quotes,
+                                               # self.instrument_static,
+                                               # self.configurator,
+                                               self.product_class)
+                # want to send the original trade on as well
+                package = hedges + [msg]
+                for x in package:
+                    x.package_size = len(package)
+                return package
+            else:
+                return [msg]
         else:
             raise ValueError('Message must be a subclass of either Quote or Trade!')
 
