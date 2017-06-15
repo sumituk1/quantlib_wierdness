@@ -1,8 +1,11 @@
 import numpy as np
-from mosaicsmartdata.core.trade import InterestRateSwap, FixedIncomeTrade
+from mosaicsmartdata.core.trade import InterestRateSwapTrade, FixedIncomeTrade
 from mosaicsmartdata.core.markout_msg import *
 
 class MarkoutBasketBuilder:
+    '''
+    Collects all messages with the same basket_id
+    '''
     def __init__(self):
         self.basket = []
 
@@ -28,7 +31,7 @@ def aggregate_markouts(hedge_markout_msgs):
 
     try:
         for x in hedge_markout_msgs:
-            if isinstance(x.trade, InterestRateSwap):
+            if isinstance(x.trade, InterestRateSwapTrade):
                 trade_mk_msg.hedged_price = sum(filter(None,[trade_mk_msg.hedged_price,
                                                              x.price_markout * x.trade.markout_mults()['PV']]))
             else:

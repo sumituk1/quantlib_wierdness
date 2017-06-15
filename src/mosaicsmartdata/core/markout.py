@@ -8,7 +8,7 @@ import datetime
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.common.read_config import *
 from mosaicsmartdata.core.markout_msg import *
-from mosaicsmartdata.core.trade import Trade,InterestRateSwap,FixedIncomeTrade
+from mosaicsmartdata.core.trade import Trade,InterestRateSwapTrade,FixedIncomeTrade
 from mosaicsmartdata.core.quote import Quote
 import time
 
@@ -120,7 +120,7 @@ class MarkoutCalculatorPre:
                 if mkmsg.final_price is np.NaN:
                     logging.getLogger(__name__).warning('Saw a NaN final price in pre-markouts')
 
-                if isinstance(msg, InterestRateSwap):
+                if isinstance(msg, InterestRateSwapTrade):
                     # "REC" in IRS world means we are receiving the fixed leg
                     mkmsg.price_markout = (-mkmsg.final_price + mkmsg.initial_price)
                 else:
@@ -255,7 +255,7 @@ class MarkoutCalculatorPost:
                     if y not in completed:
                         y.initial_price = x.final_price
             else:
-                if isinstance(x.trade,InterestRateSwap):
+                if isinstance(x.trade, InterestRateSwapTrade):
                     # "REC" in IRS world means we are receiving the fixed leg
                     x.price_markout = (-x.final_price + x.initial_price)
                 else:

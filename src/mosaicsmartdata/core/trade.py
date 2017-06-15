@@ -4,32 +4,53 @@ from mosaicsmartdata.core.repo_singleton import *
 import mosaicsmartdata.common.quantlib.bond.fixed_bond as bond
 from mosaicsmartdata.common.quantlib.bond.bond_forward_price import govbond_cleanprice_from_forwardprice
 
+class Instrument(GenericParent):
+    def __init__(self, *args, **kwargs):
+        self.sym = None
+        self.ccy = Currency.EUR
+        self.tenor = None
+        self.venue = None
+        self.holidayCities = None
+        self.country_of_risk = Country.US  # default to US
+
+class FixedIncomeInstrument(Instrument):
+    def __init__(self, *args, **kwargs):
+        self.is_benchmark = False
+        self.par_value = 100
+        self.spot_settle_date = None
+        self.issue_date = None
+        self.maturity_date = None
+        self.coupon = None
+        self.coupon_frequency = None
+        self.float_coupon_frequency = None
+        self.day_count = None
+        self.price_type = None
+        super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+
+class IRSwap(FixedIncomeInstrument):
+    def __init__(self, *args, **kwargs):
+        super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+
 
 class Trade(GenericParent):
     def __init__(self, *args, **kwargs):
         self.repo_rate = RepoSingleton()
         self.trade_id = None
         self.package_id = None
-        # self.package_size = None # todo: package_size is an attribute of FICC trade?
+        self.package = None # reference to the mother package
         self.paper_trade = False
-        self.sym = None
         self.timestamp = None
         self.notional = None
         self.side = None
         self.traded_px = None
         self.trade_date = None
         self.trade_settle_date = None
-        self.ccy = Currency.EUR
         self.client_sys_key = None
         self.trade_rc = None
         self.sales = None
         self.trader = None
         self.delta = None
-        self.tenor = None
-        self.venue = None
-        self.holidayCities = None
         self.factor_risk = None
-        self.country_of_risk = Country.US  # default to US
 
         # just paste this magic line in to assign the kwargs
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
@@ -40,8 +61,17 @@ class Trade(GenericParent):
         if self.package_id is None:
             self.package_id = self.trade_id
 
-        def markout_mults(self):
-            return {'price': 1, 'PV': self.delta}
+    def markout_mults(self):
+        return {'price': 1, 'PV': self.delta}
+
+    def __getattr__(self, item):
+        if item in self.__dict__:
+            return self.__dict__[item]
+        # calculate different markout types on the fly by applying the correct multiplier
+        elif item in self.instrument.__dict__:
+            return self.instrument.__dict__[item]
+        else:
+            raise AttributeError('This object doesn\'t have attribute' + item)
 
 
 class FixedIncomeTrade(Trade):
@@ -53,7 +83,10 @@ class FixedIncomeTrade(Trade):
 
     # Constructor
     def __init__(self, *args, **kwargs):
-        self.is_benchmark = False
+        # TODO: extract all instrument-relevant fields from **kwargs and feed them to instrument
+        self.instrument = FixedIncomeInstrument()
+        kwargs = self.instrument.apply_kwargs(self.instrument.__dict__, kwargs)
+
         self.bid_px = None
         self.ask_px = None
         self.mid_px = None
@@ -61,16 +94,7 @@ class FixedIncomeTrade(Trade):
         self.trade_added_to_rp = False
         self.is_d2d_force_close = False
         self.beta = dict()  # for hedging using multiple assets
-        self.par_value = 100
-        self.spot_settle_date = None
-        self.issue_date = None
-        self.maturity_date = None
-        self.coupon = None
-        self.coupon_frequency = None
-        self.float_coupon_frequency = None
-        self.day_count = None
         self.leg_no = None
-        self.price_type = None
         self.package_size = None  # package_size of the trade executed
 
         # the magic line to process the kwargs
@@ -257,7 +281,7 @@ Specific changes:
 1. markout_mults - Since Swaps is yield based so no need to do price to yield conversion'''
 
 
-class InterestRateSwap(FixedIncomeTrade):
+class InterestRateSwapTrade(FixedIncomeTrade):
     def markout_mults(self):
         if self.price_type == PriceType.Upfront:
             return {'price': (1 / self.par_value) * self.notional,

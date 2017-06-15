@@ -560,3 +560,10 @@ class TestHedgeMarkouts(TestCase):
                     plt.show()
         except Exception:
             raise Exception
+
+
+if __name__ == '__main__':
+    #    unittest.main()
+    k= TestHedgeMarkouts()
+    #k.setUp()
+    k.test_case_1()

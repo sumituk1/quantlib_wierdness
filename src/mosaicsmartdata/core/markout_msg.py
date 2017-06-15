@@ -35,6 +35,8 @@ class MarkoutMessage2(GenericParent):
         # calculate different markout types on the fly by applying the correct multiplier
         elif item in self.trade.__dict__:
             return self.trade.__dict__[item]
+        elif item in self.trade.instrument.__dict__:
+            return self.trade.instrument.__dict__[item]
         elif str(item)[-8:] == '_markout':
             mk_type = str(item)[:-8]
             mults = self.trade.markout_mults()

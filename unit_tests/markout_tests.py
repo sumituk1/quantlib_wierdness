@@ -307,7 +307,7 @@ class TestMarkouts(TestCase):
         except Exception:
             raise Exception
 
-    # Same as test_case_5. But uses a Kafka Persistence every COB
+    # # Same as test_case_5. But uses a Kafka Persistence every COB
     # def test_case_6(self, plotFigure=False):
     #     t0 = time.time()
     #     tolerance = 5 * 1e-2

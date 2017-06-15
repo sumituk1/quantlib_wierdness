@@ -24,12 +24,15 @@ class GenericParent:
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
-    def apply_kwargs(self, goodargs, kwargs):
-        # print('Entering apply_kwargs', self, goodargs, kwargs)
-
+    @staticmethod
+    def split_kwargs(kwargs, goodargs):
         other_kwargs = {key: value for key, value in kwargs.items() if key not in goodargs}
         good_kwargs = {key: value for key, value in kwargs.items() if key in goodargs}
+        return good_kwargs, other_kwargs
 
+    def apply_kwargs(self, goodargs, kwargs):
+        # print('Entering apply_kwargs', self, goodargs, kwargs)
+        good_kwargs, other_kwargs = self.split_kwargs(kwargs, goodargs)
         for key, value in good_kwargs.items():
             self.__dict__[key] = value
 
