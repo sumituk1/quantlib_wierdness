@@ -4,8 +4,9 @@ from mosaicsmartdata.core.instrument_singleton import InstumentSingleton
 from mosaicsmartdata.core.quote import Quote
 import logging
 import datetime as dt
+import numpy as np
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
-from mosaicsmartdata.core.trade import Trade, FixedIncomeFuturesHedge, FixedIncomeOTCHedge
+from mosaicsmartdata.core.trade import Trade, BondFuturesTrade, FixedIncomeOTCHedge
 
 
 class HedgeClass:
@@ -191,6 +192,19 @@ def load_config(country_of_risk, hedge_class):
         #     else:
         #         raise ValueError('load_config(): Hedger not implemented')
 
+def calculate_hedge_notional(trade, hedge_sym,min_hedge_delta=1000):
+    if trade.delta > min_hedge_delta:
+        create_hedge = True
+    else:
+        create_hedge = False
+    if create_hedge:
+        if not trade.beta:
+            raise ValueError("OTC Hedge calculation called on trade with no hedges set")
+        instrument_static = InstumentSingleton()
+        duration = instrument_static(sym=hedge_sym)['duration']
+        #contract_size = instrument_static(sym=hedge_sym)['contract_size']
+        #delta = calculate_futures_delta(contract_size, duration)
+        hedge_notional = trade.beta[hedge_sym] * trade.delta /(duration*0.0001)
 
 # Cash hedging
 def perform_cash_hedge(msg, lastquotes):
@@ -246,7 +260,7 @@ def perform_cash_hedge(msg, lastquotes):
                                             sym=hedge_sym_arr[i],
                                             duration=instrument_static(sym=hedge_quote.sym)['duration'],
                                             paper_trade=True,
-                                            notional=1,  # <- Cash notional is 1
+                                            notional=calculate_hedge_notional(msg,hedge_sym_arr[i],min_hedge_delta=1000),  # <- Cash notional is 1
                                             delta=None,
                                             tenor=\
                                                 fixed_bond.calculateYearFrac(DayCountConv.ACT_360,
@@ -272,6 +286,25 @@ def perform_cash_hedge(msg, lastquotes):
 
     return hedge_trades, msg_processed
 
+min_hedge_delta = 1000
+
+def calculate_hedge_contracts(trade, hedge_sym):
+    if trade.delta > min_hedge_delta:
+        create_hedge = True
+    else:
+        create_hedge = False
+    if create_hedge:
+        if not trade.beta:
+            raise ValueError("Futures Hedge calculation called on trade with no hedges set")
+        instrument_static = InstumentSingleton()
+        duration = instrument_static(sym=hedge_sym)['duration']
+        contract_size = instrument_static(sym=hedge_sym)['contract_size']
+        delta = calculate_futures_delta(contract_size, duration)
+        hedge_contracts = np.round(trade.beta[trade.sym] * trade.delta / delta)
+        return hedge_contracts
+
+def calculate_futures_delta(contract_size, futures_duration):
+    return futures_duration * contract_size * 0.0001
 
 # Futures hedging
 def perform_futures_hedge(msg, lastquotes):
@@ -325,28 +358,29 @@ def perform_futures_hedge(msg, lastquotes):
                                                                   lastquotes=lastquotes)
                     # now construct the hedge
                     hedge_listed_trade = \
-                        FixedIncomeFuturesHedge(trade_id=msg.trade_id , # + "_LISTED_HEDGE_" + str(i),
+                        BondFuturesTrade(trade_id=msg.trade_id,  # + "_LISTED_HEDGE_" + str(i),
                                                 package_id=msg.package_id,
-                                                sym=hedge_sym_arr[i],
-                                                duration=instrument_static(sym=hedge_quote.sym)['duration'],
-                                                paper_trade=True,
-                                                notional=contract_size,
-                                                tenor= \
+                                         sym=hedge_sym_arr[i],
+                                         duration=instrument_static(sym=hedge_quote.sym)['duration'],
+                                         paper_trade=True,
+                                         notional=contract_size,
+                                         contracts = calculate_hedge_contracts(msg, hedge_sym_arr[i]),
+                                         tenor= \
                                                     fixed_bond.calculateYearFrac(DayCountConv.ACT_360,
                                                                                  msg.trade_settle_date,
                                                                                  dt.datetime.strptime
                                                                                  (instrument_static(sym=hedge_quote.sym)
                                                                                   ['maturity'], "%Y.%m.%d")),
-                                                trade_delta=msg.delta,  # <-- underlying trade_delta to be hedged
+                                         trade_delta=msg.delta,  # <-- underlying trade_delta to be hedged
                                                 timestamp=msg.timestamp,
-                                                side=TradeSide.Ask if msg.side == TradeSide.Bid else TradeSide.Bid,
-                                                traded_px=hedge_quote.ask if msg.side == TradeSide.Ask else hedge_quote.bid,
-                                                client_sys_key=msg.client_sys_key,
-                                                trade_date=hedge_quote.timestamp.date(),
-                                                ccy=msg.ccy,
-                                                trade_beta=msg.beta,
-                                                trade_settle_date=msg.trade_settle_date,
-                                                min_hedge_delta=min_hedge_delta)
+                                         side=TradeSide.Ask if msg.side == TradeSide.Bid else TradeSide.Bid,
+                                         traded_px=hedge_quote.ask if msg.side == TradeSide.Ask else hedge_quote.bid,
+                                         client_sys_key=msg.client_sys_key,
+                                         trade_date=hedge_quote.timestamp.date(),
+                                         ccy=msg.ccy,
+                                         trade_beta=msg.beta,
+                                         trade_settle_date=msg.trade_settle_date,
+                                         min_hedge_delta=min_hedge_delta)
 
                     hedge_trades.append(hedge_listed_trade)
         except Exception as e:

@@ -51,6 +51,8 @@ class Trade(GenericParent):
         self.trader = None
         self.delta = None
         self.factor_risk = None
+        self.leg_no = None
+        self.package_size = None  # package_size of the trade executed
 
         # just paste this magic line in to assign the kwargs
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
@@ -94,8 +96,6 @@ class FixedIncomeTrade(Trade):
         self.trade_added_to_rp = False
         self.is_d2d_force_close = False
         self.beta = dict()  # for hedging using multiple assets
-        self.leg_no = None
-        self.package_size = None  # package_size of the trade executed
 
         # the magic line to process the kwargs
         # other_args = self.apply_kwargs(self.__dict__,kwargs)
@@ -156,57 +156,52 @@ class FixedIncomeTrade(Trade):
             #         self.adj_traded_px = self.traded_px
 
 
-class FixedIncomeFuturesHedge(Trade):
+class BondFuturesTrade(Trade):
     def __init__(self, *args, **kwargs):
         # self.package_id = None
-        self.min_hedge_delta = 1000  # in relevant ccy
-        # self.trade = None
-        self.duration = None  # <- hedge trade attribute for the time being
-        self.trade_delta = None  # <- hedge trade_delta attribute for the time being
-        self.trade_beta = dict()
-        self.package_size = None  # package_size of the trade executed
-        self.leg_no = None  # -1 would be the package leg . 0/1/2/3 are the leg_Nos
-        self.price_type = None
+        #self.min_hedge_delta = 1000  # in relevant ccy
+        #self.trade = None
+        #self.duration = None  # <- hedge trade attribute for the time being
+        #self.trade_delta = None  # <- hedge trade_delta attribute for the time being
+        #self.trade_beta = dict()
+        #self.package_size = None  # package_size of the trade executed
+        #self.leg_no = None  # -1 would be the package leg . 0/1/2/3 are the leg_Nos
+        #self.price_type = None
+        #self.par_value = 100
+        self.maturity_date = None
+        self.contracts = 0
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
         # self.notional = 100000  # for futures
-        self.paper_trade = True
-        self.par_value = 100
-        self.maturity_date = None
-        self.hedge_contracts = 0
-        self.adj_traded_px = self.traded_px
+        #self.paper_trade = True
+        #self.adj_traded_px = self.traded_px
         # self.notional = 0.0
 
         # First calculate the delta of a single Futures contract
         if self.delta is None:
             # futures delta per contract_size or notional
-            self.delta = FixedIncomeFuturesHedge.calculate_futures_delta(contract_size=self.notional,
-                                                                         futures_duration=self.duration)
-        self.calculate_hedge_contracts()
-        self.calculate_initial_hedge_cost()
+            self.delta = self.notional * self.duration * 0.0001
+        #     self.delta = BondFuturesTrade.calculate_futures_delta(contract_size=self.notional,
+        #                                                           futures_duration=self.duration)
+        # self.calculate_hedge_contracts()
+        # self.calculate_notional()
+        self.notional *= self.contracts
+
+
+
 
         # now reset the delta of the hedge contract
-        self.delta = FixedIncomeFuturesHedge.calculate_futures_delta(contract_size=self.notional,
-                                                                     futures_duration=self.duration)
+        self.delta = self.notional*self.duration*0.0001
 
-    def calculate_hedge_contracts(self):
-        if self.trade_delta > self.min_hedge_delta:
-            create_hedge = True
-        else:
-            create_hedge = False
-        if create_hedge:
-            if not self.trade_beta:
-                raise ValueError("Futures Hedge calculation called on trade with no hedges set")
-            self.hedge_contracts = np.round(self.trade_beta[self.sym] * self.trade_delta / self.delta)
 
-    def calculate_initial_hedge_cost(self):
-        if not self.trade_beta:
-            raise ValueError("Futures Hedge calculation called on trade with no hedges set")
-        self.notional *= self.hedge_contracts
+    # def calculate_notional(self):
+    #     if not self.trade_beta:
+    #         raise ValueError("Futures Hedge calculation called on trade with no hedges set")
+    #     self.notional *= self.contracts
 
-    @staticmethod
-    def calculate_futures_delta(contract_size, futures_duration):
-        return futures_duration * contract_size * 0.0001
+    # @staticmethod
+    # def calculate_futures_delta(contract_size, futures_duration):
+    #     return futures_duration * contract_size * 0.0001
 
     def markout_mults(self):
         return {'price': (1 / self.par_value) * self.notional,
@@ -220,26 +215,26 @@ Handle OTC related hedge calcs
 """
 
 
-class FixedIncomeOTCHedge(Trade):
+class FixedIncomeBondTrade(Trade):
     def __init__(self, *args, **kwargs):
         # self.package_id = None
-        self.min_hedge_delta = 1000  # in relevant ccy
+        #self.min_hedge_delta = 1000  # in relevant ccy
         # self.trade = None
         self.duration = None  # <- hedge duration attribute for the time being
-        self.trade_delta = None  # <- hedge trade_delta attribute for the time being
-        self.trade_beta = dict()
+        #self.trade_delta = None  # <- hedge trade_delta attribute for the time being
+        #self.trade_beta = dict()
         # self.settle_date = None
-        self.package_size = None  # package_size of the trade executed
-        self.leg_no = None  # -1 would be the package leg . 0/1/2/3 are the leg_Nos
-        self.price_type = None
+        #self.package_size = None  # package_size of the trade executed
+        #self.leg_no = None  # -1 would be the package leg . 0/1/2/3 are the leg_Nos
+        #self.price_type = None
 
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
-        self.notional = 1  # for OTC bonds
-        self.paper_trade = True
-        self.hedge_contracts = 0.0
+        #self.notional = 1  # for OTC bonds
+        #self.paper_trade = True
+        #self.hedge_contracts = 0.0
         self.par_value = 100
         self.maturity_date = None
-        self.adj_traded_px = self.traded_px
+        #self.adj_traded_px = self.traded_px
 
         # self.notional = 0.0
         # self.traded_px = None
@@ -248,26 +243,17 @@ class FixedIncomeOTCHedge(Trade):
             # futures delta should always be passed in
             self.delta = self.duration * self.notional * 0.0001
         # self.package_id = self.trade.package_id
-        self.calculate_hedge_contracts()
-        self.calculate_initial_hedge_cost()
-
+        #self.calculate_hedge_contracts()
+        #self.notional *= self.hedge_contracts
+        #self.calculate_initial_hedge_cost()
         # now reset the hedge delta
-        self.delta = self.duration * self.notional * 0.0001
+        #self.delta = self.duration * self.notional * 0.0001
 
-    def calculate_hedge_contracts(self):
-        if self.trade_delta > self.min_hedge_delta:
-            create_hedge = True
-        else:
-            create_hedge = False
-        if create_hedge:
-            if not self.trade_beta:
-                raise ValueError("OTC Hedge calculation called on trade with no hedges set")
-            self.hedge_contracts = self.trade_beta[self.sym] * self.trade_delta / self.delta
 
-    def calculate_initial_hedge_cost(self):
-        if not self.trade_beta:
-            raise ValueError("Futures Hedge calculation called on trade with no hedges set")
-        self.notional *= self.hedge_contracts
+    # def calculate_initial_hedge_cost(self):
+    #     if not self.trade_beta:
+    #         raise ValueError("Futures Hedge calculation called on trade with no hedges set")
+    #
 
     def markout_mults(self):
         return {'price': (1 / self.par_value) * self.notional,
