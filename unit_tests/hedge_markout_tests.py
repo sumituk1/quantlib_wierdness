@@ -73,7 +73,7 @@ class TestHedgeMarkouts(TestCase):
         return output_list
 
     # Test hedge with Cash
-    def test_case_1(self, plotFigure=False):
+    def test_case_1(self, plotFigure=True):
         tolerance = 5 * 1e-2
         t0 = time.time()
         # Create a singleton configurator and instrument_static
