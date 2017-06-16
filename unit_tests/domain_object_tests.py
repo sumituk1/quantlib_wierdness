@@ -2,6 +2,7 @@ from unittest import TestCase
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
 from mosaicsmartdata.core.trade import FixedIncomeBondTrade
 from mosaicsmartdata.core.quote import Quote
+import cloudpickle
 
 class TestMarkoutMessage(TestCase):
     # Test for Sell in bps over intra-day to COB1
@@ -18,3 +19,8 @@ class TestMarkoutMessage(TestCase):
         self.assertEqual(msg.PV_markout, 0.01)
         self.assertEqual(msg.price_markout, 1)
 
+    def test_trade_pickling(self):
+        t = FixedIncomeBondTrade(trade_id=1, duration=20, notional=5)
+        pkl = cloudpickle.dumps(t)
+        t2 = cloudpickle.loads(pkl)
+        self.assertEqual(t,t2)

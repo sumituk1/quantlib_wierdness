@@ -4,6 +4,29 @@ from mosaicsmartdata.core.generic_parent import GenericParent
 from mosaicsmartdata.core.instrument import FixedIncomeIRSwap, FixedIncomeBondFuture, FixedIncomeBond, FXForward, FXSwap
 from mosaicsmartdata.core.repo_singleton import *
 
+class Package:
+    def __init__(self, trades = []):
+        '''
+        :param trades: list of trades contained in the package
+        '''
+        self.trades = []
+        self.package_id = None
+        for trade in trades:
+            self.append(trade)
+
+    def append(self, trade):
+        if self.package_id is None:
+            self.package_id = trade.package_id
+
+        if trade.package_id is None:
+            trade.package_id = self.package_id
+        elif trade.package_id == self.package_id:
+            trade.package = self
+            self.trades.append(trade)
+        else:
+            raise ValueError('Package id of trade ', trade.package_id, ' doesn''t match package id of package', self.package_id)
+
+
 
 class Trade(GenericParent):
     def __init__(self, *args, **kwargs):
@@ -25,7 +48,7 @@ class Trade(GenericParent):
         self.delta = None
         self.factor_risk = None
         self.leg_no = None
-        self.package_size = None  # package_size of the trade executed
+        #self.package_size = None  # package_size of the trade executed
 
         # just paste this magic line in to assign the kwargs
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
@@ -37,6 +60,8 @@ class Trade(GenericParent):
         if self.package_id is None:
             self.package_id = self.trade_id
 
+
+
     def markout_mults(self):
         return {'price': 1, 'PV': self.delta}
 
@@ -46,6 +71,11 @@ class Trade(GenericParent):
         # calculate different markout types on the fly by applying the correct multiplier
         elif item in self.instrument.__dict__:
             return self.instrument.__dict__[item]
+        elif item in ['package_size']:
+            if self.package is None:
+                return 1
+            else:
+                return len(self.package.trades)
         else:
             raise AttributeError('This object doesn\'t have attribute' + item)
 
