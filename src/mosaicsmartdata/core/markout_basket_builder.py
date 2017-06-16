@@ -93,34 +93,24 @@ def aggregate_multi_leg_markouts(mkt_msgs):
         # get the long leg
         if mkt_msgs[0].trade.maturity_date > mkt_msgs[1].trade.maturity_date:
             mkmsg.display_DV01 = np.abs(mkt_msgs[0].trade.duration - mkt_msgs[1].trade.duration) * \
-                                 mkt_msgs[0].trade.delta * 0.0001
+                                 mkt_msgs[0].trade.notional * 0.0001
         else:
             mkmsg.display_DV01 = np.abs(mkt_msgs[0].trade.duration - mkt_msgs[1].trade.duration) * \
-                                 mkt_msgs[1].trade.delta * 0.0001
+                                 mkt_msgs[1].trade.notional * 0.0001
     elif legs_count == 3 and hedge_legs_count == 0:
         # this is a multi-leg 3 legs.
         # set the display_DV01
 
         # get the belly leg
         if mkt_msgs[0].trade.maturity_date > mkt_msgs[1].trade.maturity_date > mkt_msgs[2].trade.maturity_date:
-            mkmsg.display_DV01 = np.abs(mkt_msgs[0].trade.duration - mkt_msgs[1].trade.duration) * \
-                                 mkt_msgs[0].trade.delta * 0.0001
-        else:
-            mkmsg.display_DV01 = np.abs(mkt_msgs[0].trade.duration - mkt_msgs[1].trade.duration) * \
-                                 mkt_msgs[1].trade.delta * 0.0001
+            mkmsg.display_DV01 = np.abs(2 * mkt_msgs[1].trade.duration - mkt_msgs[0].trade.maturity_date
+                                        - mkt_msgs[2].trade.duration) * mkt_msgs[1].trade.notional * 0.0001
+        elif mkt_msgs[1].trade.maturity_date > mkt_msgs[0].trade.maturity_date > mkt_msgs[2].trade.maturity_date:
+            mkmsg.display_DV01 = np.abs(2 * mkt_msgs[0].trade.duration - mkt_msgs[1].trade.maturity_date -
+                                        mkt_msgs[1].trade.duration) * mkt_msgs[0].trade.notional * 0.0001
 
     else:
         # todo: handle higher order hedges!!
         mkmsg
-    # mkmsg.price_markout = None
-    # generate_package_mkt_msg(x.dt, net_PV)
-    # mkmsg = MarkoutMessage2(trade=trade_lst,
-    #                         # trade_id=mkt_msgs[0].trade.trade_id + "_PKG",
-    #                         # notional=msg.notional,
-    #                         # sym=msg.sym,
-    #                         # side=msg.side,
-    #                         factor_PV_markout=net_PV,
-    #                         factor_bps_markout = net_PV/mkt_msgs[0].trade.factor_risk.total_factor_risk,
-    #                         # next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
-    #                         dt=mkt_msgs[0].dt)
+
     return mkmsg
