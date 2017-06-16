@@ -1,12 +1,13 @@
 # require at least Python 3.5 for async/await to work
 from aiostreams import *
-from mosaicsmartdata.core.trade import Quote, Trade, FixedIncomeTrade
+from mosaicsmartdata.core.trade import Trade, FixedIncomeBondTrade
+from mosaicsmartdata.core.quote import Quote
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
 
 q=Quote(bid=1, ask = 2)
 print(q.mid)
 
-t = FixedIncomeTrade(trade_id =1, duration = 20, notional = 5)
+t = FixedIncomeBondTrade(trade_id =1, duration = 20, notional = 5)
 msg = MarkoutMessage2(trade = t)
 msg.price_markout = 1
 

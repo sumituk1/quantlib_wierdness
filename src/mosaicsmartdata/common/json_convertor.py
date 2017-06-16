@@ -7,7 +7,7 @@ import json
 import operator
 from mosaicsmartdata.core.instrument_singleton import *
 from mosaicsmartdata.core.quote import Quote
-from mosaicsmartdata.core.trade import FixedIncomeTrade
+from mosaicsmartdata.core.trade import FixedIncomeBondTrade
 
 # Load instrument static
 instrument_static = InstumentSingleton()
@@ -45,7 +45,7 @@ def parse_iso_timestamp(timestamp):
 # Convert json message to FixedIncomeTrade object
 def json_to_trade(json_message):
     request = json.loads(json_message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-    tr = FixedIncomeTrade(trade_id=request.bondTrade.negotiationId,
+    tr = FixedIncomeBondTrade(trade_id=request.bondTrade.negotiationId,
                           sym=request.bondTrade.sym,
                           notional=request.bondTrade.quantity,
                           timestamp=parse_iso_timestamp(request.bondTrade.timestamp),
