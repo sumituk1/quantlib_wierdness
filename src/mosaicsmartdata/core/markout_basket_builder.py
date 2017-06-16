@@ -1,8 +1,9 @@
 import numpy as np
 from mosaicsmartdata.core.trade import InterestRateSwapTrade, FixedIncomeTrade
 from mosaicsmartdata.core.markout_msg import *
+from mosaicsmartdata.core.trade import Package
 
-class MarkoutBasketBuilder:
+class PackageBuilder:
     '''
     Collects all messages with the same basket_id
     '''
@@ -14,12 +15,14 @@ class MarkoutBasketBuilder:
         if len(self.basket) >= msg.trade.package_size:
             my_msg = self.basket
             self.basket = []
-            return [my_msg]
+            out = Package(my_msg) # collect them in a Package object
+            return [out]
         else:
             return []
 
 '''Calculates aggregated markouts for Unhedged trade and Hedge (paper-trade) belonging to a package'''
-def aggregate_markouts(hedge_markout_msgs):
+def aggregate_markouts(pkg):
+    hedge_markout_msgs = pkg.legs
     # extract the non -paper trade
     trade_mk_msg = [x for x in hedge_markout_msgs if not x.paper_trade][0]
 
@@ -49,7 +52,8 @@ def aggregate_markouts(hedge_markout_msgs):
         2) for short-term IMM rollovers (2 legs), where total_factor_risk doesn't work,
            this number should be used for Risk weighting'''
 
-def aggregate_multi_leg_markouts(mkt_msgs):
+def aggregate_multi_leg_markouts(pkg):
+    mkt_msgs = pkg.legs
     # 1. calculate the net $ PV
     net_PV = 0.0
     for x in mkt_msgs:

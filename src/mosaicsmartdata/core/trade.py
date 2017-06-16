@@ -3,35 +3,41 @@ from mosaicsmartdata.common.quantlib.bond.bond_forward_price import govbond_clea
 from mosaicsmartdata.core.generic_parent import GenericParent
 from mosaicsmartdata.core.instrument import FixedIncomeIRSwap, FixedIncomeBondFuture, FixedIncomeBond, FXForward, FXSwap
 from mosaicsmartdata.core.repo_singleton import *
+import logging, collections
 
 class Package:
-    def __init__(self, trades = []):
+    def __init__(self, legs = []):
         '''
-        :param trades: list of trades contained in the package
+        :param legs: list of trades contained in the package
         '''
-        self.trades = []
+        self.legs = []
         self.package_id = None
-        for trade in trades:
-            self.append(trade)
+        self.append(legs)
 
+    # add one or multiple trades to the package
     def append(self, trade):
-        if self.package_id is None:
-            self.package_id = trade.package_id
 
-        if trade.package_id is None:
-            trade.package_id = self.package_id
-        elif trade.package_id == self.package_id:
-            trade.package = self
-            self.trades.append(trade)
+        if isinstance(trade,collections.Iterable):
+            for t in trade:
+                self.append(t)
+            return
         else:
-            raise ValueError('Package id of trade ', trade.package_id, ' doesn''t match package id of package', self.package_id)
+            if self.package_id is None:
+                self.package_id = trade.package_id
+            if not(trade.package_id == self.package_id):
+                if trade.package_id is not None:
+                    logging.getLogger(__name__).warning("Resetting trade package ID",trade.package_id,
+                                                        "to match package ID", self.package_id)
+                trade.package_id = self.package_id
 
-
+            trade.package = self
+            self.legs.append(trade)
 
 class Trade(GenericParent):
     def __init__(self, *args, **kwargs):
         self.trade_id = None
         self.package_id = None
+        self.source_trade_id = None  # for derived paper trades only
         self.package = None # reference to the mother package
         self.paper_trade = False
         self.timestamp = None
@@ -75,7 +81,7 @@ class Trade(GenericParent):
             if self.package is None:
                 return 1
             else:
-                return len(self.package.trades)
+                return len(self.package.legs)
         else:
             raise AttributeError('This object doesn\'t have attribute' + item)
 

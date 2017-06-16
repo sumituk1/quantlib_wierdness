@@ -6,8 +6,8 @@ import logging
 import datetime as dt
 import numpy as np
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
-from mosaicsmartdata.core.trade import Trade, BondFuturesTrade, FixedIncomeBondTrade
-
+from mosaicsmartdata.core.trade import Trade, BondFuturesTrade, FixedIncomeBondTrade, Package
+from copy import copy
 
 class HedgeClass:
     Listed = 0
@@ -34,6 +34,7 @@ class Hedger:
         self.configurator = Configurator()  # <- passed in configurator object
 
     def __call__(self, msg):
+
         if isinstance(msg, Quote):
             # store the latest quote for each instrument;
             # make a copy just in case the msg object gets modififed downstream
@@ -41,6 +42,8 @@ class Hedger:
             return [msg]
 
         elif isinstance(msg, Trade):
+            # TODO: the hedger should really get the whole package and hedge it as a whole
+            package = Package([msg])
             if msg.package_size == 1 or msg.package_size is None:
                 # Create a hedge only if it's a single leg. Higher risk factors are not hedged yet!!
                 hedges = self.hedge_calculator(msg,
@@ -49,12 +52,11 @@ class Hedger:
                                                # self.configurator,
                                                self.product_class)
                 # want to send the original trade on as well
-                package = hedges + [msg]
-                for x in package:
-                    x.package_size = len(package)
-                return package
-            else:
-                return [msg]
+                package.append(hedges)
+                # for x in package:
+                #     x.package_size = len(package)
+
+            return copy(package.legs) # to keep the downstream from modifying the list inside the package
         else:
             raise ValueError('Message must be a subclass of either Quote or Trade!')
 

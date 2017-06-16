@@ -26,7 +26,7 @@ class MarkoutMessage2(GenericParent):
         self.factor_PV_markout = None # todo: check with Egor if there's a better way
         self.factor_bps_markout = None  # todo: check with Egor if there's a better way
         self.timestamp = None # used to hold the ticking of the clock from Quotes message
-
+        self.package = None
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
     def __getattr__(self, item):

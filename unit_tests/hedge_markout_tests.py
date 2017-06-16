@@ -66,7 +66,7 @@ class TestHedgeMarkouts(TestCase):
         leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
         # 3. Aggregate all the markouts per package_id
         leg_markout_final = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt),
-                                                          MarkoutBasketBuilder()) | op.flatten() | \
+                                                          PackageBuilder()) | op.flatten() | \
                             op.map(aggregate_markouts) > output_list
         # run the pipe
         run(leg_markout_final)
