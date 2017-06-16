@@ -1,6 +1,6 @@
 from unittest import TestCase
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
-from mosaicsmartdata.core.trade import FixedIncomeTrade
+from mosaicsmartdata.core.trade import FixedIncomeBondTrade
 from mosaicsmartdata.core.quote import Quote
 
 class TestMarkoutMessage(TestCase):
@@ -10,7 +10,7 @@ class TestMarkoutMessage(TestCase):
         self.assertEqual(q.mid, 1.5)
 
     def test_case_2(self):
-        t = FixedIncomeTrade(trade_id=1, duration=20, notional=5)
+        t = FixedIncomeBondTrade(trade_id=1, duration=20, notional=5)
         msg = MarkoutMessage2(trade=t, price_markout=1)
 
         self.assertEqual(msg.bps_markout, 5.0)

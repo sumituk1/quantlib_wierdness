@@ -218,7 +218,8 @@ def perform_cash_hedge(msg, lastquotes):
     msg_processed = False
     hedge_trades = []
     if not hedge_otc_mapper == "":
-        try:
+        #try:
+        if True:
             msg_processed = True
             min_hedge_delta = float(hedge_otc_mapper['min_hedge_delta'])
             set_beta = False
@@ -281,13 +282,14 @@ def perform_cash_hedge(msg, lastquotes):
                                              ccy=msg.ccy,
                                              # trade_delta=msg.delta,
                                              trade_settle_date=msg.trade_settle_date,
-                                             min_hedge_delta=min_hedge_delta,
-                                             trade_beta=msg.beta)
+                                             #min_hedge_delta=min_hedge_delta,
+                                             #trade_beta=msg.beta
+                                             )
                     hedge_trades.append(hedge_otc_trade)
-        except Exception as e:
-            msg_processed = False
-            logging.error('Unable to perform OTC cash hedge. Please check instrument static for hedge instrument.')
-            pass
+        # except Exception as e:
+        #     msg_processed = False
+        #     logging.error('Unable to perform OTC cash hedge. Please check instrument static for hedge instrument.')
+        #     pass
 
     return hedge_trades, msg_processed
 
@@ -307,7 +309,7 @@ def calculate_hedge_contracts(trade, hedge_sym):
         duration = instrument_static(sym=hedge_sym)['duration']
         contract_size = instrument_static(sym=hedge_sym)['contract_size']
         delta = calculate_futures_delta(contract_size, duration)
-        hedge_contracts = np.round(trade.beta[trade.sym] * trade.delta / delta)
+        hedge_contracts = np.round(trade.beta[hedge_sym] * trade.delta / delta)
         return hedge_contracts
 
 
@@ -324,7 +326,8 @@ def perform_futures_hedge(msg, lastquotes):
     msg_processed = False
     hedge_listed_mapper = load_config(msg.country_of_risk, HedgeClass.Listed)
     if not hedge_listed_mapper == "":
-        try:
+        #try:
+        if True:
             msg_processed = True
             min_hedge_delta = float(hedge_listed_mapper['min_hedge_delta'])
             set_beta = False
@@ -380,20 +383,20 @@ def perform_futures_hedge(msg, lastquotes):
                                                                           dt.datetime.strptime
                                                                           (instrument_static(sym=hedge_quote.sym)
                                                                            ['maturity'], "%Y.%m.%d")),
-                                         trade_delta=msg.delta,  # <-- underlying trade_delta to be hedged
+                                         #trade_delta=msg.delta,  # <-- underlying trade_delta to be hedged
                                          timestamp=msg.timestamp,
                                          side=TradeSide.Ask if msg.side == TradeSide.Bid else TradeSide.Bid,
                                          traded_px=hedge_quote.ask if msg.side == TradeSide.Ask else hedge_quote.bid,
                                          client_sys_key=msg.client_sys_key,
                                          trade_date=hedge_quote.timestamp.date(),
-                                         ccy=msg.ccy,
-                                         trade_beta=msg.beta,
-                                         trade_settle_date=msg.trade_settle_date,
-                                         min_hedge_delta=min_hedge_delta)
+                                         ccy=msg.ccy)#,
+                                         # trade_beta=msg.beta,
+                                         # trade_settle_date=msg.trade_settle_date,
+                                         # min_hedge_delta=min_hedge_delta)
 
                     hedge_trades.append(hedge_listed_trade)
-        except Exception as e:
-            msg_processed = False
-            logging.warning("Unable to perform Futures hedge. Please check Instrument static")
-            pass
+        # except Exception as e:
+        #     msg_processed = False
+        #     logging.warning("Unable to perform Futures hedge. Please check Instrument static")
+        #     pass
     return hedge_trades, msg_processed

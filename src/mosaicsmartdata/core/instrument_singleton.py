@@ -16,11 +16,11 @@ class InstumentSingleton(Borg):
         super().__init__()
         configurator = Configurator()
         self.instrument_static_fname = configurator.get_config_given_key("instrument_static")
-
-    def __call__(self, **kwargs):
         if 'data' not in self.__dict__:
             thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
             self.data = pd.read_csv(thisfiledir + '/../configuration/' + self.instrument_static_fname)
+
+    def __call__(self, **kwargs):
         out_data_df = self.data
         # now keep applying filter
         for k,v in kwargs.items():

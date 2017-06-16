@@ -48,7 +48,7 @@ def file_to_trade_list(fname):
 
     # convert them to Trade objects, assuming first row is headers
     for x in my_list[1:]:
-        tr = FixedIncomeTrade(trade_id=x[1],
+        tr = FixedIncomeBondTrade(trade_id=x[1],
                               sym=x[4],
                               notional=float(x[6]),
                               timestamp=parse_iso_timestamp(x[13]),
