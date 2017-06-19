@@ -82,32 +82,7 @@ class TestHedgeMarkouts(TestCase):
 
         try:
             with ExceptionLoggingContext():
-                # # Load the quotes data from csv
-                # logging.basicConfig(level=configurator.get_config_given_key('log_level'))
-                # # Load the quotes data from csv
-                # quotes_dict = dict()
-                # for x in quote_files:
-                #     sym, quote = qc_csv_helper.file_to_quote_list(datapath + x, MarkoutMode.Hedged)
-                #     quotes_dict[sym] = quote
-                #
-                # # Now get the trades list from csv
-                # trades_list = qc_csv_helper.file_to_trade_list(datapath + trade_files)
-                #
-                # # Method 2 - go through each of the instruments,
-                # # create a stream of quote per sym
-                # quote_trade_list = []
-                # for k, v in quotes_dict.items():
-                #     # quote_async_iter = to_async_iterable(quotes_dict[k])
-                #     # quote_trade_list.append(quote_async_iter)
-                #     quote_async_iter = quotes_dict[k]  #to_async_iterable(quotes_dict[k])
-                #     # trades_list_sym = []
-                #     # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-                #
-                #     # trade_async_iter = to_async_iterable(trades_list_sym)
-                #     quote_trade_list.append(quote_async_iter)
-                #     # quote_trade_list.append(trade_async_iter)
 
-                # load the trade and quote data and merge
                 quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/hedged_markout_tests/",
                                                                     quote_file_list=["912828T91_quotes.csv",
                                                                                      "US30YT_RR_quotes.csv",
