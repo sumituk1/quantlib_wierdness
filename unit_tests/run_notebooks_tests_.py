@@ -7,7 +7,7 @@ import inspect, os, sys
 my_location = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 
-class TestMarkoutMessage(TestCase):
+class TestNotebook(TestCase):
     # Test for Sell in bps over intra-day to COB1
     def test_case_1(self):
         cwd = os.getcwd()

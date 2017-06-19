@@ -54,6 +54,9 @@ class RepoSingleton(Borg):
         # it's a singleton, so checking class is enough
         return self.__class__ == other.__class__
 
+    def __setstate__(self, state):
+        pass
+
             # def __str__(self):  # just for the illustration below, could be anything else
     #     return str(self.__dict__)
 

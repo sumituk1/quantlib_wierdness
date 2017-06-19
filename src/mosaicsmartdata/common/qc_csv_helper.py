@@ -48,7 +48,7 @@ def file_to_trade_list(fname):
 
     # convert them to Trade objects, assuming first row is headers
     for x in my_list[1:]:
-        tr = FixedIncomeTrade(trade_id=x[1],
+        tr = FixedIncomeBondTrade(trade_id=x[1],
                               sym=x[4],
                               notional=float(x[6]),
                               timestamp=parse_iso_timestamp(x[13]),
@@ -82,31 +82,31 @@ def file_to_swaps_trade_list(fname):
 
     # convert them to Trade objects, assuming first row is headers
     for x in my_list[1:]:
-        tr = InterestRateSwap(trade_id=x[1],
-                              sym=x[4],
-                              notional=float(x[6]), # mandatory notional
+        tr = InterestRateSwapTrade(trade_id=x[1],
+                                   sym=x[4],
+                                   notional=float(x[6]),  # mandatory notional
                               timestamp=parse_iso_timestamp(x[13]),
-                              side=TradeSide.Ask if x[10] == "Ask" else TradeSide.Bid,
-                              traded_px=float(x[7]), # has to have a traded_px
+                                   side=TradeSide.Ask if x[10] == "Ask" else TradeSide.Bid,
+                                   traded_px=float(x[7]),  # has to have a traded_px
                               client_sys_key=x[16],
-                              tenor=float(x[5]), # has to have a tenor
+                                   tenor=float(x[5]),  # has to have a tenor
                               trade_date=dt.datetime.strptime(x[14], "%Y.%m.%d"),
-                              ccy=x[18],
-                              trade_settle_date=dt.datetime.strptime(x[15], "%Y.%m.%d"),
-                              spot_settle_date=dt.datetime.strptime(x[26], "%Y.%m.%d"),
-                              maturity_date=dt.datetime.strptime(x[19], "%Y.%m.%d"),
-                              coupon=float(x[20]) if x[20] != "" else None, # optional coupon
+                                   ccy=x[18],
+                                   trade_settle_date=dt.datetime.strptime(x[15], "%Y.%m.%d"),
+                                   spot_settle_date=dt.datetime.strptime(x[26], "%Y.%m.%d"),
+                                   maturity_date=dt.datetime.strptime(x[19], "%Y.%m.%d"),
+                                   coupon=float(x[20]) if x[20] != "" else None,  # optional coupon
                               holidayCities=x[21],
-                              coupon_frequency=Frequency.convertFrequencyStr(x[22]),
-                              float_coupon_frequency=Frequency.convertFrequencyStr(x[23]),
-                              day_count=DayCountConv.convertDayCountStr(x[24]),
-                              issue_date=dt.datetime.strptime(x[25], "%Y.%m.%d") if x[25] != "" else None,
-                              duration=float(x[9]), # mandatory duration
+                                   coupon_frequency=Frequency.convertFrequencyStr(x[22]),
+                                   float_coupon_frequency=Frequency.convertFrequencyStr(x[23]),
+                                   day_count=DayCountConv.convertDayCountStr(x[24]),
+                                   issue_date=dt.datetime.strptime(x[25], "%Y.%m.%d") if x[25] != "" else None,
+                                   duration=float(x[9]),  # mandatory duration
                               country_of_risk=x[27],
-                              package_size=float(x[28]),
-                              leg_no=float(x[29]),
-                              price_type= PriceType.convert_price_type(x[30]) if x[30]!= "" else None,
-                              )
+                                   package_size=float(x[28]),
+                                   leg_no=float(x[29]),
+                                   price_type= PriceType.convert_price_type(x[30]) if x[30]!= "" else None,
+                                   )
         trade_list.append(tr)
     return trade_list
 

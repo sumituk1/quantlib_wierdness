@@ -26,7 +26,7 @@ class MarkoutMessage2(GenericParent):
         self.factor_PV_markout = None # todo: check with Egor if there's a better way
         self.factor_bps_markout = None  # todo: check with Egor if there's a better way
         self.timestamp = None # used to hold the ticking of the clock from Quotes message
-
+        self.package = None
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
     def __getattr__(self, item):
@@ -35,6 +35,8 @@ class MarkoutMessage2(GenericParent):
         # calculate different markout types on the fly by applying the correct multiplier
         elif item in self.trade.__dict__:
             return self.trade.__dict__[item]
+        elif item in self.trade.instrument.__dict__:
+            return self.trade.instrument.__dict__[item]
         elif str(item)[-8:] == '_markout':
             mk_type = str(item)[:-8]
             mults = self.trade.markout_mults()

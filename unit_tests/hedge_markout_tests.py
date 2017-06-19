@@ -54,11 +54,11 @@ class TestHedgeMarkouts(TestCase):
         return quote_trade_list
 
     # runs the graph and returns the output_list
-    def run_graph(self, quote_trade_list):
+    def run_graph(self, quote_trade_list, product_class = ProductClass.GovtBond):
         output_list = []
 
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        hedger = Hedger(my_hedge_calculator, product_class=ProductClass.GovtBond)
+        hedger = Hedger(my_hedge_calculator, product_class=product_class)
 
         # 1. set up initial hedges at point of trade
         new_trades = joint_stream | op.map(hedger) | op.flatten()
@@ -66,21 +66,22 @@ class TestHedgeMarkouts(TestCase):
         leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
         # 3. Aggregate all the markouts per package_id
         leg_markout_final = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt),
-                                                          MarkoutBasketBuilder()) | op.flatten() | \
+                                                          PackageBuilder()) | op.flatten() | \
                             op.map(aggregate_markouts) > output_list
         # run the pipe
         run(leg_markout_final)
         return output_list
 
     # Test hedge with Cash
-    def test_case_1(self, plotFigure=False):
+    def test_case_1(self, plotFigure=True):
         tolerance = 5 * 1e-2
         t0 = time.time()
         # Create a singleton configurator and instrument_static
         configurator = Configurator('config')
         instrument_static = InstumentSingleton() # required for hedge instrument duration
 
-        try:
+        #try:
+        if True:
             with ExceptionLoggingContext():
 
                 quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/hedged_markout_tests/",
@@ -138,9 +139,9 @@ class TestHedgeMarkouts(TestCase):
                     plt.legend()
                     plt.grid(True)
                     plt.show()
-        except Exception:
-            raise Exception
-            pass
+        # except Exception:
+        #     raise Exception
+        #     pass
 
     # Test hedge with futures
     def test_case_2(self, plotFigure=False):
@@ -151,7 +152,8 @@ class TestHedgeMarkouts(TestCase):
         configurator = Configurator('config')
         instrument_static = InstumentSingleton()
 
-        try:
+        #try:
+        if True:
             with ExceptionLoggingContext():
                 quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/hedged_markout_tests/",
                                                                     quote_file_list=["912828T91_quotes.csv",
@@ -162,7 +164,7 @@ class TestHedgeMarkouts(TestCase):
                                                                     trade_file="trades_hedge_test.csv")
 
                 # run the graph
-                output_list = self.run_graph(quote_trade_list)
+                output_list = self.run_graph(quote_trade_list,ProductClass.BondFutures)
 
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
@@ -227,9 +229,9 @@ class TestHedgeMarkouts(TestCase):
                     plt.legend()
                     plt.grid(True)
                     plt.show()
-        except Exception:
-            raise Exception
-            pass
+        # except Exception:
+        #     raise Exception
+        #     pass
 
     # Test case for betas using 2 Cash hedge instruments
     def test_case_3(self):
@@ -535,3 +537,10 @@ class TestHedgeMarkouts(TestCase):
                     plt.show()
         except Exception:
             raise Exception
+
+
+if __name__ == '__main__':
+    #    unittest.main()
+    k= TestHedgeMarkouts()
+    #k.setUp()
+    k.test_case_2()
