@@ -68,6 +68,7 @@ class FixedIncomeInstrument(Instrument):
         self.coupon_frequency = None
         self.day_count = None
         self.price_type = None
+        self.country_of_risk = Country.US  # default to US
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
 
@@ -92,6 +93,5 @@ class FixedIncomeIRFuture(FixedIncomeInstrument):
 
 class FixedIncomeBond(FixedIncomeInstrument):
     def __init__(self, *args, **kwargs):
-        self.country_of_risk = Country.US  # default to US
         self.is_benchmark = False
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))

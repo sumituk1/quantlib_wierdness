@@ -39,6 +39,7 @@ class Trade(GenericParent):
         self.package_id = None
         self.source_trade_id = None  # for derived paper trades only
         self.package = None # reference to the mother package
+        self.orig_package_size = None
         self.paper_trade = False
         self.timestamp = None
         self.notional = None
@@ -79,7 +80,10 @@ class Trade(GenericParent):
             return self.instrument.__dict__[item]
         elif item in ['package_size']:
             if self.package is None:
-                return 1
+                if self.orig_package_size is not None:
+                    return self.orig_package_size
+                else:
+                    return 1
             else:
                 return len(self.package.legs)
         else:
