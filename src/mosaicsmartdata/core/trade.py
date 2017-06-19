@@ -39,7 +39,7 @@ class Trade(GenericParent):
         self.package_id = None
         self.source_trade_id = None  # for derived paper trades only
         self.package = None # reference to the mother package
-        self.orig_package_size = None
+        self.orig_package_size = None # the size passed from the feed
         self.paper_trade = False
         self.timestamp = None
         self.notional = None
@@ -152,6 +152,9 @@ class InterestRateSwapTrade(FixedIncomeTrade):
         self.instrument = FixedIncomeIRSwap()
         kwargs = self.instrument.apply_kwargs(self.instrument.__dict__, kwargs)
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+        if self.delta is None:
+            # futures delta should always be passed in
+            self.delta = self.duration * self.notional * 0.0001
 
     def markout_mults(self):
         if self.price_type == PriceType.Upfront:
