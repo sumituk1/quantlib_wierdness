@@ -180,6 +180,8 @@ class MarkoutCalculatorPost:
         self.pending = []
         self.lags_list = lags_list
         self.last_price = None
+        self.nonpaper_legs_count = None
+        self.display_DV01 = None
         self.last_timestamp = None
         self.COB_time_utc = None
 

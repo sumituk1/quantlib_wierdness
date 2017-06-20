@@ -131,7 +131,7 @@ class BondFuturesTrade(FixedIncomeTrade):
         self.instrument = FixedIncomeBondFuture()
         kwargs = self.instrument.apply_kwargs(self.instrument.__dict__, kwargs)
 
-        self.maturity_date = None
+        # self.maturity_date = None
         self.contracts = 0
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
         self.notional *= self.contracts

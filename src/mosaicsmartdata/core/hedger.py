@@ -9,6 +9,7 @@ from mosaicsmartdata.common.quantlib.bond import fixed_bond
 from mosaicsmartdata.core.trade import Trade, BondFuturesTrade, FixedIncomeBondTrade, Package
 from copy import copy
 
+
 class HedgeClass:
     Listed = 0
     OTC = 1
@@ -56,51 +57,13 @@ class Hedger:
                 # for x in package:
                 #     x.package_size = len(package)
 
-            return copy(package.legs) # to keep the downstream from modifying the list inside the package
+            return copy(package.legs)  # to keep the downstream from modifying the list inside the package
         else:
             raise ValueError('Message must be a subclass of either Quote or Trade!')
 
 
 '''Extracts a duration based beta'''
 
-
-# def extract_beta_0(hedge_quote_sym,
-#                    trade_duration,
-#                    hedge_sym_arr,
-#                    lastquotes,
-#                    product_class=ProductClass.GovtBond,
-#                    trade_delta=None,
-#                    hedge_delta=None):
-#     # get the other hedge instr
-#     if len(hedge_sym_arr) == 1:
-#         return 1
-#     other_hedge_sym = [x for x in hedge_sym_arr if not x == hedge_quote_sym][0]
-#
-#     if product_class == ProductClass.BondFutures:
-#         if lastquotes[hedge_quote_sym].duration > trade_duration:
-#             return (trade_delta - hedge_delta[other_hedge_sym]) / \
-#                    abs((hedge_delta[hedge_quote_sym] - hedge_delta[other_hedge_sym]))
-#         else:
-#             return (hedge_delta[other_hedge_sym] - trade_duration) / \
-#                    abs((hedge_delta[hedge_quote_sym] - hedge_delta[other_hedge_sym]))
-#     elif product_class == ProductClass.GovtBond:
-#         if lastquotes[hedge_quote_sym].duration > trade_duration:
-#             # ths passed in hedge_quote is the right_wing hedge instr
-#             return (trade_duration - lastquotes[other_hedge_sym].duration) / \
-#                    abs((lastquotes[hedge_quote_sym].duration - lastquotes[other_hedge_sym].duration))
-#         else:
-#             # ths passed in hedge_quote is the left_wing hedge instr
-#             return (lastquotes[other_hedge_sym].duration - trade_duration) / \
-#                    abs((lastquotes[hedge_quote_sym].duration - lastquotes[other_hedge_sym].duration))
-#     else:
-#         raise ValueError("Hedging logic not implemented!!")
-
-
-# current used implementation
-
-# Looks at the left and the right hedge.
-# Can ONLY handle 2 hedges.
-# NOTE: hedge weights are inversely proportional to the diff of duration
 def extract_beta(hedge_quote_sym, trade_duration, hedge_sym_arr, lastquotes):
     instrument_static = InstumentSingleton()
     if len(hedge_sym_arr) == 0:
@@ -168,31 +131,6 @@ def load_config(country_of_risk, hedge_class):
         return configurator.get_data_given_section(section)
     else:
         raise ValueError('load_config(): Hedger not implemented')
-        #
-        # if country_of_risk == Country.US:
-        #     if hedge_class == HedgeClass.Listed:
-        #         # load the USD relevant hedge config
-        #         try:
-        #             return configurator.get_data_given_section('USD_GovtBond_Listed_Hedge_Mapper')
-        #         except configparser.NoSectionError:
-        #             # section not present
-        #             return ""
-        #     else:
-        #         try:
-        #             return configurator.get_data_given_section('USD_GovtBond_OTC_Hedge_Mapper')
-        #         except configparser.NoSectionError:
-        #             return ""
-        # else:
-        #     # For non US - look in specific Listed or Cash section for the country_list and match
-        #     if hedge_class == HedgeClass.Listed:
-        #         section = configurator.get_section_given_item_val(country_of_risk, "GovtBond_Listed_Hedge_Mapper")
-        #
-        #     else:
-        #         section = configurator.get_section_given_item_val(country_of_risk, "GovtBond_OTC_Hedge_Mapper")
-        #     if section is not None:
-        #         return configurator.get_data_given_section(section)
-        #     else:
-        #         raise ValueError('load_config(): Hedger not implemented')
 
 
 def calculate_hedge_notional(trade, hedge_sym, min_hedge_delta=1000):
@@ -211,6 +149,7 @@ def calculate_hedge_notional(trade, hedge_sym, min_hedge_delta=1000):
     else:
         return None
 
+
 # Cash hedging
 def perform_cash_hedge(msg, lastquotes):
     ''' Perform OTC hedge'''
@@ -220,7 +159,7 @@ def perform_cash_hedge(msg, lastquotes):
     msg_processed = False
     hedge_trades = []
     if not hedge_otc_mapper == "":
-        #try:
+        # try:
         if True:
             msg_processed = True
             min_hedge_delta = float(hedge_otc_mapper['min_hedge_delta'])
@@ -268,6 +207,8 @@ def perform_cash_hedge(msg, lastquotes):
                                              paper_trade=True,
                                              notional=calculate_hedge_notional(msg, hedge_sym_arr[i],
                                                                                min_hedge_delta=1000),
+                                             maturity_date=dt.datetime.strptime(
+                                                 instrument_static(sym=hedge_quote.sym)['maturity'], "%Y.%m.%d"),
                                              # <- Cash notional is 1
                                              delta=None,
                                              tenor= \
@@ -284,14 +225,14 @@ def perform_cash_hedge(msg, lastquotes):
                                              ccy=msg.ccy,
                                              # trade_delta=msg.delta,
                                              trade_settle_date=msg.trade_settle_date,
-                                             #min_hedge_delta=min_hedge_delta,
-                                             #trade_beta=msg.beta
+                                             # min_hedge_delta=min_hedge_delta,
+                                             # trade_beta=msg.beta
                                              )
                     hedge_trades.append(hedge_otc_trade)
-        # except Exception as e:
-        #     msg_processed = False
-        #     logging.error('Unable to perform OTC cash hedge. Please check instrument static for hedge instrument.')
-        #     pass
+                    # except Exception as e:
+                    #     msg_processed = False
+                    #     logging.error('Unable to perform OTC cash hedge. Please check instrument static for hedge instrument.')
+                    #     pass
 
     return hedge_trades, msg_processed
 
@@ -328,8 +269,8 @@ def perform_futures_hedge(msg, lastquotes):
     msg_processed = False
     hedge_listed_mapper = load_config(msg.country_of_risk, HedgeClass.Listed)
     if not hedge_listed_mapper == "":
-        #try:
-        if True:
+        try:
+            # if True:
             msg_processed = True
             min_hedge_delta = float(hedge_listed_mapper['min_hedge_delta'])
             set_beta = False
@@ -379,26 +320,28 @@ def perform_futures_hedge(msg, lastquotes):
                                          paper_trade=True,
                                          notional=contract_size,
                                          contracts=calculate_hedge_contracts(msg, hedge_sym_arr[i]),
+                                         maturity_date=dt.datetime.strptime(
+                                             instrument_static(sym=hedge_quote.sym)['maturity'], "%Y.%m.%d"),
                                          tenor= \
                                              fixed_bond.calculateYearFrac(DayCountConv.ACT_360,
                                                                           msg.trade_settle_date,
                                                                           dt.datetime.strptime
                                                                           (instrument_static(sym=hedge_quote.sym)
                                                                            ['maturity'], "%Y.%m.%d")),
-                                         #trade_delta=msg.delta,  # <-- underlying trade_delta to be hedged
+                                         # trade_delta=msg.delta,  # <-- underlying trade_delta to be hedged
                                          timestamp=msg.timestamp,
                                          side=TradeSide.Ask if msg.side == TradeSide.Bid else TradeSide.Bid,
                                          traded_px=hedge_quote.ask if msg.side == TradeSide.Ask else hedge_quote.bid,
                                          client_sys_key=msg.client_sys_key,
                                          trade_date=hedge_quote.timestamp.date(),
-                                         ccy=msg.ccy)#,
-                                         # trade_beta=msg.beta,
-                                         # trade_settle_date=msg.trade_settle_date,
-                                         # min_hedge_delta=min_hedge_delta)
+                                         ccy=msg.ccy)  # ,
+                    # trade_beta=msg.beta,
+                    # trade_settle_date=msg.trade_settle_date,
+                    # min_hedge_delta=min_hedge_delta)
 
                     hedge_trades.append(hedge_listed_trade)
-        # except Exception as e:
-        #     msg_processed = False
-        #     logging.warning("Unable to perform Futures hedge. Please check Instrument static")
-        #     pass
+        except Exception as e:
+            msg_processed = False
+            logging.warning("Unable to perform Futures hedge. Please check Instrument static")
+            pass
     return hedge_trades, msg_processed
