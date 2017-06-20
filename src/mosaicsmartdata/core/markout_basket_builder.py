@@ -20,6 +20,28 @@ class PackageBuilder:
         else:
             return []
 
+class AllMarkoutFilter:
+    def __init__(self):
+        self.zero_markout_state = None
+        self.packages = []
+    def __call__(self,pkg):
+        self.packages.append(pkg)
+        # if received the zero lag, do smart stuff
+        if pkg.legs[0].markout_lag == 0:
+            self.zero_markout_state = smart_stuff_goes_here()
+
+        if self.zero_markout_state:
+            for p in self.packages:
+                p = do_smart_filter(p, self.zero_markout_state)
+
+            tmp = self.packages
+            self.packages = []
+            return tmp
+        else:
+            return {}
+
+
+
 '''Calculates aggregated markouts for Unhedged trade and Hedge (paper-trade) belonging to a package'''
 def aggregate_markouts(pkg):
     hedge_markout_msgs = pkg.legs
