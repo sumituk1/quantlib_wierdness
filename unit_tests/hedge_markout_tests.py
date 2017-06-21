@@ -19,6 +19,7 @@ from mosaicsmartdata.common import qc_csv_helper
 from mosaicsmartdata.core.markout import GovtBondMarkoutCalculator
 from mosaicsmartdata.core.markout_basket_builder import *
 from mosaicsmartdata.core.hedger import *
+from mosaicsmartdata.swaps.core.pca_risk import *
 import os, inspect
 
 thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
@@ -62,12 +63,21 @@ class TestHedgeMarkouts(TestCase):
 
         # 1. set up initial hedges at point of trade
         new_trades = joint_stream | op.map(hedger) | op.flatten()
-        # 2. Perform markouts of both underlying trade and the paper_trades
-        leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
-        # 3. Aggregate all the markouts per package_id
-        leg_markout_final = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt),
-                                                          PackageBuilder()) | op.flatten() | \
-                            op.map(aggregate_markouts) > output_list
+
+        leg_markout = new_trades | op.map(PCARisk()) | op.flatten() | \
+                      op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
+
+        # 2. Aggregate all the markouts per package_id
+        leg_markout_final = leg_markout | op.map_by_group(lambda x: (x.trade_id, x.dt), PackageBuilder()) \
+                            | op.flatten() | op.map(aggregate_multi_leg_markouts) | \
+                            op.map_by_group(lambda x: x.package_id, AllMarkoutFilter()) | op.flatten() > output_list
+
+        # # 2. Perform markouts of both underlying trade and the paper_trades
+        # leg_markout = new_trades | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
+        # # 3. Aggregate all the markouts per package_id
+        # leg_markout_final = leg_markout | op.map_by_group(lambda x: (x.package_id, x.dt),
+        #                                                   PackageBuilder()) | op.flatten() | \
+        #                     op.map(aggregate_markouts) > output_list
         # run the pipe
         run(leg_markout_final)
         return output_list
@@ -142,6 +152,80 @@ class TestHedgeMarkouts(TestCase):
         # except Exception:
         #     raise Exception
         #     pass
+
+    # Test case 1 but second trade will be filtered out i.e. test filter on hedging pipeline
+    def test_case_1b(self, plotFigure=False):
+        tolerance = 5 * 1e-2
+        thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+        os.chdir(thisfiledir)
+
+        # Load the configuration file
+        configurator = Configurator('config')
+        try:
+            with ExceptionLoggingContext():
+                # load the trade and quote data and merge
+                quote_trade_list = self.read_and_merge_quotes_trade(
+                    datapath="../resources/hedged_markout_tests/",
+                    quote_file_list=["912828T91_quotes.csv",
+                                     "US30YT_RR_quotes.csv",
+                                     "US10YT_RR_quotes.csv",
+                                     "US5YT_RR_quotes.csv"],
+                    trade_file="trades_hedge_test_filter.csv")
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
+
+                # do assertions
+                # do assertions
+                self.assertEquals(len(output_list), 9, msg=None)
+                for mk_msg in output_list:
+                    if mk_msg.trade_id == 456 and mk_msg.dt == '-900':
+                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+                                             msg=None)
+                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance,
+                                             msg=None)
+                    if mk_msg.trade_id == 456 and mk_msg.dt == '-60':
+                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+                                             msg=None)
+                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance,
+                                             msg=None)
+                    if mk_msg.trade_id == 456 and mk_msg.dt == '0':
+                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+                                             msg=None)
+                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance,
+                                             msg=None)
+                    elif mk_msg.trade_id == 456 and mk_msg.dt == '60':
+                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+                                             msg=None)
+                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance,
+                                             msg=None)
+                    elif mk_msg.trade_id == 456 and mk_msg.dt == '300':
+                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.09277) / mk_msg.hedged_bps), tolerance,
+                                             msg=None)
+                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 1.10313) / mk_msg.hedged_cents), tolerance,
+                                             msg=None)
+                    elif mk_msg.trade_id == 456 and mk_msg.dt == '3600':
+                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.01609) / mk_msg.hedged_bps), tolerance,
+                                             msg=None)
+                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 5.4) / mk_msg.hedged_cents), tolerance,
+                                             msg=None)
+                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB0':
+                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.19828)) / mk_msg.hedged_bps), tolerance,
+                                             msg=None)
+                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 41.3375) / mk_msg.hedged_cents), tolerance,
+                                             msg=None)
+                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB1':
+                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.49894)) / mk_msg.hedged_bps), tolerance,
+                                             msg=None)
+                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 46.4156) / mk_msg.hedged_cents), tolerance,
+                                             msg=None)
+                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB2':
+                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.42919)) / mk_msg.hedged_bps), tolerance,
+                                             msg=None)
+                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 37.8219) / mk_msg.hedged_cents), tolerance,
+                                             msg=None)
+
+        except ValueError:  # Exception:
+            raise Exception
 
     # Test hedge with futures
     def test_case_2(self, plotFigure=False):

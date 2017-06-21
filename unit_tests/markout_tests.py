@@ -18,6 +18,8 @@ import time
 import datetime as dt
 from mosaicsmartdata.core.quote import Quote
 from mosaicsmartdata.core.trade import Trade,FixedIncomeTrade
+from mosaicsmartdata.core.markout_basket_builder import *
+from mosaicsmartdata.swaps.core.pca_risk import *
 import os, inspect
 
 thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
@@ -43,13 +45,7 @@ class TestMarkouts(TestCase):
         # now merge the quote and the trade list
         quote_trade_list = []
         for k, v in quotes_dict.items():
-            # quote_async_iter = to_async_iterable(quotes_dict[k])
-            # quote_trade_list.append(quote_async_iter)
             quote_async_iter = quotes_dict[k]  # to_async_iterable(quotes_dict[k])
-            # trades_list_sym = []
-            # [trades_list_sym.append(t) for t in trades_list if t.sym == k]
-
-            # trade_async_iter = to_async_iterable(trades_list_sym)
             quote_trade_list.append(quote_async_iter)
 
         quote_trade_list.append(trades_list)
@@ -61,9 +57,12 @@ class TestMarkouts(TestCase):
         # run graph
         # t0 = time.time()
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
-        graph = joint_stream | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) \
-                | op.flatten() > output_list
-        return graph,output_list
+        graph_1 = joint_stream | op.map(PCARisk())| op.flatten() | op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator())| op.flatten()
+
+        graph_2 = graph_1 | op.map_by_group(lambda x: (x.trade_id, x.dt), PackageBuilder()) \
+                            | op.flatten() | op.map(aggregate_multi_leg_markouts) | \
+                            op.map_by_group(lambda x: x.package_id, AllMarkoutFilter()) | op.flatten() > output_list
+        return graph_2,output_list
 
     # runs the graph and returns the output_list
     def run_graph(self, quote_trade_list):
@@ -118,6 +117,58 @@ class TestMarkouts(TestCase):
                                              tolerance, msg=None)
 
         except ValueError:# Exception:
+            raise Exception
+
+    # Test case 1 but with a "Filter" for the last trade
+    def test_case_1b(self, plotFigure=False):
+        tolerance = 5 * 1e-2
+        thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+        os.chdir(thisfiledir)
+
+        # Load the configuration file
+        configurator = Configurator('config')
+        try:
+            with ExceptionLoggingContext():
+                # load the trade and quote data and merge
+                quote_trade_list = self.read_and_merge_quotes_trade(
+                    datapath="../resources/unhedged_markout_tests/",
+                    quote_file_list=["912810RB6_quotes.csv",
+                                     "DE10YT_RR_quotes.csv",
+                                     "US30YT_RR_quotes.csv"],
+                    trade_file="trades_filter.csv")
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
+
+                # do assertions
+                # self.assertEquals(len(output_list), 27, msg=None)
+                self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 3, msg=None)
+                self.assertEquals(len(output_list), 27, msg=None)
+                for mk_msg in output_list:
+                    if mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '0':
+                        self.assertEquals(np.abs(mk_msg.bps_markout), 0.0, msg=None)
+                    elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '-900':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.15)) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+                    elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '-60':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.022) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+                    elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '60':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0833)) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+                    elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '300':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.1333)) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+                    elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '3600':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.572)) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+                    elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB0':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0722)) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+                    elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB1':
+                        self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.844)) / mk_msg.bps_markout),
+                                             tolerance, msg=None)
+
+        except ValueError:  # Exception:
             raise Exception
 
     # Test for Sell in cents over intra-day to COB1
