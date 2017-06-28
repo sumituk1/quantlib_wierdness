@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 
-import argparse
-import inspect, os, sys
-from aiostreams.main import main_function
+from aiostreams import entrypoint, get_pipelines
 
-sys.stdout.write('Starting... !\n')
+entrypoint(get_pipelines)
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--id', help='process ID to use for caching/retrieval')
-parser.add_argument('-r', '--reload', help='Set this to reload cached graphs', action='store_true')
-parser.add_argument('--kafka_broker', help='Kafka IP:port')
-parser.add_argument('--persist_topic', help='Kafka topic for object persistence')
-
-args = parser.parse_args()
-main_function(args)
+# Template for the pipeline definition function to be used instead of get_pipelines:
+# def pipeline_fun(names_only=False):
+#     if names_only:
+#         # return a list with the names of the graphs this function makes
+#     else:
+#         # return a dict where the keys are graph names
+#         # and the values are the graphs
+#         # the keys here must be the same as the names in the list above

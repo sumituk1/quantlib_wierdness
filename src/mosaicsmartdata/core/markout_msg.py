@@ -50,6 +50,14 @@ class MarkoutMessage2(GenericParent):
         else:
             raise AttributeError('This object doesn\'t have attribute' + item)
 
+    def __eq__(self, other):
+        # need to do it this way to avoid endless recursion from package to trade and back
+        # TODO: what is a cleaner way of achieving that, that also checks for 'same' packages w/o endless recursion?
+        return self.compare_except_package(other)
+
+    def compare_except_package(self, other):
+        return all([self.__dict__[key] == other.__dict__[key] for key in self.__dict__.keys() if key not in ['package']])
+
 
 
     def __str__(self):

@@ -6,14 +6,17 @@ from mosaicsmartdata.core.trade import Trade
 from mosaicsmartdata.core.quote import Quote
 
 
-class SwapsFactorRisk:
+class FactorRisk:
     def __init__(self, *args):
         self.f1_risk = args[0]
         self.f2_risk = args[1]
         self.f3_risk = args[2]
         self.total_factor_risk = args[3]
 
-    # def get_f1_risk(self, attr):
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+            # def get_f1_risk(self, attr):
     #     return self.f1_risk
 
 
@@ -99,5 +102,5 @@ class PCARisk:
         total_factor_risk = np.sqrt(self.mult * (np.square(np.dot(self.eig_vec[:,0], dv01_arr)) * self.eig_val[0] +
                                                  np.square(np.dot(self.eig_vec[:,1], dv01_arr)) * self.eig_val[1] +
                                                  np.square(np.dot(self.eig_vec[:,2], dv01_arr)) * self.eig_val[2]))
-        swaps_factor_risk = SwapsFactorRisk(f1_risk, f2_risk, f3_risk, total_factor_risk)
+        swaps_factor_risk = FactorRisk(f1_risk, f2_risk, f3_risk, total_factor_risk)
         return swaps_factor_risk

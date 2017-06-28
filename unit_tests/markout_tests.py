@@ -19,7 +19,7 @@ import datetime as dt
 from mosaicsmartdata.core.quote import Quote
 from mosaicsmartdata.core.trade import Trade,FixedIncomeTrade
 from mosaicsmartdata.core.markout_basket_builder import *
-from mosaicsmartdata.swaps.core.pca_risk import *
+from mosaicsmartdata.core.pca_risk import *
 import os, inspect
 
 thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
@@ -78,7 +78,8 @@ class TestMarkouts(TestCase):
 
         # Load the configuration file
         configurator = Configurator('config')
-        try:
+        # try:
+        if True:
             with ExceptionLoggingContext():
                 # load the trade and quote data and merge
                 quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/unhedged_markout_tests/",
@@ -116,8 +117,8 @@ class TestMarkouts(TestCase):
                         self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.844)) / mk_msg.bps_markout),
                                              tolerance, msg=None)
 
-        except ValueError:# Exception:
-            raise Exception
+        # except ValueError:# Exception:
+        #     raise Exception
 
     # Test case 1 but with a "Filter" for the last trade
     def test_case_1b(self, plotFigure=False):
@@ -482,4 +483,4 @@ if __name__ == '__main__':
     #    unittest.main()
     k= TestMarkouts()
     k.setUp()
-    k.test_case_6()
+    k.test_case_1()

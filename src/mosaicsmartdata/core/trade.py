@@ -6,13 +6,20 @@ from mosaicsmartdata.core.repo_singleton import *
 import logging, collections
 
 class Package:
-    def __init__(self, legs = []):
+    def __init__(self, legs = [], timestamp = None):
         '''
         :param legs: list of trades contained in the package
         '''
         self.legs = []
         self.package_id = None
         self.append(legs)
+        if timestamp:
+            self.timestamp = timestamp
+        else:
+            try:
+                self.timestamp = max([leg.timestamp for leg in legs])
+            except:
+                self.timestamp = None
 
     # add one or multiple trades to the package
     def append(self, trade):
@@ -32,6 +39,9 @@ class Package:
 
             trade.package = self
             self.legs.append(trade)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 class Trade(GenericParent):
     def __init__(self, *args, **kwargs):
@@ -67,7 +77,13 @@ class Trade(GenericParent):
         if self.package_id is None:
             self.package_id = self.trade_id
 
+    def __eq__(self, other):
+        # need to do it this way to avoid endless recursion from package to trade and back
+        # TODO: what is a cleaner way of achieving that, that also checks for 'same' packages w/o endless recursion?
+        return self.compare_except_package(other)
 
+    def compare_except_package(self, other):
+        return all([self.__dict__[key] == other.__dict__[key] for key in self.__dict__.keys() if key not in ['package']])
 
     def markout_mults(self):
         return {'price': 1, 'PV': self.delta}

@@ -9,20 +9,28 @@ tenor_tol = 1.0
 
 class PackageBuilder:
     '''
-    Collects all messages with the same basket_id
+    Collects all messages with the same package_id, provided they are trades or contain trades
     '''
     def __init__(self):
         self.basket = []
 
     def __call__(self, msg):
-        self.basket.append(msg)
-        if len(self.basket) >= msg.trade.package_size:
-            my_msg = self.basket
-            self.basket = []
-            out = Package(my_msg) # collect them in a Package object
-            return [out]
-        else:
-            return []
+        try:
+            if 'trade' in msg.__dict__:  # is it a markout_message?
+                this_pkg_size = msg.trade.package_size
+            else: # or is it something which knows its package size?
+                this_pkg_size = msg.package_size
+
+            self.basket.append(msg)
+            if len(self.basket) >= this_pkg_size:
+                my_msg = self.basket
+                self.basket = []
+                out = Package(my_msg) # collect them in a Package object
+                return [out]
+            else:
+                return []
+        except: # things with no package size just get passed through
+            return [msg]
 
 class AllMarkoutFilter:
     def __init__(self):

@@ -19,7 +19,7 @@ from mosaicsmartdata.common import qc_csv_helper
 from mosaicsmartdata.core.markout import GovtBondMarkoutCalculator
 from mosaicsmartdata.core.markout_basket_builder import *
 from mosaicsmartdata.core.hedger import *
-from mosaicsmartdata.swaps.core.pca_risk import *
+from mosaicsmartdata.core.pca_risk import *
 import os, inspect
 
 thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
@@ -60,9 +60,15 @@ class TestHedgeMarkouts(TestCase):
 
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
         hedger = Hedger(my_hedge_calculator, product_class=product_class)
+        def get_legs(x):
+            try:
+                return copy(x.legs)
+            except:
+                return [x]
 
         # 1. set up initial hedges at point of trade
-        new_trades = joint_stream | op.map(hedger) | op.flatten()
+        new_trades = joint_stream | op.map_by_group(lambda x: x.package_id , PackageBuilder()) |\
+                        op.flatten() | op.map(hedger) | op.flat_map(get_legs)
 
         leg_markout = new_trades | op.map(PCARisk()) | op.flatten() | \
                       op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()

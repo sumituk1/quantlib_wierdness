@@ -40,12 +40,13 @@ class Hedger:
             # store the latest quote for each instrument;
             # make a copy just in case the msg object gets modififed downstream
             self.last_quotes[msg.sym] = msg  # copy.deepcopy(msg)
-            return [msg]
+            return msg
 
-        elif isinstance(msg, Trade):
+        elif isinstance(msg, Package):
             # TODO: the hedger should really get the whole package and hedge it as a whole
-            package = Package([msg])
-            if msg.package_size == 1 or msg.package_size is None:
+            package = msg#Package([msg])
+            if len(package.legs)==1: #msg.package_size == 1 or msg.package_size is None:
+                msg = package.legs[0]
                 # Create a hedge only if it's a single leg. Higher risk factors are not hedged yet!!
                 hedges = self.hedge_calculator(msg,
                                                self.last_quotes,
@@ -57,9 +58,9 @@ class Hedger:
                 # for x in package:
                 #     x.package_size = len(package)
 
-            return copy(package.legs)  # to keep the downstream from modifying the list inside the package
+            return package #copy(package.legs)  # to keep the downstream from modifying the list inside the package
         else:
-            raise ValueError('Message must be a subclass of either Quote or Trade!')
+            raise ValueError('Message must be a subclass of either Quote or Package!')
 
 
 '''Extracts a duration based beta'''
@@ -97,12 +98,12 @@ def my_hedge_calculator(msg,
 
     if msg.package_size == 1 or msg.package_size is None:
 
-        if product_class is not None:
+        #if product_class is not None:
             # caller passed in specific hedge class to hedge the underlying
-            if product_class == ProductClass.BondFutures:
-                hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes)
-            elif product_class == ProductClass.GovtBond:
-                hedge_trades, msg_processed = perform_cash_hedge(msg, lastquotes)
+        if product_class == ProductClass.BondFutures:#isinstance(msg, BondFuturesTrade ): #
+            hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes)
+        elif product_class == ProductClass.GovtBond:#isinstance(msg, FixedIncomeBondTrade ): #
+            hedge_trades, msg_processed = perform_cash_hedge(msg, lastquotes)
                 # msg_processed = True  # TODO: currently we support ONLY Futures OR Cash hedging
 
         # No specific hedge class passed in. So walk the config and try and do the hedging, starting with Futures
@@ -270,7 +271,7 @@ def perform_futures_hedge(msg, lastquotes):
     hedge_listed_mapper = load_config(msg.country_of_risk, HedgeClass.Listed)
     if not hedge_listed_mapper == "":
         try:
-            # if True:
+        #if True:
             msg_processed = True
             min_hedge_delta = float(hedge_listed_mapper['min_hedge_delta'])
             set_beta = False
