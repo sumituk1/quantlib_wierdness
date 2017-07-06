@@ -20,7 +20,7 @@ def parse_iso_timestamp(timestamp):
 def file_to_quote_list(fname, markout_mode=MarkoutMode.Unhedged):
     # Load instrument static
     configurator = Configurator()
-    instrument_static = InstumentSingleton()
+    instrument_static = InstrumentStaticSingleton()
 
     with open(fname, 'r') as f:
         reader = csv.reader(f)

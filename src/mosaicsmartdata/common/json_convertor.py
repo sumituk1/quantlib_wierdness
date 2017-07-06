@@ -10,7 +10,7 @@ from mosaicsmartdata.core.quote import Quote
 from mosaicsmartdata.core.trade import FixedIncomeBondTrade
 
 # Load instrument static
-instrument_static = InstumentSingleton()
+instrument_static = InstrumentStaticSingleton()
 
 
 # Helper to convert config to json
