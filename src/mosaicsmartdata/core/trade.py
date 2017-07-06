@@ -88,6 +88,31 @@ class Trade(GenericParent):
     def markout_mults(self):
         return {'price': 1, 'PV': self.delta}
 
+    # price the trade was done at, using the price convention the user expects for markouts
+    def traded_price(self):
+        return self.adj_traded_px # really?
+
+    # price for the current trade given pricing data, using the price convention the user expects for markouts
+    def valuation_price(self, pricing_context):
+        return pricing_context # if it's a price for a discrete instrument, that's all we need
+
+    def side_mult(self):
+        if self.side == TradeSide.Ask:
+            return -1
+        else:
+            return 1
+
+
+    def price_diff(self, pricing_context):
+        p_diff = self.valuation_price(pricing_context) - self.traded_price()
+        p_diff *= self.side_mult()
+        return p_diff
+
+    def PV(self, pricing_context):
+        # price the trade using
+        return self.price_diff(pricing_context)*self.markout_mults['PV']
+
+
     def __getattr__(self, item):
         if item in self.__dict__:
             return self.__dict__[item]
@@ -183,6 +208,15 @@ class InterestRateSwapTrade(FixedIncomeTrade):
                     'PV': (1.0 / self.par_value) * 10000 * self.delta,
                     # 'cents': 100.0,
                     'bps': (1.0 / self.par_value) * 10000}
+
+    # price the trade was done at, using the price convention the user expects for markouts
+    def traded_price(self):
+        return -self.adj_traded_px # really?
+
+    # price for the current trade given pricing data, using the price convention the user expects for markouts
+    def valuation_price(self, pricing_context):
+        return -pricing_context # if it's a price for a discrete instrument, that's all we need
+
 
 
 class FixedIncomeBondTrade(FixedIncomeTrade):

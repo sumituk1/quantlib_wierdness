@@ -81,7 +81,7 @@ class MarkoutCalculatorPre:
     '''
 
     def __init__(self, lags_list, max_lag, instr=None):
-        self.pending = []
+        #self.pending = []
         self.lags_list = lags_list
         self.buffer = PriceBuffer(max_lag=max_lag)
         #self.last_price = pd.DataFrame(columns=['mid', 'timestamp']).reset_index()
@@ -97,74 +97,45 @@ class MarkoutCalculatorPre:
         # print(msg)
         if isinstance(msg, Trade):
             self.COB_time_utc = COB_time_utc
-            # Egor - no need to generate markout_requests for pre as they already would have been
-            # generated
-            # self.generate_markout_requests(msg)
             for mk in self.lags_list:
                 mkmsg = MarkoutMessage2(trade=msg,
-                                        initial_price=msg.adj_traded_px,
+                                        initial_price=msg.traded_price(),
                                         next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
                                         timestamp=msg.timestamp,
                                         dt=mk)
-                if mkmsg.trade_id == '222' and mk == '-900':
-                    print('') # to set breakpoint here
-                # if len(self.last_price[self.last_price['timestamp'] <= mkmsg.next_timestamp]['mid'].values) == 0:
-                #     mkmsg.price_markout = None
-                # else:
-                #     mkmsg.final_price = self.last_price[self.last_price['timestamp'] <=
-                #                                         mkmsg.next_timestamp]['mid'].values[-1]
-
                 # if price more than 24 hours before desired, treat it as stale
                 cutoff_timestamp = mkmsg.next_timestamp + dt.timedelta(0,-24*60*60)
-                mkmsg.final_price = self.buffer.get_last_price_before(mkmsg.next_timestamp,cutoff_timestamp)
+                final_price_context = self.buffer.get_last_price_before(mkmsg.next_timestamp,cutoff_timestamp)
+                mkmsg.final_price = mkmsg.trade.valuation_price(final_price_context)
+                mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)*mkmsg.trade.side_mult()
+
                 if mkmsg.final_price is np.NaN:
                     logging.getLogger(__name__).warning('Saw a NaN final price in pre-markouts')
 
-                if isinstance(msg, InterestRateSwapTrade):
-                    # "REC" in IRS world means we are receiving the fixed leg
-                    mkmsg.price_markout = (-mkmsg.final_price + mkmsg.initial_price)
-                else:
-                    mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)
 
-                if (mkmsg.side == TradeSide.Ask) and (not mkmsg.price_markout is None):
-                    mkmsg.price_markout *= -1
+                # if isinstance(msg, InterestRateSwapTrade):
+                #     # "REC" in IRS world means we are receiving the fixed leg
+                #     mkmsg.price_markout = (-mkmsg.final_price + mkmsg.initial_price)
+                # else:
+                #     mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)
+                #
+                # if (mkmsg.side == TradeSide.Ask) and (not mkmsg.price_markout is None):
+                #     mkmsg.price_markout *= -1
 
                 completed.append(mkmsg)
         elif isinstance(msg, Quote):
-            # update the pending markout_messages with the new timestamp
-            for x in self.pending:
-                x.timestamp = msg.timestamp
+            pass
+            # update the pending markout_messages with the new timestamp - but there aren't any!
+            # for x in self.pending:
+            #     x.timestamp = msg.timestamp
         else: # if not isinstance(msg, Quote):
             print(msg)
 
-        # print("MarkoutCalculatorPre(): time spent before timestamp check =%s "%(time.time()-t_3))
-
         if isinstance(msg, Quote) or hasattr(msg, 'mid'):
-            # throw out stale Quotes which have a timestamp > min(abs(lags_list) if lags_list < 0
-            # intra-day markout lags given
-            # t_3 = time.time()
-            # ix = len(self.last_price) + 1
             self.buffer.add_point(msg.timestamp, msg.mid)
             if len(self.buffer.time) > size_threshold:
                 stale_timestamp = self.buffer.time[self.buffer.last - 1] - dt.timedelta(0, self.max_lag)
                 self.buffer.throw_away_before(stale_timestamp)
-            # self.last_price.set_value(ix, 'mid', msg.mid)
-            # self.last_price.set_value(ix, 'timestamp', msg.timestamp)
-            # print("MarkoutCalculatorPre(): time spent appending Quote =%s " % (time.time() - t_3))
-            # t_3 = time.time()
-            #stale_timestamp = self.last_price['timestamp'].values[-1] - dt.timedelta(0, self.max_lag)
-            # dt.timedelta(0, max([abs(float(x)) for x in self.lags_list]))
-            # print("MarkoutCalculatorPre(): time spent calculating stale =%s " % (time.time() - t_3))
-            # t_3 = time.time()
-            # if len(self.last_price) > size_threshold:
-            #     print("Re-indexing!!")
-            #     if len(self.last_price[self.last_price['timestamp'] <= stale_timestamp]) > 0:
-            #         # re-indexing is expensive!!
-            #         self.last_price.drop(self.last_price[self.last_price['timestamp'] < stale_timestamp].index,
-            #                              inplace=True)
-            #         self.last_price.reset_index(drop=True, inplace=True)
-                    # print("MarkoutCalculatorPre(): time spent dropping & re-indexing=%s " % (time.time() - t_3))
-        # print("Total time spent in MarkoutCalculatorPre() = %s" % (time.time() - t0))
         return completed
 
 
@@ -197,32 +168,21 @@ class MarkoutCalculatorPost:
             # for each markout lag in lags_list, create a markout_msg for this trade
             for mk in self.lags_list:
                 if "COB" not in mk:
-                    mkmsg = MarkoutMessage2(trade=msg,
-                                            # trade_id=msg.trade_id,
-                                            # notional=msg.notional,
-                                            # sym=msg.sym,
-                                            # side=msg.side,
-                                            initial_price=msg.adj_traded_px,
-                                            next_timestamp=msg.timestamp + dt.timedelta(0, float(mk)),
-                                            dt=mk)
+                    next_timestamp = msg.timestamp + dt.timedelta(0, float(mk))
                 else:
                     # This is a COB lag. Extract the COB time in UTC
                     # COB_time_utc = None
 
                     # now get the COB lag i.e. COB_T0 or COB_T1, COB_T2
                     COB_lag = mk[-1]
-                    COB_time_utc = dt.datetime.combine(msg.trade_date, self.COB_time_utc) + \
+                    next_timestamp = dt.datetime.combine(msg.trade_date, self.COB_time_utc) + \
                                    dt.timedelta(days=float(COB_lag))
 
-                    mkmsg = MarkoutMessage2(trade=msg,
-                                            # trade_id=msg.trade_id,
-                                            # notional=msg.notional,
-                                            # sym=msg.sym,
-                                            # side=msg.side,
-                                            initial_price=msg.traded_px,
-                                            next_timestamp=COB_time_utc,
-                                            dt=mk)
-                # print(mkmsg)
+                mkmsg = MarkoutMessage2(trade=msg,
+                                        initial_price=msg.traded_price(),
+                                        next_timestamp = next_timestamp,
+                                        dt=mk)
+
                 self.pending.append(mkmsg)
 
     def __call__(self, msg, COB_time_utc=None):
@@ -247,7 +207,8 @@ class MarkoutCalculatorPost:
         self.pending = [x for x in self.pending if x not in completed]
 
         for x in completed:
-            x.final_price = self.last_price
+            x.final_price = x.trade.valuation_price(self.last_price)
+            # TODO: rewrite this!!!
             if x.trade.price_type == PriceType.Upfront and x.dt == "0":
                 # Handle upfront_fee at point of trade
                 x.price_markout = (x.final_price + x.initial_price)
@@ -257,14 +218,14 @@ class MarkoutCalculatorPost:
                     if y not in completed:
                         y.initial_price = x.final_price
             else:
-                if isinstance(x.trade, InterestRateSwapTrade):
-                    # "REC" in IRS world means we are receiving the fixed leg
-                    x.price_markout = (-x.final_price + x.initial_price)
-                else:
-                    x.price_markout = (x.final_price - x.initial_price)
+                # if isinstance(x.trade, InterestRateSwapTrade):
+                #     # "REC" in IRS world means we are receiving the fixed leg
+                #     x.price_markout = (-x.final_price + x.initial_price)
+                # else:
+                #     x.price_markout = (x.final_price - x.initial_price)
+                x.price_markout = (x.final_price - x.initial_price)
 
-            if x.side == TradeSide.Ask:
-                x.price_markout *= -1
+            x.price_markout *= x.trade.side_mult()
 
         if isinstance(msg, Quote) or hasattr(msg, 'mid'):
             self.last_price = msg.mid

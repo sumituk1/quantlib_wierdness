@@ -1,6 +1,6 @@
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.common.read_config import *
-from mosaicsmartdata.core.instrument_singleton import InstumentSingleton
+from mosaicsmartdata.core.instrument_singleton import InstrumentStaticSingleton
 from mosaicsmartdata.core.quote import Quote
 import logging
 import datetime as dt
@@ -66,7 +66,7 @@ class Hedger:
 '''Extracts a duration based beta'''
 
 def extract_beta(hedge_quote_sym, trade_duration, hedge_sym_arr, lastquotes):
-    instrument_static = InstumentSingleton()
+    instrument_static = InstrumentStaticSingleton()
     if len(hedge_sym_arr) == 0:
         raise ValueError("extract_beta called with no hedge_sym passed in")
     if len(hedge_sym_arr) == 1:
@@ -92,7 +92,7 @@ def my_hedge_calculator(msg,
                         product_class=None):
     hedge_dict = msg.__dict__
     # hedge_trades = []
-    instrument_static = InstumentSingleton()
+    instrument_static = InstrumentStaticSingleton()
     configurator = Configurator()
     msg_processed = False
 
@@ -142,7 +142,7 @@ def calculate_hedge_notional(trade, hedge_sym, min_hedge_delta=1000):
     if trade.delta > min_hedge_delta:
         if not trade.beta:
             raise ValueError("OTC Hedge calculation called on trade with no hedges set")
-        instrument_static = InstumentSingleton()
+        instrument_static = InstrumentStaticSingleton()
         duration = instrument_static(sym=hedge_sym)['duration']
         # contract_size = instrument_static(sym=hedge_sym)['contract_size']
         # delta = calculate_futures_delta(contract_size, duration)
@@ -154,7 +154,7 @@ def calculate_hedge_notional(trade, hedge_sym, min_hedge_delta=1000):
 # Cash hedging
 def perform_cash_hedge(msg, lastquotes):
     ''' Perform OTC hedge'''
-    instrument_static = InstumentSingleton()
+    instrument_static = InstrumentStaticSingleton()
     configurator = Configurator()
     hedge_otc_mapper = load_config(msg.country_of_risk, HedgeClass.OTC)
     msg_processed = False
@@ -249,7 +249,7 @@ def calculate_hedge_contracts(trade, hedge_sym):
     if create_hedge:
         if not trade.beta:
             raise ValueError("Futures Hedge calculation called on trade with no hedges set")
-        instrument_static = InstumentSingleton()
+        instrument_static = InstrumentStaticSingleton()
         duration = instrument_static(sym=hedge_sym)['duration']
         contract_size = instrument_static(sym=hedge_sym)['contract_size']
         delta = calculate_futures_delta(contract_size, duration)
@@ -264,7 +264,7 @@ def calculate_futures_delta(contract_size, futures_duration):
 # Futures hedging
 def perform_futures_hedge(msg, lastquotes):
     ''' ---Process for LISTED--- '''
-    instrument_static = InstumentSingleton()
+    instrument_static = InstrumentStaticSingleton()
     configurator = Configurator()
     hedge_trades = []
     msg_processed = False

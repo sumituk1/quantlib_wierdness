@@ -1,6 +1,73 @@
+from copy import copy
+from collections import namedtuple
+
 from mosaicsmartdata.common.constants import Currency, Country
 from mosaicsmartdata.core.generic_parent import GenericParent
 from mosaicsmartdata.core.discounting_service import DiscountingService
+from mosaicsmartdata.core.instrument_singleton import InstrumentStaticSingleton
+
+TenorTuple = namedtuple('TenorTuple','tenor today instr')
+SpotRate = namedtuple('SpotRate','ccy1  ccy2 today spot_date mid')
+
+class PricingContext:
+    def __init__(self, curves, spots, today):
+        '''
+        A bundle of spot rates and matching discounting curves, derived from the
+        FX spot and swap markets
+        :param curves: a dict of discounting curves by ccy, implied from the FX swap market
+        :param spots: a dict of spot rates, with all currency pairs normalized to ccy1 = USD
+        '''
+        if 'USD' not in curves:
+            raise ValueError('Need a USD discounting curve')
+
+        self.curve = copy.copy(curves)
+        self.today = today
+        self.spot = {}
+        for s in spots:
+            if s.ccy1 == 'USD':
+                self.spot[s.ccy2] =s
+            else:
+                raise ValueError('Ccy1 must always be USD here, not ', s)
+
+    def spot_rate(self, ccypair):
+        # calculate the rate for that ccypair and return
+        pass
+
+    def fwd_points(self, ccypair, start_date, end_date):
+        pass
+
+
+class DateCalculatorBorg:
+    _shared = {}
+    def __init__(self):
+        self.__dict__ = self._shared
+
+
+class DateCalculator(DateCalculatorBorg):
+    def __init__(self):
+        super().__init__()
+
+    def date_add(self, today, interval):
+        # call quantlib wrapper here
+        pass
+
+    def spot_date(self, ccypair, today):
+        # TODO should cache these
+        # TODO: use by-currency-pair spot conventions
+        return self.date_add(today, '2b')
+
+    def resolve_tenor(self, tenor_tuple):
+        # a bunch of cases, calculating the dates corresponding to the tenor for different instruments
+        if not isinstance(tenor_tuple, TenorTuple):
+            raise ValueError('Expected a TenorTuple, got ', tenor_tuple)
+
+        tenor, today, instr = tenor_tuple
+
+        if tenor.lower() == 'spot':
+            # TODO: use by-currency-pair spot conventions
+            return self.dateAdd(today, '2b')
+
+
 
 class Instrument(GenericParent):
     def __init__(self, *args, **kwargs):
@@ -11,51 +78,74 @@ class Instrument(GenericParent):
         self.holidayCities = None
 
 class FXInstrument(Instrument):
-    def __init__(self, *args, **kwargs):
-        # ccy is base currency,
-        self.ccy2 = None
-        super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+    pass
 
 class FXForward(FXInstrument):
-    def __init__(self, *args, **kwargs):
-        self.notional1 = None # includes sign, + means I'm getting that flow
-        self.notional2 = None # includes sign, + means I'm getting that flow
-        self.settle_date = None
-        self.isSpot = True
-        self.isDeliverable = True
-        self.disc = DiscountingService()
+    def __init__(self, ccypair, settle_date, notionals, **kwargs):
+        self.ccy = ccypair # a tuple, such as ('USD','JPY')
+        self.notionals = notionals # a pair of notionals includes sign, + means I'm getting that flow
+        self.settle_date = settle_date
+        self.isDeliverable = True # only do cash FX for now
+        self.date_calc = DateCalculator()
+        self.static = InstrumentStaticSingleton()
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
-    def spot(self):
-        return abs(self.notional2/self.notional1)
+    def rate(self):
+        return abs(self.notionals[1]/self.notionals[0])
 
-    def pv(self):
-        return self.notional1*self.disc(self.settle_date,self.ccy) - self.notional2*self.disc(self.settle_date,self.ccy2)
+    def price(self, pricing_context: PricingContext):
+        return pricing_context.spot_rate(self.ccy)
 
-class FXSwap(FXInstrument):
-    def __init__(self, leg1: FXForward, leg2: FXForward, **kwargs):
-        self.leg1 = leg1
-        self.leg2 = leg2
-        if not (leg1.ccy == leg2.ccy and leg1.ccy2 == leg2.ccy2):
-            raise ValueError('The two legs of an FX swap must have the same ccy pair')
+    def pv(self, pricingContext, today, accounting_ccy = 'USD', ignoreDiscountFromSpotToToday = True):
+        if not self.is_spot(today):
+            pass
+            # if settle_date is not spot, discount notionals to spot
+        # use pricingContext to convert both notionals to accounting_ccy
+        # sum these up
+        if not ignoreDiscountFromSpotToToday:
+            pass
+            # further discount the net value to today
+        return None
 
+    def spot_date(self, today):
+        return self.date_calc.spot_date(self.ccy,today)
+
+    def is_spot(self, today):
+        return self.settle_date == self.spot_date(today)
+
+    def equivalent_spot_instrument(self):
+        # returns a spot-settled forward with the same exposure to spot rates
+        pass
+
+class FXMultiForward(FXInstrument):
+    def __init__(self, legs, **kwargs):
+        self.legs = legs
+        self.first_leg = None
+        for leg in legs:
+            if not self.first_leg:
+                self.first_leg = leg
+            else:
+                if not leg.ccy == self.first_leg.ccy:
+                    raise ValueError('All the legs must have the same currency pair!')
+        self.pip_size = InstrumentStaticSingleton().pip_size(self.first_leg)
+        # TODO: get parent properties from first leg properties?
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
-        for key in self.__dict__.keys():
-            if key in self.leg1.__dict__ and key in self.__dict__ \
-                and self.__dict__[key] is None and key not in ['sym','tenor']:
-                    self.__dict__[key] = self.leg1.__dict__[key]
 
-    def forward_points(self):
-            return self.leg2.spot() - self.leg1.spot()
 
-    def pv(self):
-        return self.leg1.pv() + self.leg2.pv()
+    def pv(self,  pc: PricingContext):
+        return sum([self.leg.pv(pc) for leg in self.legs])
 
     def __getattr__(self, item):
         if item in self.leg1.__dict__:
             return self.leg1.__dict__[item]
         else:
-            return AttributeError('FXSwap doesn''t have attribute ', item)
+            return AttributeError('FXMultiForward doesn''t have attribute ', item)
+
+# an FX Swap is just a multi-forward with just 2 legs
+class FXSwap(FXMultiForward):
+    def forward_points(self):
+        return (self.legs[1].rate() - self.legs[0].rate())/self.pip_size()
+
 
 class FixedIncomeInstrument(Instrument):
     def __init__(self, *args, **kwargs):
@@ -75,6 +165,7 @@ class FixedIncomeInstrument(Instrument):
 class FixedIncomeIRSwap(FixedIncomeInstrument):
     def __init__(self, *args, **kwargs):
         self.float_coupon_frequency = None
+        self.tenor = None
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
 
@@ -89,9 +180,8 @@ class FixedIncomeIRFuture(FixedIncomeInstrument):
         self.contract_notional = None
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
-
-
 class FixedIncomeBond(FixedIncomeInstrument):
     def __init__(self, *args, **kwargs):
         self.is_benchmark = False
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+

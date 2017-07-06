@@ -9,7 +9,7 @@ class Borg:
         self.__dict__ = self._shared
 
 
-class InstumentSingleton(Borg):
+class InstrumentStaticSingleton(Borg):
     def __init__(self):
         # this line plus the inheritance makes the magic happen
         # any class using that pattern will be a singleton
@@ -33,8 +33,12 @@ class InstumentSingleton(Borg):
     def __str__(self):  # just for the illustration below, could be anything else
         return str(self.__dict__)
 
+    def pip_size(self,ccypair):
+        # return the pip size for the currencypair
+        pass
+
 if __name__ == "__main__":
-    instrument_static = InstumentSingleton()
+    instrument_static = InstrumentStaticSingleton()
     instr_static_df = instrument_static(sym='FGBLc1') #,date='2017.03.30')
     instr_static_df_2 = instrument_static(sym='US30YT=RR')  # ,date='2017.03.30')
     print(instr_static_df['duration'])

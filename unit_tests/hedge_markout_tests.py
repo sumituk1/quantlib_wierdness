@@ -94,7 +94,7 @@ class TestHedgeMarkouts(TestCase):
         t0 = time.time()
         # Create a singleton configurator and instrument_static
         configurator = Configurator('config')
-        instrument_static = InstumentSingleton() # required for hedge instrument duration
+        instrument_static = InstrumentStaticSingleton() # required for hedge instrument duration
 
         #try:
         if True:
@@ -240,7 +240,7 @@ class TestHedgeMarkouts(TestCase):
 
         # Create a singleton configurator
         configurator = Configurator('config')
-        instrument_static = InstumentSingleton()
+        instrument_static = InstrumentStaticSingleton()
 
         #try:
         if True:
@@ -387,7 +387,7 @@ class TestHedgeMarkouts(TestCase):
 
         # Create a singleton configurator
         configurator = Configurator('config_hedge_test_case_5')
-        instrument_static = InstumentSingleton()
+        instrument_static = InstrumentStaticSingleton()
 
         try:
             with ExceptionLoggingContext():
@@ -466,7 +466,7 @@ class TestHedgeMarkouts(TestCase):
 
         # Create a singleton configurator
         configurator = Configurator('config')
-        instrument_static = InstumentSingleton()
+        instrument_static = InstrumentStaticSingleton()
 
         try:
             with ExceptionLoggingContext():
@@ -551,7 +551,7 @@ class TestHedgeMarkouts(TestCase):
 
         # Create a singleton configurator
         configurator = Configurator('config')
-        instrument_static = InstumentSingleton()
+        instrument_static = InstrumentStaticSingleton()
 
         try:
             with ExceptionLoggingContext():
