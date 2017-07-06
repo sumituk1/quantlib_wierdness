@@ -1,6 +1,12 @@
 About
+=====
+
+
+Input Messages
+==============
 
 Market Data Snapshot / Quote Messages
+-------------------------------------
 
 ```{
   "marketDataSnapshotFullRefreshList": [
@@ -69,6 +75,7 @@ Market Data Snapshot / Quote Messages
 }```
 
 Mosaic Negoitation Bundle - Has the Trade Information
+-----------------------------------------------------
 
 This is going to change to add some 3 or 4 missing fields
 
@@ -349,3 +356,5 @@ This is going to change to add some 3 or 4 missing fields
     "timeToTrade": 45
   }
 }```
+
+Output Message
