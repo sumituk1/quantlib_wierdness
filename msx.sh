@@ -210,6 +210,9 @@ integration_test)
 jupyter)
    start_jupyter
    ;;
+attach)
+   do_attach_msq_domain
+   ;;     
 attach_msq_domain)
    do_attach_msq_domain
    ;;     
