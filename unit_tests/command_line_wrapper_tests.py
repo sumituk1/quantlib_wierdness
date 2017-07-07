@@ -31,6 +31,7 @@ class TestCommandLine(TestCase):
                                             trade_file="trades.csv")
         # dump it onto Kafka topics
         logging.getLogger().setLevel('INFO')
+        logging.info('staring command line test...')
         with ExceptionLoggingContext():
             dump1 = quotes > AsyncKafkaPublisher(quotes_topic)
             dump2 = trades > AsyncKafkaPublisher(trades_topic)

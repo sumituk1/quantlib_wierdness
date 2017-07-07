@@ -26,12 +26,11 @@ def pipeline_fun(names_only=False,
                 output_topic = cmd_args.output_topic
 
         my_name = pipeline_fun(True)[0]
-
-        sources = [AsyncKafkaSource(topic, timeout_ms=60*60*24*1000) for topic in input_topics]
-        with ExceptionLoggingContext():
-            # TODO shouldn't need this: redo init scheme!
-            run() # initialize sources
-        stream = op.merge_sorted(sources, lambda x: x.timestamp) #| op.map(PCARisk())| op.flatten()
+        def source_wrapper(topic):
+            return AsyncKafkaSource(topic, timeout_ms=500) | op.map(lambda x: x.value)
+        sources = [source_wrapper(topic) for topic in input_topics]
+        run() # initialize source consumers
+        stream = op.merge_sorted(sources, lambda x: x.timestamp) | op.map(PCARisk())| op.flatten()
         graph_1 = stream | op.flat_map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator())
 
         graph_2 = graph_1 | op.flat_map_by_group(lambda x: (x.trade_id, x.dt), PackageBuilder()) \
