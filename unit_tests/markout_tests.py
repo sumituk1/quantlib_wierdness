@@ -7,8 +7,9 @@ from unittest import TestCase
 import numpy as np
 import math
 import asyncio
+import random
 import aiostreams.operators as op
-from aiostreams import run, ExceptionLoggingContext
+from aiostreams import run, ExceptionLoggingContext, AsyncKafkaPublisher, AsyncKafkaSource
 from aiostreams import KafkaPersister
 from mosaicsmartdata.common import qc_csv_helper
 from mosaicsmartdata.common.read_config import Configurator
@@ -16,12 +17,13 @@ from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.core.markout import GovtBondMarkoutCalculator
 import time
 import datetime as dt
+from mosaicsmartdata.common.test_utils import read_quotes_trades
 from mosaicsmartdata.core.quote import Quote
 from mosaicsmartdata.core.trade import Trade,FixedIncomeTrade
 from mosaicsmartdata.core.markout_basket_builder import *
 from mosaicsmartdata.core.pca_risk import *
 import os, inspect
-
+from aiostreams.main import main_function
 thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
 os.chdir(thisfiledir)
 
@@ -479,8 +481,10 @@ class TestMarkouts(TestCase):
         except Exception:
             raise Exception
 
+
+
 if __name__ == '__main__':
     #    unittest.main()
     k= TestMarkouts()
     k.setUp()
-    k.test_case_1()
+    k.test_app_wrapper()

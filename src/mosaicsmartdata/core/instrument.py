@@ -1,9 +1,9 @@
-from copy import copy
 from collections import namedtuple
+from copy import copy
 
-from mosaicsmartdata.common.constants import Currency, Country
+from mosaicsmartdata.common.constants import Country
+from mosaicsmartdata.core.date_calculator import DateCalculator
 from mosaicsmartdata.core.generic_parent import GenericParent
-from mosaicsmartdata.core.discounting_service import DiscountingService
 from mosaicsmartdata.core.instrument_singleton import InstrumentStaticSingleton
 
 TenorTuple = namedtuple('TenorTuple','tenor today instr')
@@ -37,38 +37,6 @@ class PricingContext:
         pass
 
 
-class DateCalculatorBorg:
-    _shared = {}
-    def __init__(self):
-        self.__dict__ = self._shared
-
-
-class DateCalculator(DateCalculatorBorg):
-    def __init__(self):
-        super().__init__()
-
-    def date_add(self, today, interval):
-        # call quantlib wrapper here
-        pass
-
-    def spot_date(self, ccypair, today):
-        # TODO should cache these
-        # TODO: use by-currency-pair spot conventions
-        return self.date_add(today, '2b')
-
-    def resolve_tenor(self, tenor_tuple):
-        # a bunch of cases, calculating the dates corresponding to the tenor for different instruments
-        if not isinstance(tenor_tuple, TenorTuple):
-            raise ValueError('Expected a TenorTuple, got ', tenor_tuple)
-
-        tenor, today, instr = tenor_tuple
-
-        if tenor.lower() == 'spot':
-            # TODO: use by-currency-pair spot conventions
-            return self.dateAdd(today, '2b')
-
-
-
 class Instrument(GenericParent):
     def __init__(self, *args, **kwargs):
         self.sym = None
@@ -76,15 +44,15 @@ class Instrument(GenericParent):
         self.tenor = None
         self.venue = None
         self.holidayCities = None
+        super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
 class FXInstrument(Instrument):
     pass
 
 class FXForward(FXInstrument):
-    def __init__(self, ccypair, settle_date, notionals, **kwargs):
-        self.ccy = ccypair # a tuple, such as ('USD','JPY')
-        self.notionals = notionals # a pair of notionals includes sign, + means I'm getting that flow
-        self.settle_date = settle_date
+    def __init__(self, **kwargs):
+        self.notionals = None # a pair of notionals includes sign, + means I'm getting that flow
+        self.settle_date = None
         self.isDeliverable = True # only do cash FX for now
         self.date_calc = DateCalculator()
         self.static = InstrumentStaticSingleton()

@@ -31,7 +31,7 @@ class InstrumentStaticSingleton(Borg):
         return out_data_df.iloc[-1]
 
     def __str__(self):  # just for the illustration below, could be anything else
-        return str(self.__dict__)
+        return 'Instrument static singleton facade'# str(self.__dict__)
 
     def pip_size(self,ccypair):
         # return the pip size for the currencypair

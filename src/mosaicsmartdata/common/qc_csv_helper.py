@@ -4,7 +4,45 @@ from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.core.instrument_singleton import *
 from mosaicsmartdata.core.trade import *
 from mosaicsmartdata.core.quote import Quote
+from mosaicsmartdata.core.instrument_utils import sym_to_fx_instrument
 
+def indfun(headers, string):
+    return [i for i, name in enumerate(headers) if string in name][0]
+
+def reuters_to_datetime(rdate, rtime):
+    ts, partial_seconds = rtime.split('.')
+    partial_seconds = float("." + partial_seconds)
+    time = dt.datetime.strptime(rdate + '-' + ts, "%d-%b-%Y-%H:%M:%S")
+    precise_datetime = time + dt.timedelta(seconds=partial_seconds)
+    return precise_datetime
+
+def get_fx_quotes(filename):
+    headers = None
+    quote_dict = {}
+    instr_gen = sym_to_fx_instrument()
+    with open(filename) as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',')
+        for i,row in enumerate(spamreader):
+            if not headers:
+                headers = row
+                ricind = indfun(headers, 'RIC')
+                dateind = indfun(headers, 'Date')
+                timeind = indfun(headers, 'Time')
+                bidind = indfun(headers, 'Bid Price')
+                askind = indfun(headers, 'Ask Price')
+            else:
+                sym = row[ricind]
+                timestamp = reuters_to_datetime(row[dateind],row[timeind])
+                bid = row[bidind]
+                ask = row[askind]
+                quote = Quote(sym = sym, timestamp = timestamp, bid = bid, ask = ask)
+                quote.instr = instr_gen(sym, timestamp.date())
+                if i%100000 == 0:
+                    print(i, quote)
+                if sym not in quote_dict:
+                    quote_dict[sym] = []
+                quote_dict[sym].append(quote)
+    return quote_dict
 
 # converts a time precision in nano-seconds (kdb+) to a datetime object
 def parse_iso_timestamp(timestamp):

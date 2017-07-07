@@ -1,7 +1,9 @@
 from collections import namedtuple
 
 from aiostreams import operators as op
-from mosaicsmartdata.core.instrument import FXForward, FixedIncomeIRSwap, PricingContext, DateCalculator
+from mosaicsmartdata.core.instrument import FXForward, FixedIncomeIRSwap, PricingContext
+from mosaicsmartdata.core.date_calculator import DateCalculator
+
 
 # TODO: replace this with a proper conversion from timestamp to its date :)
 def date(timestamp):
