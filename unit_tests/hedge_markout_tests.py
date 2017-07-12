@@ -55,7 +55,7 @@ class TestHedgeMarkouts(TestCase):
         return quote_trade_list
 
     # runs the graph and returns the output_list
-    def run_graph(self, quote_trade_list, product_class = ProductClass.GovtBond):
+    def run_graph(self, quote_trade_list, product_class = ProductClass.GovtBond.value):
         output_list = []
 
         joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
@@ -254,7 +254,7 @@ class TestHedgeMarkouts(TestCase):
                                                                     trade_file="trades_hedge_test.csv")
 
                 # run the graph
-                output_list = self.run_graph(quote_trade_list,ProductClass.BondFutures)
+                output_list = self.run_graph(quote_trade_list,ProductClass.BondFutures.value)
 
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)

@@ -1,6 +1,7 @@
 # This has the list of day counts and the related convention
 # from workalendar.usa import *
 import QuantLib as ql
+from enum import Enum
 
 class BootStrapMethod:
     PiecewiseLogCubicDiscount = "PicewiseLogCubicDiscount"
@@ -431,8 +432,10 @@ class Frequency:
     except:
         print("Didn't find Quantlib, so can't define Frequency.getQLFrequency")
 
+class ProductClass(Enum):
+    # def __str__(self):
+    #     return str(self.value)
 
-class ProductClass:
     GovtBond = 1
     CorpBond = 2
     Swaps = 3

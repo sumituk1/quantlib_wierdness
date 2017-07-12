@@ -7,7 +7,7 @@ import json
 import operator
 from mosaicsmartdata.core.instrument_singleton import *
 from mosaicsmartdata.core.quote import Quote
-from mosaicsmartdata.core.trade import FixedIncomeBondTrade
+from mosaicsmartdata.core.trade import Trade,FixedIncomeBondTrade
 
 # Load instrument static
 instrument_static = InstrumentStaticSingleton()
@@ -40,6 +40,7 @@ def parse_iso_timestamp(timestamp):
     time = dt.datetime.strptime(ts, "%Y.%m.%dD%H:%M:%S")
     precise_datetime = time + dt.timedelta(seconds=partial_seconds)
     return precise_datetime
+
 
 
 # Convert json message to FixedIncomeTrade object
@@ -261,6 +262,92 @@ def govtbond_config_to_json():
     zz = json.dumps(out)
     return zz
 
+# takes in a json message and accordingly converts to the relevant domain object
+def json_to_domain(json_message):
+    if "productClass" in json_message:
+        # convert tp Trade object
+        return json_to_trade(json_message=json_message)
+    else:
+        # convert to Quote object
+        return json_to_quote(json_message=json_message)
+
+def domain_to_json(obj):
+    res = dict()
+    if isinstance(obj, Trade):
+        # convert Trade object to json
+        out = dict()
+        ## first set the productClass
+        if isinstance(obj, FixedIncomeBondTrade):
+            out["productClass"] = ProductClass.GovtBond.name
+        else:
+            raise ValueError("ProductClass %s not implemented"%obj.__class__.__name__)
+
+        for item in obj.__dict__:
+            if "settle_date" in item:
+                out["settlementDate"] = dt.datetime.strftime(obj.__dict__[item], "%Y.%m.%d")
+            elif "trade_id" in item:
+                out["negotiationId"] = obj.__dict__[item]
+            elif "side" in item:
+                out[item] = "ASK" if obj.__dict__[item] else "BUY"
+            elif "package_id" in item:
+                out["packageId"] = obj.__dict__[item]
+            elif "notional" in item:
+                out["quantity"] = obj.__dict__[item]
+            elif "traded_px" in item:
+                out["tradedPx"] = obj.__dict__[item]
+            elif "timestamp" in item:
+                out["timestamp"] = dt.datetime.strftime(obj.__dict__[item],"%Y.%m.%dD%H:%M:%S.%f000")
+            elif "trade_date" in item:
+                out["tradeDate"] = dt.datetime.strftime(obj.__dict__[item], "%Y.%m.%d")
+            elif "delta" in item:
+                out["quantityDv01"] = obj.__dict__[item]
+            elif "instrument" in item:
+                ## instrument related fields.
+                # "ccy": "USD",
+                # "countryOfIssue": "US",
+                # "dayCount": "ACT/ACT",
+                # "issueDate": "2016.10.31",
+                # "coupon": 1.2,
+                # "couponFrequency": "ANNUAL",
+                # "maturityDate": "2047.01.18"
+                for item_instr in obj.__dict__[item].__dict__:
+                    if "day_count" in item_instr:
+                        out["dayCount"] = obj.__dict__[item].__dict__[item_instr]
+                    elif "is_benchmark" in item_instr:
+                        out["issueOldness"] = 1
+                    elif "country_of_risk" in item_instr:
+                        out["countryOfIssue"] = obj.__dict__[item].__dict__[item_instr]
+                    elif "issue_date" in item_instr:
+                        out["issueDate"] = dt.datetime.strftime(obj.__dict__[item].__dict__[item_instr], "%Y.%m.%d")
+                    elif "coupon_frequency" in item_instr:
+                        out["couponFrequency"] = Frequency.convertFrequencyStr(obj.__dict__[item].__dict__[item_instr])
+                    elif "maturity_date" in item_instr:
+                        out["maturityDate"] = dt.datetime.strftime(obj.__dict__[item].__dict__[item_instr], "%Y.%m.%d")
+                    elif "spot_settle_date" in item_instr:
+                        out["spotSettlementDate"] = dt.datetime.strftime(obj.__dict__[item].__dict__[item_instr], "%Y.%m.%d")
+                    elif "holidayCities" in item_instr:
+                        out["holidayCalendar"] = obj.__dict__[item].__dict__[item_instr]
+                    elif "duration" in item_instr:
+                        out["modifiedDuration"] = obj.__dict__[item].__dict__[item_instr]
+                    else:
+                        out[item_instr] = obj.__dict__[item].__dict__[item_instr]
+
+        out["negotiationId"] = obj.__dict__["trade_id"]
+        res["bondTrade"] = out
+        json_out = json.dumps(res)
+    else:
+        # create a Quote json from Quote domain object
+        out = dict()
+        for item in obj.__dict__:
+            if "timestamp" in item:
+                out[item] = dt.datetime.strftime(obj.__dict__[item],"%Y.%m.%dD%H:%M:%S.%f000")
+            else:
+                out[item] = obj.__dict__[item]
+
+        json_out = json.dumps(out)
+
+    return json_out
+
 
 if __name__ == "__main__":
     json_message = '{"bondTrade": {"negotiationId": "123456789", "orderId": "123456789::venue::date::DE10YT_OTR_111::BUY",\
@@ -278,8 +365,9 @@ if __name__ == "__main__":
                    "couponFrequency": "ANNUAL",\
                    "maturityDate": "2047.01.18","venue": "BBGUST"}}'
 
-    # print(json_to_trade(json_message=json_message))
-
+    # print("test")
+    str_1 = json_to_trade(json_message=json_message)
+    str_2 = json_to_domain(json_message=json_message)
     msg = '{\
       "marketDataSnapshotFullRefreshList": [\
         {\

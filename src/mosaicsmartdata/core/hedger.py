@@ -100,9 +100,9 @@ def my_hedge_calculator(msg,
 
         #if product_class is not None:
             # caller passed in specific hedge class to hedge the underlying
-        if product_class == ProductClass.BondFutures:#isinstance(msg, BondFuturesTrade ): #
+        if product_class == ProductClass.BondFutures.value:#isinstance(msg, BondFuturesTrade ): #
             hedge_trades, msg_processed = perform_futures_hedge(msg, lastquotes)
-        elif product_class == ProductClass.GovtBond:#isinstance(msg, FixedIncomeBondTrade ): #
+        elif product_class == ProductClass.GovtBond.value:#isinstance(msg, FixedIncomeBondTrade ): #
             hedge_trades, msg_processed = perform_cash_hedge(msg, lastquotes)
                 # msg_processed = True  # TODO: currently we support ONLY Futures OR Cash hedging
 
