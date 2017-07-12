@@ -168,6 +168,10 @@ function start_jupyter {
 
     cd /code/target/dist/msq-domain-1.0.dev0
     pip install .
+
+    # The below is an ugly hack until we can figure out how to make project.include_directory work in build.py
+    cp mosaicsmartdata/configuration/*.csv  /opt/conda/lib/python3.5/site-packages/mosaicsmartdata/configuration/
+
     cd scripts
     python ./start-app.py --kafka_broker kafka --loglevel DEBUG --input_topics topic-a,topic-b --output_topic output-topic
 
