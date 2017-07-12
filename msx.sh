@@ -81,7 +81,7 @@ function do_pyb_skip_tests {
 	pyb -x run_unit_tests -x verify clean publish
 }
 
-function do_pyb_run_integraton_tests {
+function do_pyb_run_integration_tests {
 
 	# run from your host directly, requires docker-compose installed
 
@@ -151,10 +151,29 @@ function start_jupyter {
 
 	install_devtools
 
-	# Start jupyter
 
-	cd /code
+
+
+	# Start jupyter
+    cd /code
+	echo Installing dependencies
+	pyb install_dependencies
+    pyb -x run_unit_tests -x verify clean publish
+
+#    RUN pip install --upgrade pip \
+#    && cd msq-domain-1.0.dev0 \
+#    && pip install . \
+#    && cp -ra /msq-domain-1.0.dev0/scripts / \
+#    && rm -rf /msq-domain-1.0.dev0
+
+    cd /code/target/dist/msq-domain-1.0.dev0
+    pip install .
+    cd scripts
+    python ./start-app.py --kafka_broker kafka --loglevel DEBUG --input_topics topic-a,topic-b --output_topic output-topic
+
 	jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
+
+
 }
 
 function do_attach {
@@ -198,8 +217,8 @@ build_dev_image)
 pyb_skip_tests)
    do_pyb_skip_tests
    ;;   
-pyb_run_integraton_tests)
-   do_pyb_run_integraton_tests
+pyb_run_integration_tests)
+   do_pyb_run_integration_tests
    ;;
 pyb_build_all_from_source)
   do_pyb_build_all_from_source
@@ -221,7 +240,7 @@ attach_msq_domain)
    echo
    echo "link_source              - links current source directory into docker container" >&2
    echo "pyb_skip_tests           - runs pybuilder without tests" >&2
-   echo "pyb_run_integraton_tests - runs pybuilder with ZK, Kafka including integration tests" >&2
+   echo "pyb_run_integration_tests - runs pybuilder with ZK, Kafka including integration tests" >&2
    exit 3
    ;;
 esac
