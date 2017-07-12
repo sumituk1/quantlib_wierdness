@@ -79,7 +79,7 @@ class TestMarkouts(TestCase):
         os.chdir(thisfiledir)
 
         # Load the configuration file
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         # try:
         if True:
             with ExceptionLoggingContext():
@@ -129,7 +129,7 @@ class TestMarkouts(TestCase):
         os.chdir(thisfiledir)
 
         # Load the configuration file
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         try:
             with ExceptionLoggingContext():
                 # load the trade and quote data and merge
@@ -181,7 +181,7 @@ class TestMarkouts(TestCase):
         os.chdir(thisfiledir)
 
         # create a singleton Configurator
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         try:
             with ExceptionLoggingContext():
                 # load the trade and quote data and merge
@@ -225,7 +225,7 @@ class TestMarkouts(TestCase):
         # trade_files = "trades.csv"
 
         # Create a singleton configurator
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         try:
             with ExceptionLoggingContext():
                 # load the trade and quote data and merge
@@ -273,7 +273,7 @@ class TestMarkouts(TestCase):
         # trade_files = "trades.csv"
 
         # Create a singleton configurator
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         try:
             with ExceptionLoggingContext():
                 # load the trade and quote data and merge
@@ -322,7 +322,7 @@ class TestMarkouts(TestCase):
         # trade_files = "trades.csv"
 
         # Create a singleton configurator
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         try:
             with ExceptionLoggingContext():
                 # load the trade and quote data and merge
@@ -370,7 +370,7 @@ class TestMarkouts(TestCase):
         logging.getLogger().setLevel('INFO')
         logging.getLogger().info("test")
         # Create a singleton configurator
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         #try:
         with ExceptionLoggingContext():
             # load the trade and quote data and merge
@@ -449,7 +449,7 @@ class TestMarkouts(TestCase):
         # trade_files = "trades_NaN_test.csv"
 
         # Create a singleton configurator
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
 
         try:
             with ExceptionLoggingContext():

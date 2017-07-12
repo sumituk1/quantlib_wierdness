@@ -3,6 +3,7 @@ import inspect, os, sys
 # import configparser
 from mosaicsmartdata.core.config_parser import *
 import mosaicsmartdata
+import logging
 import glob
 
 class Borg:
@@ -28,10 +29,11 @@ class Configurator(Borg):
                 root_location = [x for x in root_location if 'msq-domain' in x]
             pre = root_location[0] + '/configuration'
             if fname is None:
-                configFilePath = os.path.join(pre, 'config')
+                configFilePath = os.path.join(pre, 'config.csv')
             else:
                 configFilePath = os.path.join(pre, fname)
-            #print('****', glob.glob(configFilePath))
+            logging.getLogger(__name__).info('Trying to read configs from ' + configFilePath)
+            logging.getLogger(__name__).info('glob.glob resolves that to '.join(glob.glob(configFilePath)))
             # load the configuration data into memory
 
             self.config = ConfigParser()
@@ -81,10 +83,10 @@ class Configurator(Borg):
 
 
 if __name__ == "__main__":
-    config_1 = Configurator('config')
+    config_1 = Configurator('config.csv')
     zz = config_1.get_data_given_section_and_key('FX', 'fx_ccy_g10')
     print(zz)
-    config_2 = Configurator('config')
+    config_2 = Configurator('config.csv')
     print(config_2.create_ccy_pair("GBP", "JPY"))
     zz = config_2.get_data_given_section_and_key("GovtBond_Markout", "EGB_COB")
     print(zz)

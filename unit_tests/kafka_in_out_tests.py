@@ -37,7 +37,7 @@ class TestKafka(TestCase):
                           '"USD","countryOfIssue": "US","dayCount": "ACT/ACT","issueDate": "2016.10.31",' \
                           '"coupon": 1.2,"couponFrequency": "ANNUAL","maturityDate": "2047.01.18","venue": "BBGUST"}}'
         # Load the configuration file
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         logging.basicConfig(level=configurator.get_config_given_key('log_level'))
         try:
             with ExceptionLoggingContext():
@@ -155,7 +155,7 @@ class TestKafka(TestCase):
                             ]\
                           }'
         # Load the configuration file
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         logging.basicConfig(level=configurator.get_config_given_key('log_level'))
         try:
             with ExceptionLoggingContext():
@@ -212,7 +212,7 @@ class TestKafka(TestCase):
         json_markout = mktmsg_to_json(msg)
 
         # Load the configuration file
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         logging.basicConfig(level=configurator.get_config_given_key('log_level'))
         try:
             with ExceptionLoggingContext():
