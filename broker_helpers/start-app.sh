@@ -13,4 +13,4 @@ sleep 15
 
 echo "Executing start-app.py script"
 
-python /scripts/start-app.py --kafka_broker kafka --loglevel DEBUG
+python /scripts/start-app.py --kafka_broker kafka --loglevel DEBUG --input_topics topic-a,topic-b --output_topic output-topic
