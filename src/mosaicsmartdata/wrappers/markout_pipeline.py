@@ -27,7 +27,7 @@ def pipeline_fun(names_only=False,
 
         my_name = pipeline_fun(True)[0]
         def source_wrapper(topic):
-            return AsyncKafkaSource(topic, timeout_ms=500) | op.map(lambda x: x.value)
+            return AsyncKafkaSource(topic, timeout_ms=1000*60*60*24*30) | op.map(lambda x: x.value)
         sources = [source_wrapper(topic) for topic in input_topics]
         run() # initialize source consumers
         stream = op.merge_sorted(sources, lambda x: x.timestamp) | op.map(PCARisk())| op.flatten()
