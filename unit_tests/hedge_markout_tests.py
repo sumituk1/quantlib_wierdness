@@ -93,7 +93,7 @@ class TestHedgeMarkouts(TestCase):
         tolerance = 5 * 1e-2
         t0 = time.time()
         # Create a singleton configurator and instrument_static
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         instrument_static = InstrumentStaticSingleton() # required for hedge instrument duration
 
         #try:
@@ -166,7 +166,7 @@ class TestHedgeMarkouts(TestCase):
         os.chdir(thisfiledir)
 
         # Load the configuration file
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         try:
             with ExceptionLoggingContext():
                 # load the trade and quote data and merge
@@ -239,7 +239,7 @@ class TestHedgeMarkouts(TestCase):
         t0 = time.time()
 
         # Create a singleton configurator
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         instrument_static = InstrumentStaticSingleton()
 
         #try:
@@ -465,7 +465,7 @@ class TestHedgeMarkouts(TestCase):
         # trade_files = "trades_hedge_test_2.csv"
 
         # Create a singleton configurator
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         instrument_static = InstrumentStaticSingleton()
 
         try:
@@ -550,7 +550,7 @@ class TestHedgeMarkouts(TestCase):
         # trade_files = "trades_hedge_test_2.csv"
 
         # Create a singleton configurator
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         instrument_static = InstrumentStaticSingleton()
 
         try:

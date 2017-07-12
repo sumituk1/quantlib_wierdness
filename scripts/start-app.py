@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 # PLEASE DON'T DELETE THE BELOW 4 LINES, I COMMENT THEM IN FOR LOCAL TESTING
-import os, sys, inspect
-my_location = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.path.append(my_location+ '/../src')
-sys.path.append(my_location + '/../../quant_container/src')
+# import os, sys, inspect
+# my_location = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# sys.path.append(my_location+ '/../src')
+# sys.path.append(my_location + '/../../quant_container/src')
 
 from aiostreams import entrypoint, get_pipelines
+from mosaicsmartdata.core.quote import Quote
 from mosaicsmartdata.wrappers.markout_pipeline import pipeline_fun
 # Template for the pipeline definition function to be used instead of get_pipelines:
 # def pipeline_fun(names_only=False, cmd_args = None):

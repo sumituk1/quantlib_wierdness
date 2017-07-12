@@ -25,9 +25,13 @@ class PCARisk:
         configurator = Configurator()
         # thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
         # get the factor loadings, tenor_list and annualisation factor
-        self.eig_vec = np.genfromtxt('../resources/' +
+        root_location = mosaicsmartdata.__path__
+        if len(root_location) > 1:
+            root_location = [x for x in root_location if 'msq-domain' in x]
+        config_location = root_location[0] + '/configuration/'
+        self.eig_vec = np.genfromtxt(config_location +
                                       configurator.get_data_given_section_and_key("Factor_loadings", "eig_vector"))
-        self.eig_val = np.genfromtxt('../resources/' +
+        self.eig_val = np.genfromtxt(config_location +
                                      configurator.get_data_given_section_and_key("Factor_loadings", "eig_value"))
 
         self.tenor_list = [int(x) for x in configurator.get_data_given_section_and_key("Factor_loadings", "tenor_list").split(',')]

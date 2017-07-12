@@ -10,7 +10,7 @@ from mosaicsmartdata.common.read_config import Configurator
 class TestConfigurator(TestCase):
     # Test for Trade json convertor
     def test_case_1(self):
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         try:
             with ExceptionLoggingContext():
                 # Load the quotes data from csv
@@ -36,7 +36,7 @@ class TestConfigurator(TestCase):
 
     def test_case_2(self):
 
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
 
         try:
             with ExceptionLoggingContext():
@@ -56,7 +56,7 @@ class TestConfigurator(TestCase):
 
 
     def test_case_3(self):
-        configurator = Configurator('config')
+        configurator = Configurator('config.csv')
         try:
             with ExceptionLoggingContext():
                 # Load the quotes data from csv

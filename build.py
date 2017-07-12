@@ -24,3 +24,6 @@ def initialize(project):
     project.set_property('dir_source_main_python','src')
     project.set_property('dir_source_unittest_python', 'unit_tests')
     project.set_property('dir_source_main_scripts', 'scripts')
+
+    # without this, pybuilder only copies over *.py files
+    project.include_directory('mosaicsmartdata/configuration', ['*.csv'])
