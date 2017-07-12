@@ -321,10 +321,11 @@ class TestMarkouts(TestCase):
           }'
         quote = json_to_domain(json_message=json_message)
         json_msg = domain_to_json(quote)
-        X = json.loads(json_msg, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-        quote_2 = Quote(sym=X.sym,
-                           ask=X.ask,
-                           timestamp=parse_iso_timestamp(X.timestamp),
-                           bid=X.bid)
+        quote_2 = json_to_domain(json_msg)
+        # X = json.loads(json_msg, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
+        # quote_2 = Quote(sym=X.sym,
+        #                    ask=X.ask,
+        #                    timestamp=parse_iso_timestamp(X.timestamp),
+        #                    bid=X.bid)
         # quote_2 = json_to_domain(json)
         self.assertEqual(quote, quote_2)
