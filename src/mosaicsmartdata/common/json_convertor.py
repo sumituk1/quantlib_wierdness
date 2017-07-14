@@ -337,14 +337,39 @@ def domain_to_json(obj):
     else:
         # create a Quote json from Quote domain object
         out = dict()
+        out["entrySize"] = 1
+        out["settlementCurrencyCode"] = "USD"
+
         for item in obj.__dict__:
             if "timestamp" in item:
-                out[item] = dt.datetime.strftime(obj.__dict__[item],"%Y.%m.%dD%H:%M:%S.%f000")
+                out[item] = (obj.timestamp - dt.datetime(1970,1,1)).total_seconds()*1000
             else:
                 out[item] = obj.__dict__[item]
 
-        json_out = json.dumps(out)
+        # json_out = json.dumps(out)
 
+        lst_px = [{"quoteEntryId": "quoteEntryId101",
+                   "entryId": "entryId101",
+                   "entryType": "BID",
+                   "entryPx": out["bid"],
+                   "currencyCode": "USD",
+                   "settlementCurrencyCode": "USD",
+                   "entrySize": "1"}, {"quoteEntryId": "quoteEntryId102",
+                                       "entryId": "entryId102",
+                                       "entryType": "OFFER",
+                                       "entryPx": out["ask"],
+                                       "currencyCode": "USD",
+                                       "settlementCurrencyCode": "USD",
+                                       "entrySize": "1"}]
+
+        res = dict()
+        res_2 = dict()
+        res["securityId"] = "CUSIP"
+        res["symbol"] = out["sym"]
+        res["timestamp"] = out["timestamp"]
+        res["marketDataEntryList"] = lst_px
+        res_2["marketDataSnapshotFullRefreshList"] = [res]
+        json_out = json.dumps(res_2)
     return json_out
 
 
