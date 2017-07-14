@@ -154,8 +154,7 @@ def mktmsg_to_json(markout_message):
 def json_to_quote(json_message):
     request = json.loads(json_message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
     # calculate a vwap of bids
-    zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if
-          str.upper(x.entryType) == "BID"]
+    zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if str.upper(x.entryType) == "BID"]
     bid_close = sum([x[0] * x[1] for x in zz]) / sum([x[0] for x in zz])
     # calculate a vwap of ask
     zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if

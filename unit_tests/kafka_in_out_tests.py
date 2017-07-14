@@ -19,6 +19,7 @@ import aiostreams.operators as op
 from aiostreams.config import QCConfigProvider
 from mosaicsmartdata.common.json_convertor import *
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
+import random
 
 kafka_host = QCConfigProvider().kafka_broker  # Kafka on local Docker
 
@@ -230,3 +231,98 @@ class TestKafka(TestCase):
                 print(jsonMessage)
         except Exception:
             raise Exception
+
+    # check the new json_to_domain single function for Quote
+    def test_universal_converter(self):
+        # test case to check the new  json_to_domain function
+        json_message = '{\
+            "marketDataSnapshotFullRefreshList": [\
+              {\
+                "securityId": "CUSIP",\
+                "symbol": "912810RB6",\
+                "timestamp": 1485941760000,\
+                "marketDataEntryList": [\
+                  {\
+                    "entryId": "entryId101",\
+                    "entryType": "BID",\
+                    "entryPx": "1.1243",\
+                    "currencyCode": "USD",\
+                    "settlementCurrencyCode": "USD",\
+                    "entrySize": "1000000",\
+                    "quoteEntryId": "quoteEntryId101"\
+                  },\
+                  {\
+                    "entryId": "entryId102",\
+                    "entryType": "MID",\
+                    "entryPx": "1.12345",\
+                    "currencyCode": "USD",\
+                    "settlementCurrencyCode": "USD",\
+                    "entrySize": "1000000",\
+                    "quoteEntryId": "quoteEntryId102"\
+                  },\
+                  {\
+                    "entryId": "entryId103",\
+                    "entryType": "OFFER",\
+                    "entryPx": "1.1246",\
+                    "currencyCode": "USD",\
+                    "settlementCurrencyCode": "USD",\
+                    "entrySize": "1000000",\
+                    "quoteEntryId": "quoteEntryId103"\
+                  },\
+                  {\
+                    "entryId": "entryId201",\
+                    "entryType": "BID",\
+                    "entryPx": "1.12445",\
+                    "currencyCode": "USD",\
+                    "settlementCurrencyCode": "USD",\
+                    "entrySize": "500000",\
+                    "quoteEntryId": "quoteEntryId201"\
+                  },\
+                  {\
+                    "entryId": "entryId202",\
+                    "entryType": "MID",\
+                    "entryPx": "1.12345",\
+                    "currencyCode": "USD",\
+                    "settlementCurrencyCode": "USD",\
+                    "entrySize": "500000",\
+                    "quoteEntryId": "quoteEntryId202"\
+                  },\
+                  {\
+                    "entryId": "entryId203",\
+                    "entryType": "OFFER",\
+                    "entryPx": "1.12445",\
+                    "currencyCode": "USD",\
+                    "settlementCurrencyCode": "USD",\
+                    "entrySize": "500000",\
+                    "quoteEntryId": "quoteEntryId203"\
+                  }\
+                ]\
+              }\
+            ]\
+          }'
+        quote = json_to_domain(json_message=json_message)
+        topic = 'test_topic_' + str(random.randint(1, 100000))
+        print('*******',domain_to_json(quote))
+
+        graph1 = [quote] | op.map(domain_to_json)\
+                 > AsyncKafkaPublisher(topic, value_serializer= lambda x : x.encode('utf-8'))
+
+        with ExceptionLoggingContext():
+            run(graph1)
+
+        def my_decode(x):
+            out = x.decode('utf-8')
+            return out
+
+        graph2 = AsyncKafkaSource(topic, value_deserializer = my_decode)\
+                 | op.map(lambda x: x.value) | op.map(json_to_domain) > []
+        with ExceptionLoggingContext():
+            run(graph2)
+
+        quote_2 = graph2.sink[0]
+        # quote_2 = json_to_domain(json)
+        self.assertEqual(quote, quote_2)
+
+if __name__ == '__main__':
+    k = TestKafka()
+    k.test_universal_converter()

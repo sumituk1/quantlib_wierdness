@@ -2,6 +2,8 @@ from unittest import TestCase
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
 from mosaicsmartdata.common.json_convertor import *
 import json
+import random
+
 
 
 class TestMarkouts(TestCase):
@@ -248,6 +250,7 @@ class TestMarkouts(TestCase):
                        "maturityDate": "2047.01.18","venue": "BBGUST"}}'
         trade = json_to_domain(json_message=json_message)
         json = domain_to_json(trade)
+        print(json)
         trade_2 = json_to_domain(json)
         self.assertEqual(trade, trade_2)
 
@@ -328,3 +331,5 @@ class TestMarkouts(TestCase):
                            bid=X.bid)
         # quote_2 = json_to_domain(json)
         self.assertEqual(quote, quote_2)
+
+
