@@ -7,6 +7,7 @@ import json
 import operator
 from mosaicsmartdata.core.instrument_singleton import *
 from mosaicsmartdata.core.quote import Quote
+from mosaicsmartdata.core.markout_msg import MarkoutMessage2
 from mosaicsmartdata.core.trade import Trade,FixedIncomeBondTrade
 
 # Load instrument static
@@ -334,7 +335,7 @@ def domain_to_json(obj):
         out["negotiationId"] = obj.__dict__["trade_id"]
         res["bondTrade"] = out
         json_out = json.dumps(res)
-    else:
+    elif isinstance(obj,Quote):
         # create a Quote json from Quote domain object
         out = dict()
         out["entrySize"] = 1
@@ -370,6 +371,10 @@ def domain_to_json(obj):
         res["marketDataEntryList"] = lst_px
         res_2["marketDataSnapshotFullRefreshList"] = [res]
         json_out = json.dumps(res_2)
+    elif isinstance(obj,MarkoutMessage2):
+        json_out = mktmsg_to_json(obj)
+    else:
+        raise ValueError("domain_to_json not support for this type")
     return json_out
 
 

@@ -124,7 +124,7 @@ class TestMarkouts(TestCase):
         print(json_markout) # check if the markoutPeriod value = -900
 
     # test case for json creation for mkt_message
-    def test_case_4(self):
+    def test_case_4a(self):
         trade = self.test_case_1()
         # t = FixedIncomeTrade(trade_id=1, duration=20, notional=5)
 
@@ -140,6 +140,25 @@ class TestMarkouts(TestCase):
         json_markout = mktmsg_to_json(msg)
 
         print("json_markout") # CHECK IF THE MARKOUTPERIODVALUE = 0AND TIMEUNIT='DAY'
+
+    # test case for json creation for mkt_message
+    def test_case_4b(self):
+        trade = self.test_case_1()
+        # t = FixedIncomeTrade(trade_id=1, duration=20, notional=5)
+
+        msg = MarkoutMessage2(dt='COB2', trade=trade, price_markout=1, hedged_bps=0.34, hedged_cents=0.13,
+                              hedged_price=1.05)
+
+        # do assertions on the markout_message
+        self.assertEqual(round(msg.bps_markout, 3), 5.556)
+        self.assertEqual(msg.cents_markout, 100.0)
+        self.assertEqual(msg.PV_markout, 1800)
+        self.assertEqual(msg.price_markout, 1)
+
+        json_markout = domain_to_json(msg)
+        json_markout_2 = mktmsg_to_json(msg)
+        self.assertEqual(json_markout,json_markout_2)
+        print("json_markout")
 
     # test case to check the new  json_to_domain function
     def test_case_5(self):
