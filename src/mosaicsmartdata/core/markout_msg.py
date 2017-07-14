@@ -72,7 +72,7 @@ class MarkoutMessage2(GenericParent):
                 out += ' timestamp:' + self.trade.timestamp.strftime("%d/%m/%Y %H:%M:%S")
                 out += ' delta:' + str(self.trade.delta)
                 out += ' paper_trade:' + str(self.trade.paper_trade)
-                out += ' client_sys_key:' + self.trade.client_sys_key
+                out += ' client_sys_key:' + str(self.trade.client_sys_key)
                 out += ' notional:' + str(self.trade.notional)
                 if self.trade.trade_settle_date is not None:
                     out += ' trade_settle_date:' + self.trade.trade_settle_date.strftime("%d/%m/%Y")
