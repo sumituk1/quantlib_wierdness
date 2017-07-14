@@ -13,7 +13,7 @@ from mosaicsmartdata.common.test_utils import read_quotes_trades
 from mosaicsmartdata.core.markout_basket_builder import *
 from mosaicsmartdata.common.json_convertor import json_to_domain, domain_to_json
 
-from mosaicsmartdata.wrappers.markout_pipeline import pipeline_fun
+from mosaicsmartdata.wrappers.markout_pipeline import pipeline_fun_unhedged
 
 thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
 os.chdir(thisfiledir)
@@ -60,7 +60,7 @@ class TestCommandLine(TestCase):
         args.output_topic = output_topic
         args.test_mode = True
 
-        main_function(args, pipeline_fun)
+        main_function(args, pipeline_fun_unhedged)
 
         with ExceptionLoggingContext():
             graph = AsyncKafkaSource(output_topic, value_deserializer= lambda x: x.decode('utf-8'))  > []

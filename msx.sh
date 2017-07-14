@@ -173,7 +173,7 @@ function start_jupyter {
     cp mosaicsmartdata/configuration/*.csv  /opt/conda/lib/python3.5/site-packages/mosaicsmartdata/configuration/
 
     cd scripts
-    python ./start-app.py --kafka_broker kafka --loglevel DEBUG --input_topics topic-a,topic-b --output_topic output-topic
+    python ./start-app-hedged.py --kafka_broker kafka --loglevel DEBUG --input_topics topic-a,topic-b --output_topic output-topic
 
 	jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
 

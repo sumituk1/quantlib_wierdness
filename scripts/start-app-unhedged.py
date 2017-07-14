@@ -8,7 +8,7 @@
 
 from aiostreams import entrypoint, get_pipelines
 from mosaicsmartdata.core.quote import Quote
-from mosaicsmartdata.wrappers.markout_pipeline import pipeline_fun
+from mosaicsmartdata.wrappers.markout_pipeline import pipeline_fun_unhedged
 # Template for the pipeline definition function to be used instead of get_pipelines:
 # def pipeline_fun(names_only=False, cmd_args = None):
 #     if names_only:
@@ -17,6 +17,6 @@ from mosaicsmartdata.wrappers.markout_pipeline import pipeline_fun
 #         # return a dict where the keys are graph names
 #         # and the values are the graphs
 #         # the keys here must be the same as the names in the list above
-entrypoint(pipeline_fun)
+entrypoint(pipeline_fun_unhedged)
 
 
