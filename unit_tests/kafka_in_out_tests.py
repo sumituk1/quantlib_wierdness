@@ -233,7 +233,7 @@ class TestKafka(TestCase):
             raise Exception
 
     # check the new json_to_domain single function for Quote
-    def test_universal_converter(self):
+    def test_universal_converter_quote(self):
         # test case to check the new  json_to_domain function
         json_message = '{\
             "marketDataSnapshotFullRefreshList": [\
@@ -304,25 +304,66 @@ class TestKafka(TestCase):
         topic = 'test_topic_' + str(random.randint(1, 100000))
         print('*******',domain_to_json(quote))
 
-        graph1 = [quote] | op.map(domain_to_json)\
-                 > AsyncKafkaPublisher(topic, value_serializer= lambda x : x.encode('utf-8'))
+        graph1 = [quote, quote] | op.map(domain_to_json)\
+                 > AsyncKafkaPublisher(topic, value_serializer=lambda x: x.encode('utf-8'))
 
         with ExceptionLoggingContext():
             run(graph1)
 
-        def my_decode(x):
-            out = x.decode('utf-8')
-            return out
+        print('Broadcast', graph1.message_count, 'messages')
 
-        graph2 = AsyncKafkaSource(topic, value_deserializer = my_decode)\
+        graph2 = AsyncKafkaSource(topic, value_deserializer=lambda x: x.decode('utf-8'))\
                  | op.map(lambda x: x.value) | op.map(json_to_domain) > []
+
         with ExceptionLoggingContext():
             run(graph2)
 
+        print('Read', graph1.message_count, 'messages')
+
         quote_2 = graph2.sink[0]
-        # quote_2 = json_to_domain(json)
         self.assertEqual(quote, quote_2)
+
+
+    # check the new json_to_domain single function for Quote
+    def test_universal_converter_trade(self):
+        # test case to check the new  json_to_domain function
+        json_message = '{"bondTrade": {"negotiationId": "123456789", \
+            "packageId": "123456789::venue::date", "productClass": "GovtBond",\
+            "sym": "DE10YT=RR", "tenor": 30, "quantity": 114.235, "tradedPx": 1.5, "modifiedDuration": 18.0,\
+            "side": "Ask", "quantityDv01": 18.0, "issueOldness": 1,' \
+                       '"timestamp": "2017.01.16D14:05:00.600000000",\
+                       "tradeDate": "2017.01.16", "settlementDate": "2017.01.18", "holidayCalendar": "NYC",\
+                       "spotSettlementDate": "2017.01.18",\
+                       "ccy": "USD",\
+                       "countryOfIssue": "US",\
+                       "dayCount": "ACT/ACT",\
+                       "issueDate": "2016.10.31",\
+                       "coupon": 1.2,\
+                       "couponFrequency": "ANNUAL",\
+                       "maturityDate": "2047.01.18","venue": "BBGUST"}}'
+        trade = json_to_domain(json_message=json_message)
+        topic = 'test_topic_' + str(random.randint(1, 100000))
+        print('*******',domain_to_json(trade))
+
+        graph1 = [trade, trade] | op.map(domain_to_json)\
+                 > AsyncKafkaPublisher(topic, value_serializer=lambda x: x.encode('utf-8'))
+
+        with ExceptionLoggingContext():
+            run(graph1)
+
+        print('Broadcast', graph1.message_count, 'messages')
+
+        graph2 = AsyncKafkaSource(topic, value_deserializer=lambda x: x.decode('utf-8'))\
+                 | op.map(lambda x: x.value) | op.map(json_to_domain) > []
+
+        with ExceptionLoggingContext():
+            run(graph2)
+
+        print('Read', graph1.message_count, 'messages')
+
+        trade_2= graph2.sink[0]
+        self.assertEqual(trade,trade_2 )
 
 if __name__ == '__main__':
     k = TestKafka()
-    k.test_universal_converter()
+    k.test_universal_converter_trade()
