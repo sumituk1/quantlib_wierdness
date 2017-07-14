@@ -149,3 +149,4 @@ ENV/
 .ropeproject
 
 # End of https://www.gitignore.io/api/python,pycharm
+notebooks/data.pickle

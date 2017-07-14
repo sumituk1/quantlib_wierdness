@@ -4,6 +4,7 @@ from mosaicsmartdata.core.generic_parent import GenericParent
 class Quote(GenericParent):
     def __init__(self, *args, **kwargs):
         self.sym = None
+        self.instrument = None
         self.timestamp = None  # <-- should be in datetime format
         self.bid = None
         self.ask = None

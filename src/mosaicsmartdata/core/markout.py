@@ -8,7 +8,7 @@ import datetime
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.common.read_config import *
 from mosaicsmartdata.core.markout_msg import *
-from mosaicsmartdata.core.trade import Trade,InterestRateSwapTrade,FixedIncomeTrade
+from mosaicsmartdata.core.trade import Trade, InterestRateSwapTrade,FixedIncomeTrade
 from mosaicsmartdata.core.quote import Quote
 import time
 
@@ -95,7 +95,7 @@ class MarkoutCalculatorPre:
         completed = []
         # t_3 = time.time()
         # print(msg)
-        if isinstance(msg, Trade):
+        if isinstance(msg, Trade) or 'trade_id' in msg.__dict__: # workaround for a Python class resolution issue
             self.COB_time_utc = COB_time_utc
             for mk in self.lags_list:
                 mkmsg = MarkoutMessage2(trade=msg,
@@ -129,7 +129,9 @@ class MarkoutCalculatorPre:
             # for x in self.pending:
             #     x.timestamp = msg.timestamp
         else: # if not isinstance(msg, Quote):
-            print(msg)
+            error_string = 'Markout calculator only wants trades or price data, instead it got ' + str(msg)
+            logging.getLogger(__name__).error(error_string)
+            raise ValueError(error_string)
 
         if isinstance(msg, Quote) or hasattr(msg, 'mid'):
             self.buffer.add_point(msg.timestamp, msg.mid)
@@ -189,7 +191,7 @@ class MarkoutCalculatorPost:
         # t0 = time.time()
         self.last_timestamp = msg.timestamp
 
-        if isinstance(msg, Trade):
+        if isinstance(msg, Trade) or 'trade_id' in msg.__dict__: # a workaround for Python class resolution issue
             self.COB_time_utc = COB_time_utc
             self.generate_markout_requests(msg)
             # elif isinstance(msg, Quote) or hasattr(msg, 'mid'):
@@ -200,7 +202,10 @@ class MarkoutCalculatorPost:
                 x.timestamp = msg.timestamp
             # [(lambda x: x.timestamp = msg.timestamp)(x) for x in self.pending]
         else: # if not isinstance(msg, Quote):
-            print(msg)
+            error_string = 'Markout calculator only wants trades or price data, instead it got ' + str(msg)
+            logging.getLogger(__name__).error(error_string)
+            raise ValueError(error_string)
+
         # determine which pending markout requests we can complete now
 
         completed = [x for x in self.pending if x.next_timestamp < self.last_timestamp]
@@ -209,7 +214,7 @@ class MarkoutCalculatorPost:
         for x in completed:
             x.final_price = x.trade.valuation_price(self.last_price)
             # TODO: rewrite this!!!
-            if x.trade.price_type == PriceType.Upfront and x.dt == "0":
+            if 'price_type' in x.trade.__dict__ and x.trade.price_type == PriceType.Upfront and x.dt == "0":
                 # Handle upfront_fee at point of trade
                 x.price_markout = (x.final_price + x.initial_price)
 
@@ -241,10 +246,16 @@ class MarkoutCalculator:
     It assumes all messages arrrive in strict timestamp order
     '''
 
-    def __init__(self, lags_list, instr=None):
+    def __init__(self, lags_list_, instr=None):
         self.COB_time_utc = None
         self.timestamp = None
         # self.configurator = configurator
+        lags_list = [str(lag) for lag in lags_list_]
+
+        if any([ 'COB' in lag for lag in lags_list]):
+            self.cob = True
+        else:
+            self.cob = False
         pre_lags = [x for x in lags_list if x[0] == '-']
         post_lags = [x for x in lags_list if not x[0] == '-']
         if len([x for x in lags_list if "COB" not in x]) > 0:
@@ -264,7 +275,7 @@ class MarkoutCalculator:
             self.markout_calculator_pre.generate_markout_requests(msg)
 
     def __call__(self, msg):
-        if isinstance(msg, Trade) and self.COB_time_utc is None:
+        if isinstance(msg, Trade) and self.cob and self.COB_time_utc is None:
             # set the utc cob time as per traded ccy
             # first get the UTC time for COB per ccy of risk (only possible at trade level)
             if msg.ccy == Currency.EUR:

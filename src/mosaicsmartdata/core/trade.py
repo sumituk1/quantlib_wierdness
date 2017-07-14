@@ -65,6 +65,9 @@ class Trade(GenericParent):
         self.delta = None
         self.factor_risk = None
         self.leg_no = None
+        self.instrument = None
+        self.sym =  None
+
         #self.package_size = None  # package_size of the trade executed
 
         # just paste this magic line in to assign the kwargs
@@ -102,7 +105,6 @@ class Trade(GenericParent):
         else:
             return 1
 
-
     def price_diff(self, pricing_context):
         p_diff = self.valuation_price(pricing_context) - self.traded_price()
         p_diff *= self.side_mult()
@@ -131,14 +133,14 @@ class Trade(GenericParent):
             raise AttributeError('This object doesn\'t have attribute' + item)
 
 class FXForwardTrade(Trade):
-    def __init__(self, *args, **kwargs):
-        self.instrument = FXForward()
-        kwargs = self.instrument.apply_kwargs(self.instrument.__dict__, kwargs)
+    def __init__(self, instr: FXForward, **kwargs):
+        kwargs['instrument'] = instr
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+        pass
 
 class FXSwapTrade(Trade):
-    def __init__(self, leg1, leg2, **kwargs):
-        self.instrument = FXSwap(leg1, leg2)
+    def __init__(self, instr: FXSwap, **kwargs):
+        kwargs['instrument'] = instr # required arg
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
 

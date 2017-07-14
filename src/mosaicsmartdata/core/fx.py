@@ -38,7 +38,7 @@ class DiscountCurveGenerator:
                 # ignore crosses
                 pass
 
-            today = date(quote.timestamp)
+            today = quote.timestamp.date()
             if quote.instr.is_spot(today):
                 self.spot_rate[non_usd_ccy] = used_mid
             else:
