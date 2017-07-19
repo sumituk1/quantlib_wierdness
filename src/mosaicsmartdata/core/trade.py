@@ -65,8 +65,10 @@ class Trade(GenericParent):
         self.delta = None
         self.factor_risk = None
         self.leg_no = None
-        self.instrument = None
-        self.sym =  None
+        if not 'instrument' in self.__dict__:
+            self.instrument = None
+        # if not 'sym' in self.__dict__:
+        #     self.sym =  None
 
         #self.package_size = None  # package_size of the trade executed
 
@@ -93,7 +95,14 @@ class Trade(GenericParent):
 
     # price the trade was done at, using the price convention the user expects for markouts
     def traded_price(self):
-        return self.adj_traded_px # really?
+        price = None
+        try:
+            price = self.adj_traded_px
+        except:
+            pass
+        if not price:
+            price = self.traded_px
+        return price
 
     # price for the current trade given pricing data, using the price convention the user expects for markouts
     def valuation_price(self, pricing_context):
@@ -134,8 +143,12 @@ class Trade(GenericParent):
 
 class FXForwardTrade(Trade):
     def __init__(self, instr: FXForward, **kwargs):
-        kwargs['instrument'] = instr
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+        self.instrument = instr
+        self.traded_px = abs(instr.notionals[1] / instr.notionals[0])
+        # TODO: enter a proper analytical delta
+        self.delta = 1.0
+
         pass
 
 class FXSwapTrade(Trade):
@@ -173,7 +186,6 @@ class BondFuturesTrade(FixedIncomeTrade):
     def __init__(self, *args, **kwargs):
         self.instrument = FixedIncomeBondFuture()
         kwargs = self.instrument.apply_kwargs(self.instrument.__dict__, kwargs)
-
         # self.maturity_date = None
         self.contracts = 0
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))

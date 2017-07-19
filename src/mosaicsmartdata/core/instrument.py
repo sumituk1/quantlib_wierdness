@@ -62,6 +62,7 @@ class FXForward(FXInstrument):
         return abs(self.notionals[1]/self.notionals[0])
 
     def price(self, pricing_context: PricingContext):
+        # TODO: augment for forwards
         return pricing_context.spot_rate(self.ccy)
 
     def pv(self, pricingContext, today, accounting_ccy = 'USD', ignoreDiscountFromSpotToToday = True):

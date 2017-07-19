@@ -246,11 +246,11 @@ class MarkoutCalculator:
     It assumes all messages arrrive in strict timestamp order
     '''
 
-    def __init__(self, lags_list_, instr=None):
+    def __init__(self, lags_list, instr=None):
         self.COB_time_utc = None
         self.timestamp = None
         # self.configurator = configurator
-        lags_list = [str(lag) for lag in lags_list_]
+        lags_list = [str(lag) for lag in lags_list] # to allow to enter the lags as numbers
 
         if any([ 'COB' in lag for lag in lags_list]):
             self.cob = True
