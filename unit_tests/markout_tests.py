@@ -487,4 +487,4 @@ if __name__ == '__main__':
     #    unittest.main()
     k= TestMarkouts()
     k.setUp()
-    k.test_app_wrapper()
+    k.test_case_6()

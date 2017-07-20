@@ -1,17 +1,27 @@
 from mosaicsmartdata.core.date_calculator import DateCalculator
 from mosaicsmartdata.core.instrument import FXForward, FXSwap
 
-def split_ric(sym):
-    ccy = str(sym[:3])
-    tenor = str(sym[3:-1])
-    return (ccy, tenor)
-
+# TODO: have a nice currency list
+ccys = {'EUR','USD','GBP','JPY', 'CAD'}
 
 def ccy_to_major_pair(ccy):
     if ccy in ['EUR', 'GBP', 'AUD', 'NZD']:
         return (ccy, 'USD')
     else:
         return ('USD', ccy)
+
+# only works for FX spot and forward symbols for now
+def split_ric(sym):
+    sym = sym.split('=')[0]
+    ccy = str(sym[:3])
+    if len(sym) >= 6 and str(sym[3:6]) in ccys:
+        pair = (ccy, str(sym[3:6]))
+        tenor = str(sym[6:])
+    else:
+        pair = ccy_to_major_pair(ccy)
+        tenor = str(sym[3:])
+    return (pair, tenor)
+
 
 class sym_to_fx_instrument:
     def __init__(self):
@@ -20,8 +30,7 @@ class sym_to_fx_instrument:
     def __call__(self, sym, today):
         if (sym, today) not in self.instr_cache:
             date_calc = DateCalculator()
-            ccy, tenor = split_ric(sym)
-            pair = ccy_to_major_pair(ccy)
+            pair, tenor = split_ric(sym)
             spot_date = date_calc.spot_date(pair, today)
             spot_instr = FXForward(ccy = pair, settle_date = spot_date, sym = sym, tenor = 'SPOT')
             if not tenor:

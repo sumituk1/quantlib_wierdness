@@ -10,50 +10,50 @@ from mosaicsmartdata.common.read_config import *
 from mosaicsmartdata.core.markout_msg import *
 from mosaicsmartdata.core.trade import Trade, InterestRateSwapTrade,FixedIncomeTrade
 from mosaicsmartdata.core.quote import Quote
-import time
+
 
 size_threshold = 100 * 1000  # 100 kb before re-indexing kicks in
 class PriceBuffer:
     def __init__(self, buf_incr = 10000, max_lag = None):
         self.buf_incr = buf_incr
         self.max_lag = max_lag
-        self.value = np.zeros(0)
-        self.time = pd.Series(np.zeros(0))
+        self.value = []#np.zeros(0)
+        self.time = []#pd.Series(np.zeros(0))
         self.last = 0
 
     def add_point(self, timestamp, value):
         self.last +=1
         if self.last > len(self.value):
-            extra_buffer = np.zeros(self.buf_incr)
-            extra_buffer[:] = np.NaN
-            self.value = np.concatenate([self.value, extra_buffer], axis = 0)
-            extra_time = pd.Series(np.zeros(self.buf_incr))
-            extra_time[:] = datetime.datetime(2100, 1, 1,1,1,1) # far in the future
-            self.time = pd.concat([self.time, extra_time], axis = 0)
+            time_dummy = datetime.datetime(2100, 1, 1,1,1,1) # far in the future
+            self.time += [time_dummy]*self.buf_incr
+            self.value += [None]*self.buf_incr
         self.time[self.last - 1] = timestamp
         self.value[self.last - 1] = value
 
     def get_last_price_before(self, timestamp, cutoff_timestamp = None):
-        if cutoff_timestamp:
-            filter_ = np.logical_and(np.array(self.time <= timestamp), np.array(self.time > cutoff_timestamp))
-        else:
-            filter_ = np.array(self.time <= timestamp)
-        nicedata = self.value[filter_]
-        if len(nicedata) > 0:
-            return nicedata[-1]
-        else:
-            return np.NaN
+        def filter_fun(time):
+            if cutoff_timestamp:
+                return time <= timestamp and time > cutoff_timestamp
+            else:
+                return time <= timestamp
+
+        last_price = float('NaN')
+        for i, value in enumerate(self.value):
+            if value is None: # we fill the tail of the pre-allocated array with None
+                break
+            if filter_fun(self.time[i]):
+                last_price = value # values are ordered, so take the latest
+        return last_price
+
 
     def throw_away_before(self, timestamp):
-        filter_ = self.time >= timestamp
         oldlen = len(self.value)
-        self.value = copy(self.value[np.array(filter_)])
-        self.time = copy(self.time[filter_])
+        self.value = [value for i, value in enumerate(self.value) if self.time[i] >= timestamp]#copy(self.value[np.array(filter_)])
         if self.last == oldlen:
             self.last = len(self.value)# both arrays just full
         else:
-            inds = np.array(range(oldlen))
-            new_inds = inds[np.array(filter_)]
+            inds = list(range(oldlen))
+            new_inds = [ind for i, ind in enumerate(inds) if self.time[i] >= timestamp]
             for i, ind in enumerate(new_inds):
                 if ind ==self.last:
                     self.last = i
@@ -61,16 +61,21 @@ class PriceBuffer:
             if self.last > len(self.value):
                 raise RuntimeError('Error in price buffer!')
 
+        self.time = [time_ for time_ in self.time if time_ >= timestamp]
+
     def __getstate__(self):
         # trim all unneeded data before saving
         if self.last > 0: # if there's any data in the buffer
             max_lookback = self.time[self.last - 1] + dt.timedelta(seconds=self.max_lag)
             self.throw_away_before(max_lookback)
-            self.value = np.array(self.value[:self.last])
-            self.time = pd.Series(np.array(self.time[:self.last]))
+            self.value = list(self.value[:self.last])
+            self.time = list(self.time[:self.last])
         state = self.__dict__.copy()
         return state
 
+def is_quote(x):
+    x_type = str(type(x))
+    return 'Quote' in x_type or 'PricingContext' in x_type
 
 class MarkoutCalculatorPre:
     '''
@@ -81,10 +86,8 @@ class MarkoutCalculatorPre:
     '''
 
     def __init__(self, lags_list, max_lag, instr=None):
-        #self.pending = []
         self.lags_list = lags_list
         self.buffer = PriceBuffer(max_lag=max_lag)
-        #self.last_price = pd.DataFrame(columns=['mid', 'timestamp']).reset_index()
         self.last_timestamp = None
         self.COB_time_utc = None
         self.max_lag = max_lag
@@ -112,29 +115,21 @@ class MarkoutCalculatorPre:
                 if mkmsg.final_price is np.NaN:
                     logging.getLogger(__name__).warning('Saw a NaN final price in pre-markouts')
 
-
-                # if isinstance(msg, InterestRateSwapTrade):
-                #     # "REC" in IRS world means we are receiving the fixed leg
-                #     mkmsg.price_markout = (-mkmsg.final_price + mkmsg.initial_price)
-                # else:
-                #     mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)
-                #
-                # if (mkmsg.side == TradeSide.Ask) and (not mkmsg.price_markout is None):
-                #     mkmsg.price_markout *= -1
-
                 completed.append(mkmsg)
-        elif isinstance(msg, Quote):
+        elif is_quote(msg):
             pass
-            # update the pending markout_messages with the new timestamp - but there aren't any!
-            # for x in self.pending:
-            #     x.timestamp = msg.timestamp
         else: # if not isinstance(msg, Quote):
             error_string = 'Markout calculator only wants trades or price data, instead it got ' + str(msg)
             logging.getLogger(__name__).error(error_string)
             raise ValueError(error_string)
 
-        if isinstance(msg, Quote) or hasattr(msg, 'mid'):
-            self.buffer.add_point(msg.timestamp, msg.mid)
+        if is_quote(msg):
+            try: # if it's a vanilla quote
+                last_price = msg.mid
+            except: # if it's a PricingContext
+                last_price = msg
+            # TODO adjust so works with PriceContexts
+            self.buffer.add_point(msg.timestamp, last_price)
             if len(self.buffer.time) > size_threshold:
                 stale_timestamp = self.buffer.time[self.buffer.last - 1] - dt.timedelta(0, self.max_lag)
                 self.buffer.throw_away_before(stale_timestamp)
@@ -174,7 +169,6 @@ class MarkoutCalculatorPost:
                 else:
                     # This is a COB lag. Extract the COB time in UTC
                     # COB_time_utc = None
-
                     # now get the COB lag i.e. COB_T0 or COB_T1, COB_T2
                     COB_lag = mk[-1]
                     next_timestamp = dt.datetime.combine(msg.trade_date, self.COB_time_utc) + \
@@ -194,13 +188,9 @@ class MarkoutCalculatorPost:
         if isinstance(msg, Trade) or 'trade_id' in msg.__dict__: # a workaround for Python class resolution issue
             self.COB_time_utc = COB_time_utc
             self.generate_markout_requests(msg)
-            # elif isinstance(msg, Quote) or hasattr(msg, 'mid'):
-            # self.last_price = msg.mid
-        elif isinstance(msg,Quote):
-            # update the pending markout_messages with the new timestamp
-            for x in self.pending:
+        elif is_quote(msg):
+            for x in self.pending:# update the pending markout_messages with the new timestamp
                 x.timestamp = msg.timestamp
-            # [(lambda x: x.timestamp = msg.timestamp)(x) for x in self.pending]
         else: # if not isinstance(msg, Quote):
             error_string = 'Markout calculator only wants trades or price data, instead it got ' + str(msg)
             logging.getLogger(__name__).error(error_string)
@@ -223,17 +213,15 @@ class MarkoutCalculatorPost:
                     if y not in completed:
                         y.initial_price = x.final_price
             else:
-                # if isinstance(x.trade, InterestRateSwapTrade):
-                #     # "REC" in IRS world means we are receiving the fixed leg
-                #     x.price_markout = (-x.final_price + x.initial_price)
-                # else:
-                #     x.price_markout = (x.final_price - x.initial_price)
                 x.price_markout = (x.final_price - x.initial_price)
 
             x.price_markout *= x.trade.side_mult()
 
-        if isinstance(msg, Quote) or hasattr(msg, 'mid'):
-            self.last_price = msg.mid
+        if is_quote(msg):
+            try: # if it's a vanilla quote
+                self.last_price = msg.mid
+            except: # if it's a PricingContext
+                self.last_price = msg
         # print("Time spent in MarkoutCalculatorPost() = %s"%(time.time()-t0))
         return completed
 

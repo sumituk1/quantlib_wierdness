@@ -10,7 +10,7 @@ TenorTuple = namedtuple('TenorTuple','tenor today instr')
 SpotRate = namedtuple('SpotRate','ccy1  ccy2 today spot_date mid')
 
 class PricingContext:
-    def __init__(self, curves, spots, today):
+    def __init__(self, curves, spots, timestamp):
         '''
         A bundle of spot rates and matching discounting curves, derived from the
         FX spot and swap markets
@@ -20,21 +20,21 @@ class PricingContext:
         if 'USD' not in curves:
             raise ValueError('Need a USD discounting curve')
 
-        self.curve = copy.copy(curves)
-        self.today = today
-        self.spot = {}
-        for s in spots:
-            if s.ccy1 == 'USD':
-                self.spot[s.ccy2] =s
-            else:
-                raise ValueError('Ccy1 must always be USD here, not ', s)
+        self.curve = curves
+        self.timestamp = timestamp
+        self.today = timestamp.date()
+        self.spot = spots
+        self.spot['USD'] = 1
 
     def spot_rate(self, ccypair):
-        # calculate the rate for that ccypair and return
-        pass
+        if ccypair[0] in self.spot and ccypair[1] in self.spot:
+            return self.spot[ccypair[1]]/self.spot[ccypair[0]]
+        else:
+            return float('NaN')
 
     def fwd_points(self, ccypair, start_date, end_date):
-        pass
+        # TODO: use discounting curves to derive correct forward points
+        return float('NaN')
 
 
 class Instrument(GenericParent):
@@ -57,6 +57,7 @@ class FXForward(FXInstrument):
         self.date_calc = DateCalculator()
         self.static = InstrumentStaticSingleton()
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+        self.pip_size = self.static.pip_size(self.ccy)
 
     def rate(self):
         return abs(self.notionals[1]/self.notionals[0])
@@ -96,7 +97,7 @@ class FXMultiForward(FXInstrument):
             else:
                 if not leg.ccy == self.first_leg.ccy:
                     raise ValueError('All the legs must have the same currency pair!')
-        self.pip_size = InstrumentStaticSingleton().pip_size(self.first_leg)
+        self.pip_size = self.first_leg.pip_size
         # TODO: get parent properties from first leg properties?
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 

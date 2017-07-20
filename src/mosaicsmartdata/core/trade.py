@@ -141,7 +141,10 @@ class Trade(GenericParent):
         else:
             raise AttributeError('This object doesn\'t have attribute' + item)
 
-class FXForwardTrade(Trade):
+class FXTrade(Trade):
+    pass
+
+class FXForwardTrade(FXTrade):
     def __init__(self, instr: FXForward, **kwargs):
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
         self.instrument = instr
@@ -149,9 +152,16 @@ class FXForwardTrade(Trade):
         # TODO: enter a proper analytical delta
         self.delta = 1.0
 
-        pass
+    # price for the current trade given pricing data, using the price convention the user expects for markouts
+    def valuation_price(self, pricing_context):
+        if type(pricing_context) == float or type(pricing_context) == int:
+            return pricing_context  # if it's a price for a discrete instrument, that's all we need
+        else: # assume it's a PricingContext
+            # TODO: get a spot or forward rate, depending
+            return pricing_context.spot_rate(self.instrument.ccy)
 
-class FXSwapTrade(Trade):
+
+class FXSwapTrade(FXTrade):
     def __init__(self, instr: FXSwap, **kwargs):
         kwargs['instrument'] = instr # required arg
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))

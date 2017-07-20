@@ -8,6 +8,7 @@ class Quote(GenericParent):
         self.timestamp = None  # <-- should be in datetime format
         self.bid = None
         self.ask = None
+        self.units = None
         self.duration = None  # <-- need this for hedging
 
         # just paste this magic line in to assign the kwargs

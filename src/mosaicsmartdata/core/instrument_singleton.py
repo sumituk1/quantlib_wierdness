@@ -34,6 +34,7 @@ class InstrumentStaticSingleton(Borg):
         return 'Instrument static singleton facade'# str(self.__dict__)
 
     def pip_size(self,ccypair):
+        # TODO: implement proper pip size lookup
         # return the pip size for the currencypair
         pass
 

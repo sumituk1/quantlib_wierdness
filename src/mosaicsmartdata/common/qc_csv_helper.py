@@ -35,8 +35,16 @@ def get_fx_quotes(filename):
                 timestamp = reuters_to_datetime(row[dateind],row[timeind])
                 bid = row[bidind]
                 ask = row[askind]
-                quote = Quote(sym = sym, timestamp = timestamp, bid = bid, ask = ask)
-                quote.instr = instr_gen(sym, timestamp.date())
+                quote = Quote(sym = sym,
+                              timestamp = timestamp,
+                              bid = bid,
+                              ask = ask)
+                quote.instrument = instr_gen(sym, timestamp.date())
+                if quote.instrument.tenor == 'SPOT':
+                    quote.units = 'outright'
+                else:
+                    quote.units = 'pips'
+
                 if i%100000 == 0:
                     print(i, quote)
                 if sym not in quote_dict:
