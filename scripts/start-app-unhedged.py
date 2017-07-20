@@ -6,8 +6,7 @@
 # sys.path.append(my_location+ '/../src')
 # sys.path.append(my_location + '/../../quant_container/src')
 
-from aiostreams import entrypoint, get_pipelines
-from mosaicsmartdata.core.quote import Quote
+from aiostreams import entrypoint
 from mosaicsmartdata.wrappers.markout_pipeline import pipeline_fun_unhedged
 # Template for the pipeline definition function to be used instead of get_pipelines:
 # def pipeline_fun(names_only=False, cmd_args = None):
