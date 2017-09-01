@@ -4,10 +4,13 @@ from copy import copy
 from mosaicsmartdata.common.constants import Country
 from mosaicsmartdata.core.date_calculator import DateCalculator
 from mosaicsmartdata.core.generic_parent import GenericParent
-from mosaicsmartdata.core.instrument_singleton import InstrumentStaticSingleton
+from mosaicsmartdata.core.instrument_static_singleton import InstrumentStaticSingleton
 
 TenorTuple = namedtuple('TenorTuple','tenor today instr')
 SpotRate = namedtuple('SpotRate','ccy1  ccy2 today spot_date mid')
+
+date_calc = DateCalculator()
+
 
 class PricingContext:
     def __init__(self, curves, spots, timestamp):
@@ -58,6 +61,7 @@ class FXForward(FXInstrument):
         self.static = InstrumentStaticSingleton()
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
         self.pip_size = self.static.pip_size(self.ccy)
+        self.maturity_date = self.settle_date
 
     def rate(self):
         return abs(self.notionals[1]/self.notionals[0])
@@ -78,7 +82,7 @@ class FXForward(FXInstrument):
         return None
 
     def spot_date(self, today):
-        return self.date_calc.spot_date(self.ccy,today)
+        return date_calc.spot_date('fx',self.ccy,today)
 
     def is_spot(self, today):
         return self.settle_date == self.spot_date(today)
@@ -90,31 +94,50 @@ class FXForward(FXInstrument):
 class FXMultiForward(FXInstrument):
     def __init__(self, legs, **kwargs):
         self.legs = legs
-        self.first_leg = None
-        for leg in legs:
-            if not self.first_leg:
-                self.first_leg = leg
-            else:
-                if not leg.ccy == self.first_leg.ccy:
-                    raise ValueError('All the legs must have the same currency pair!')
-        self.pip_size = self.first_leg.pip_size
+        for leg in legs[1:]:
+            if not leg.ccy == self.legs[0].ccy:
+                raise ValueError('All the legs must have the same currency pair!')
         # TODO: get parent properties from first leg properties?
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
-
+        self.ccy = self.legs[0].ccy # need to do this as else will inherit default=None from Instrument
+        #self.ccy = self.first_leg.ccy
 
     def pv(self,  pc: PricingContext):
         return sum([self.leg.pv(pc) for leg in self.legs])
 
     def __getattr__(self, item):
-        if item in self.leg1.__dict__:
-            return self.leg1.__dict__[item]
+        if item in self.legs[0].__dict__:
+            return self.legs[0].__dict__[item]
         else:
             return AttributeError('FXMultiForward doesn''t have attribute ', item)
 
 # an FX Swap is just a multi-forward with just 2 legs
-class FXSwap(FXMultiForward):
+class FXSwap(FXInstrument):
+    def __init__(self, legs, **kwargs):
+        self.legs = legs
+        if len(legs) >2:
+            raise ValueError("An FXSwap only has 2 legs")
+        for leg in legs[1:]:
+            if not leg.ccy == self.legs[0].ccy:
+                raise ValueError('All the legs must have the same currency pair!')
+        # TODO: get parent properties from first leg properties?
+        super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+        self.ccy = self.legs[0].ccy # need to do this as else will inherit default=None from Instrument
+        self.maturity_date = self.legs[1].settle_date
+        self.settle_date = self.legs[0].settle_date
+
+    def pv(self,  pc: PricingContext):
+        return sum([self.leg.pv(pc) for leg in self.legs])
+
+    def __getattr__(self, item):
+        if item in self.legs[0].__dict__:
+            return self.legs[0].__dict__[item]
+        else:
+            return AttributeError('FXMultiForward doesn''t have attribute ', item)
+
     def forward_points(self):
         return (self.legs[1].rate() - self.legs[0].rate())/self.pip_size()
+
 
 
 class FixedIncomeInstrument(Instrument):
@@ -132,12 +155,15 @@ class FixedIncomeInstrument(Instrument):
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
 
+
 class FixedIncomeIRSwap(FixedIncomeInstrument):
     def __init__(self, *args, **kwargs):
         self.float_coupon_frequency = None
         self.tenor = None
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
+class OIS(FixedIncomeIRSwap):
+    pass
 
 class FixedIncomeBondFuture(FixedIncomeInstrument):
     def __init__(self, *args, **kwargs):

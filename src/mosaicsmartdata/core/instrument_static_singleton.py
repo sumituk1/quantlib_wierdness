@@ -4,7 +4,6 @@ import inspect
 
 class Borg:
     _shared = {}
-
     def __init__(self):
         self.__dict__ = self._shared
 
@@ -35,8 +34,14 @@ class InstrumentStaticSingleton(Borg):
 
     def pip_size(self,ccypair):
         # TODO: implement proper pip size lookup
+        pair = list(ccypair)
         # return the pip size for the currencypair
-        pass
+        if pair == ['USD','JPY']:
+            return 0.01
+        elif pair ==['JPY','USD']:
+            return 0.000001
+        else:
+            return 0.0001
 
 if __name__ == "__main__":
     instrument_static = InstrumentStaticSingleton()

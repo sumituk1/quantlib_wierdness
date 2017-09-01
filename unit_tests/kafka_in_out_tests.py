@@ -1,6 +1,7 @@
 '''
 To start Kafka 9 in Docker (using image from https://hub.docker.com/r/flozano/kafka/) run the following in the Docker bash:
   docker run -p 2181:2181 -p 9092:9092 --env _KAFKA_advertised_host_name=`docker-machine ip \`docker-machine active\`` --env _KAFKA_advertised_port=9092 --name=local_kafka flozano/kafka &
+  docker run -p 2181:2181 -p 9092:9092 --env _KAFKA_advertised_host_name=localhost --env _KAFKA_advertised_port=9092 --name=local_kafka flozano/kafka &
 To kill it run
   docker kill local_kafka
 then

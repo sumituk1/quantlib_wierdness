@@ -1,5 +1,5 @@
 #from mosaicsmartdata.core.instrument import TenorTuple
-
+from datetime import timedelta
 
 class DateCalculatorBorg:
     _shared = {}
@@ -10,24 +10,42 @@ class DateCalculatorBorg:
 class DateCalculator(DateCalculatorBorg):
     def __init__(self):
         super().__init__()
+        self.intervals = set()
 
     def date_add(self, today, interval, holiday_cities = None):
-        # TODO: call quantlib wrappers here
-        # must support at least intervals of 0b (nearest business day), 1b, 2b,
-        # and the standard tenors
-        return today
+        # TODO: call quantlib wrappers here instead
+        if interval[-1].lower() == 'b': # really want to return the next BUSINESS DAY
+            days = float(interval[:-1])
+        elif interval[-1].lower() =='m':
+            days = 30*float(interval[:-1])
+        elif interval[-1].lower() =='w':
+            days = 7*float(interval[:-1])
+        elif interval[-1].lower() == 'y':
+            days = 365* float(interval[:-1])
 
-    def spot_date(self, ccypair, today):
-        # TODO: get holiday cities from ccypair
-        if ccypair in [('USD', 'CAD'),
-                       ('USD', 'TRY'),
-                       ('USD', 'PHP'),
-                       ('USD', 'RUB'),
-                       ('USD', 'KZT'),
-                       ('USD', 'PKR')]:
-            delta = '1b'
+        delta = timedelta(days=days)
+        return today + delta
+
+        # self.intervals.add(interval)
+        # print(self.intervals)
+
+
+    def spot_date(self, instr_type, ccypair, today):
+        # TODO: get holiday cities from ccypair/ccy
+        if instr_type == 'ois':
+            return self.date_add(today, '2b')
+        elif instr_type == 'fx':
+            if ccypair in [('USD', 'CAD'),
+                           ('USD', 'TRY'),
+                           ('USD', 'PHP'),
+                           ('USD', 'RUB'),
+                           ('USD', 'KZT'),
+                           ('USD', 'PKR')]:
+                delta = '1b'
+            else:
+                delta = '2b'
         else:
-            delta = '2b'
+            raise ValueError("Can only hanlde instrument types fx and ois, got ",instr_type)
         return self.date_add(today, delta)
 
     def resolve_tenor(self, instr, today):

@@ -5,7 +5,7 @@ from mosaicsmartdata.common.constants import *
 from collections import namedtuple
 import json
 import operator
-from mosaicsmartdata.core.instrument_singleton import *
+from mosaicsmartdata.core.instrument_static_singleton import *
 from mosaicsmartdata.core.quote import Quote
 from mosaicsmartdata.core.markout_msg import MarkoutMessage2
 from mosaicsmartdata.core.trade import Trade,FixedIncomeBondTrade

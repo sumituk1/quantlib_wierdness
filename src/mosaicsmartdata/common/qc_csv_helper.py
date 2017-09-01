@@ -1,10 +1,10 @@
 import csv
 import datetime as dt
 from mosaicsmartdata.common.constants import *
-from mosaicsmartdata.core.instrument_singleton import *
+from mosaicsmartdata.core.instrument_static_singleton import *
 from mosaicsmartdata.core.trade import *
 from mosaicsmartdata.core.quote import Quote
-from mosaicsmartdata.core.instrument_utils import sym_to_fx_instrument
+from mosaicsmartdata.core.instrument_utils import sym_to_instrument
 
 def indfun(headers, string):
     return [i for i, name in enumerate(headers) if string in name][0]
@@ -16,10 +16,10 @@ def reuters_to_datetime(rdate, rtime):
     precise_datetime = time + dt.timedelta(seconds=partial_seconds)
     return precise_datetime
 
-def get_fx_quotes(filename):
+def get_ric_quotes(filename):
     headers = None
     quote_dict = {}
-    instr_gen = sym_to_fx_instrument()
+    instr_gen = sym_to_instrument()
     with open(filename) as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
         for i,row in enumerate(spamreader):
@@ -35,21 +35,29 @@ def get_fx_quotes(filename):
                 timestamp = reuters_to_datetime(row[dateind],row[timeind])
                 bid = row[bidind]
                 ask = row[askind]
-                quote = Quote(sym = sym,
-                              timestamp = timestamp,
-                              bid = bid,
-                              ask = ask)
-                quote.instrument = instr_gen(sym, timestamp.date())
-                if quote.instrument.tenor == 'SPOT':
-                    quote.units = 'outright'
-                else:
-                    quote.units = 'pips'
+                try:
+                    bid = float(bid)
+                    ask = float(ask)
+                    quote = Quote(sym = sym,
+                                  timestamp = timestamp,
+                                  bid = bid,
+                                  ask = ask)
+                    quote.instrument = instr_gen(sym, timestamp.date())
+                    if 'OIS' in sym:
+                        quote.units = 'percent'
+                    elif quote.instrument.tenor == 'SPOT': # assume FX if not OIS
+                        quote.units = 'outright'
+                    else:
+                        quote.units = 'pips'
 
-                if i%100000 == 0:
-                    print(i, quote)
-                if sym not in quote_dict:
-                    quote_dict[sym] = []
-                quote_dict[sym].append(quote)
+                    if i%100000 == 0:
+                        print(i, quote)
+                    if sym not in quote_dict:
+                        quote_dict[sym] = []
+                    quote_dict[sym].append(quote)
+                except:
+                    pass # ignore malformed quote rows
+        print(i,quote)
     return quote_dict
 
 # converts a time precision in nano-seconds (kdb+) to a datetime object

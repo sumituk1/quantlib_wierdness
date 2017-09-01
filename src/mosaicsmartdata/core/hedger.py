@@ -1,6 +1,6 @@
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.common.read_config import *
-from mosaicsmartdata.core.instrument_singleton import InstrumentStaticSingleton
+from mosaicsmartdata.core.instrument_static_singleton import InstrumentStaticSingleton
 from mosaicsmartdata.core.quote import Quote
 import logging
 import datetime as dt
