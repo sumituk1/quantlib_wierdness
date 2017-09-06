@@ -30,7 +30,7 @@ function do_tag {
 }
 
 function do_push {
-	
+
 	echo "Pushing nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain"
 
 	docker push nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest
@@ -172,7 +172,7 @@ function start_jupyter {
     # The below is an ugly hack until we can figure out how to make project.include_directory work in build.py
     cp mosaicsmartdata/configuration/*.csv  /opt/conda/lib/python3.5/site-packages/mosaicsmartdata/configuration/
 
-    cd scripts
+    #cd scripts
     python ./start-app-hedged.py --kafka_broker kafka --loglevel DEBUG --input_topics topic-a,topic-b --output_topic output-topic
 
 	jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
@@ -214,13 +214,13 @@ run_build)
    ;;
 ps)
    docker ps
-   ;;   
+   ;;
 build_dev_image)
    do_build_dev_image
-   ;;   
+   ;;
 pyb_skip_tests)
    do_pyb_skip_tests
-   ;;   
+   ;;
 pyb_run_integration_tests)
    do_pyb_run_integration_tests
    ;;
@@ -229,16 +229,16 @@ pyb_build_all_from_source)
   ;;
 integration_test)
    do_integration_test
-   ;;   
+   ;;
 jupyter)
    start_jupyter
    ;;
 attach)
    do_attach_msq_domain
-   ;;     
+   ;;
 attach_msq_domain)
    do_attach_msq_domain
-   ;;     
+   ;;
  *)
    echo "Usage: dockerctrl {build_image|tag_image|push_image|pull_image|btp_image|link_source|run_build|ps}" >&2
    echo

@@ -14,3 +14,6 @@ sleep 15
 echo "Executing start-app-unhedged.py script"
 
 python /scripts/start-app-unhedged.py --kafka_broker kafka --loglevel DEBUG --input_topics topic-a,topic-b --output_topic output-topic
+
+# This will keep the container up
+tail -f /dev/null
