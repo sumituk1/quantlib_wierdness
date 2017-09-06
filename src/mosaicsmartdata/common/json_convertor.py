@@ -155,15 +155,21 @@ def mktmsg_to_json(markout_message):
 def json_to_quote(json_message):
     request = json.loads(json_message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
     # calculate a vwap of bids
-    zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if str.upper(x.entryType) == "BID"]
+    # zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if str.upper(x.entryType) == "BID"]
+    zz = [[float(x.entrySize), float(x.entryPx)] for x in
+          request.marketDataSnapshotFullRefreshList[0].marketDataEntryList if str.upper(x.entryType) == "BID"]
+
     bid_close = sum([x[0] * x[1] for x in zz]) / sum([x[0] for x in zz])
     # calculate a vwap of ask
-    zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if
-          str.upper(x.entryType) == "OFFER"]
+    # zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if
+    #       str.upper(x.entryType) == "OFFER"]
+    zz = [[float(x.entrySize), float(x.entryPx)] for x in
+          request.marketDataSnapshotFullRefreshList[0].marketDataEntryList if str.upper(x.entryType) == "OFFER"]
+
     ask_close = sum([x[0] * x[1] for x in zz]) / sum([x[0] for x in zz])
-    quote = Quote(sym=request[0][0].symbol,
+    quote = Quote(sym=request.marketDataSnapshotFullRefreshList[0].symbol,
                   ask=ask_close,
-                  timestamp=dt.datetime.fromtimestamp(request[0][0].timestamp / 1000),
+                  timestamp=dt.datetime.fromtimestamp(request.marketDataSnapshotFullRefreshList[0].timestamp / 1000),
                   bid=bid_close)
     return quote
 
@@ -463,8 +469,49 @@ if __name__ == "__main__":
       ]\
     }'
 
-    quote = json_to_quote(msg)
-    # print(quote)
+    # "orderId": "0", \
+    msg_2 = '{\
+              "orderId": "0", \
+              "marketDataSnapshotFullRefreshList": [\
+                {\
+                  "key": "CUSIP1504582201933",\
+                  "securityId": "CUSIP",\
+                  "symbol": "912796KN7",\
+                  "timestamp": 1504582201933,\
+                  "marketDataEntryList": [\
+                    {\
+                      "entryId": "pxPre2hEntry_bid",\
+                      "entryType": "BID",\
+                      "entryPx": "92.71875",\
+                      "currencyCode": "USD",\
+                      "settlementCurrencyCode": "USD",\
+                      "entrySize": "10000000",\
+                      "quoteEntryId": "quoteEntryId"\
+                    },\
+                    {\
+                      "entryId": "pxPre2hEntry_mid",\
+                      "entryType": "MID",\
+                      "entryPx": "92.71875",\
+                      "currencyCode": "USD",\
+                      "settlementCurrencyCode": "USD",\
+                      "entrySize": "10000000",\
+                      "quoteEntryId": "quoteEntryId"\
+                    },\
+                    {\
+                      "entryId": "pxPre2hEntry_ask",\
+                      "entryType": "OFFER",\
+                      "entryPx": "92.71875",\
+                      "currencyCode": "USD",\
+                      "settlementCurrencyCode": "USD",\
+                      "entrySize": "10000000",\
+                      "quoteEntryId": "quoteEntryId"\
+                    }\
+                  ]\
+                }\
+              ]\
+            }'
+    quote = json_to_quote(msg_2)
+    print(quote)
 
-    zz = govtbond_config_to_json()
-    print(zz)
+    # zz = govtbond_config_to_json()
+    # print(zz)
