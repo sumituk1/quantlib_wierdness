@@ -23,8 +23,10 @@ pipelines:
 definitions:
   services:
     zookeeper:
-      image: zookeeper:3.4
+      image: wurstmeister/zookeeper
     kafka:
-      image: ches/kafka
+      image: wurstmeister/kafka
+      environment:
+        KAFKA_ADVERTISED_HOST_NAME: "kafka"
 options:
   docker: true
