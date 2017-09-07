@@ -15,7 +15,8 @@ pipelines:
       - step:
           script:
             - docker login nexus.mosaicsmartdata.com:8083 -u $DOCKER_REPO_USERNAME -p $DOCKER_REPO_PASSWORD
-            - bash msx.sh pyb_skip_tests
+            - pyb install_dependencies
+            - pyb clean publish
           services:
             - zookeeper
             - kafka
