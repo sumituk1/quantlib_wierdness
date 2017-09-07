@@ -16,5 +16,14 @@ pipelines:
           script:
             - docker login nexus.mosaicsmartdata.com:8083 -u $DOCKER_REPO_USERNAME -p $DOCKER_REPO_PASSWORD
             - bash msx.sh pyb_skip_tests
+          services:
+            - zookeeper
+            - kafka
+definitions:
+  services:
+    zookeeper:
+      image: zookeeper:3.4
+    kafka:
+      image: ches/kafka
 options:
   docker: true
