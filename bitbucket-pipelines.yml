@@ -1,5 +1,5 @@
 image:
-  name: nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-docker:latest
+  name: nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-docker
   username: $DOCKER_REPO_USERNAME
   password: $DOCKER_REPO_PASSWORD
   email: james@mosaicsmartdata.com
