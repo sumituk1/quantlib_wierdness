@@ -9,10 +9,12 @@ pipelines:
       - step:
           script:
             - docker login nexus.mosaicsmartdata.com:8083 -u $DOCKER_REPO_USERNAME -p $DOCKER_REPO_PASSWORD
+            - bash msx.sh pyb_skip_tests
   branches:
     master:
       - step:
           script:
             - docker login nexus.mosaicsmartdata.com:8083 -u $DOCKER_REPO_USERNAME -p $DOCKER_REPO_PASSWORD
+            - bash msx.sh pyb_skip_tests
 options:
   docker: true
