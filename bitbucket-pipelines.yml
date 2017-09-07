@@ -1,12 +1,32 @@
-# This is a sample build configuration for all languages.
-# Check our guides at https://confluence.atlassian.com/x/5Q4SMw for more examples.
-# Only use spaces to indent your .yml configuration.
-# -----
-# You can specify a custom docker image from Docker Hub as your build environment.
-# image: docker-image:tag
-
+image:
+  name: nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-docker
+  username: $DOCKER_REPO_USERNAME
+  password: $DOCKER_REPO_PASSWORD
+  email: james@mosaicsmartdata.com
 pipelines:
-  default:
-    - step:
-        script:
-          - echo "Everything is awesome!"
+  custom:
+    clean-build:
+      - step:
+          script:
+            - docker login nexus.mosaicsmartdata.com:8083 -u $DOCKER_REPO_USERNAME -p $DOCKER_REPO_PASSWORD
+            - bash msx.sh pyb_skip_tests
+  branches:
+    master:
+      - step:
+          script:
+            - docker login nexus.mosaicsmartdata.com:8083 -u $DOCKER_REPO_USERNAME -p $DOCKER_REPO_PASSWORD
+            - pyb install_dependencies
+            - pyb clean publish
+          services:
+            - zookeeper
+            - kafka
+definitions:
+  services:
+    zookeeper:
+      image: wurstmeister/zookeeper
+    kafka:
+      image: wurstmeister/kafka
+      environment:
+        KAFKA_ADVERTISED_HOST_NAME: "kafka"
+options:
+  docker: true
