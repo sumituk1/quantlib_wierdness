@@ -122,19 +122,19 @@ def mktmsg_to_json(markout_message):
     # --------------------------------
     lst_markoutPrice = []
     attribs = [a for a in dir(markout_message) if not a.startswith('__') and 'markout' in a]
-    mk_type = attribs[0][:-8]
+    mk_type = attribs[-1] # pick up the price_markout
     mults = markout_message.trade.markout_mults()
-    if mk_type in mults:
-        for key, value in mults.items():
-            if key == 'bps':
-                val = markout_message.price_markout * value \
-                    if markout_message.price_markout is not None else np.nan
-                lst_markoutPrice.append({'priceType': 'UNHEDGED_INITIAL_EDGE', 'value': val})
-                # out['legMarkout']['markoutPrice'].append({'value' : val})
-            if key == 'cents':
-                val = markout_message.price_markout * value \
-                    if markout_message.price_markout is not None else np.nan
-                lst_markoutPrice.append({'priceType': 'UNHEDGED_SPREAD_PRICE', 'value': val})
+    # if mk_type in mults: # 08/09/17: Sumit: Not sure why I was doing this check!!
+    for key, value in mults.items():
+        if key == 'bps':
+            val = markout_message.price_markout * value \
+                if markout_message.price_markout is not None else np.nan
+            lst_markoutPrice.append({'priceType': 'UNHEDGED_INITIAL_EDGE', 'value': val})
+            # out['legMarkout']['markoutPrice'].append({'value' : val})
+        if key == 'cents':
+            val = markout_message.price_markout * value \
+                if markout_message.price_markout is not None else np.nan
+            lst_markoutPrice.append({'priceType': 'UNHEDGED_SPREAD_PRICE', 'value': val})
     # set the HEDGED price/cents/bps
     # --------------------------------
     val = markout_message.hedged_bps if markout_message.hedged_bps is not None else np.nan
