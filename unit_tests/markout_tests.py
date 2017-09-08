@@ -538,7 +538,7 @@ class TestMarkouts(TestCase):
                 output_list = self.run_graph_2(quote_trade_list)
 
                 # do assertions
-                if output_list[0].find("DE10YT_OTR_111")  != -1:
+                if output_list[0].find("DE10YT_OTR_111")!= -1:
                     if output_list[0].find("\"timeUnit\": \"SECONDS\",\"value\": -900") != -1:
                         ## pre 900 secs markout in bps
                         x = output_list[0][output_list[0].find("UNHEDGED_INITIAL_EDGE") + 33:

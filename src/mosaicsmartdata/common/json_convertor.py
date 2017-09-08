@@ -138,10 +138,12 @@ def mktmsg_to_json(markout_message):
     # set the HEDGED price/cents/bps
     # --------------------------------
     val = markout_message.hedged_bps if markout_message.hedged_bps is not None else np.nan
-    lst_markoutPrice.append({'priceType': 'HEDGED_INITIAL_EDGE', 'value': val})
+    if val is not np.nan:
+        lst_markoutPrice.append({'priceType': 'HEDGED_INITIAL_EDGE', 'value': val})
 
     val = markout_message.hedged_cents if markout_message.hedged_cents is not None else np.nan
-    lst_markoutPrice.append({'priceType': 'HEDGED_SPREAD_PRICE', 'value': val})
+    if val is not np.nan:
+        lst_markoutPrice.append({'priceType': 'HEDGED_SPREAD_PRICE', 'value': val})
 
     out['legMarkout'].append({'evaluatedPricingSource': 'INTERNAL',
                               "markoutPeriod": dict_markoutPeriod,
