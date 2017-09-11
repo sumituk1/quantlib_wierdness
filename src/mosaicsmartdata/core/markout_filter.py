@@ -1,4 +1,4 @@
-bps_tol = 4.0
+bps_tol = 3.0
 
 
 def filter_markouts(mkmsg):
