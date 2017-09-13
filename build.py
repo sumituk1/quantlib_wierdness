@@ -27,3 +27,21 @@ def initialize(project):
 
     # without this, pybuilder only copies over *.py files
     project.include_directory('mosaicsmartdata/configuration', ['*.csv'])
+
+@init(environments='test')
+def set_properties_for_test(project):
+    from aiostreams.config import QCConfigProvider
+    QCConfigProvider().kafka_broker = 'kafka:9092'
+
+    #project.version = '%s-%s' % (project.version, os.environ.get('BUILD_NUMBER', 0))
+    # project.default_task = ['install_dependencies', 'package', 'verify']
+    #project.set_property('install_dependencies_use_mirrors', False)
+    #project.get_property('distutils_commands').append('bdist_rpm')
+    #project.set_property('teamcity_output', True)
+
+# invoke this with pyb -E bitbucket
+@init(environments='bitbucket')
+def set_properties_for_test(project):
+    from aiostreams.config import QCConfigProvider
+    QCConfigProvider().kafka_broker = 'localhost:9092'
+    
