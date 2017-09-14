@@ -55,7 +55,7 @@ class TestCommandLine(TestCase):
         args.loglevel = 'INFO'
         args.id = 'Unhedgded_bond_markouts_'
         args.persist_topic = None
-        args.kafka_broker = 'kafka'
+        args.kafka_broker = None
         args.input_topics = quotes_topic + ',' + trades_topic
         args.output_topic = output_topic
         args.test_mode = True # that makes the function time out after 500ms, rather than waiting for looong time for inputs

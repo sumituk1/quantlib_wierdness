@@ -1,9 +1,10 @@
 from pybuilder.core import use_plugin, init
 import inspect, os, sys
 
-#my_location = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-#sys.path.append(my_location)
-#sys.path.append(my_location + '/../quant_container')
+# Don't delete these 3 lines: I comment them in to run pyb locally
+# my_location = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# sys.path.append(my_location)
+# sys.path.append(my_location + '/../quant_container/src')
 
 use_plugin("python.core")
 use_plugin("python.unittest")
