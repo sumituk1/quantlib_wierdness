@@ -24,6 +24,7 @@ from mosaicsmartdata.core.markout_basket_builder import *
 from mosaicsmartdata.core.pca_risk import *
 from mosaicsmartdata.common.json_convertor import *
 import os, inspect
+from aiostreams.config import QCConfigProvider
 from aiostreams.main import main_function
 thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
 os.chdir(thisfiledir)
@@ -407,6 +408,9 @@ class TestMarkouts(TestCase):
         logging.getLogger().info("test")
         # Create a singleton configurator
         configurator = Configurator('config.csv')
+        qc_config = QCConfigProvider()
+        old_persist_topic = qc_config.persist_kafka_topic
+        qc_config.persist_kafka_topic = 'test_topic_' + str(random.randint(1, 100000))
         #try:
         with ExceptionLoggingContext():
             # load the trade and quote data and merge
@@ -465,6 +469,11 @@ class TestMarkouts(TestCase):
             output_list = graph.sink
             print('inital run completed')
 
+        async def sleep_a_bit(x):
+            await asyncio.sleep(x)
+
+        #run(sleep_a_bit(5)) # to get Kafka time to get up to date? To fix an intermittent bug
+
         with ExceptionLoggingContext():
             print('starting load attempt')
             # run(asyncio.sleep(1)) # so Kafka has time to propagate
@@ -473,8 +482,8 @@ class TestMarkouts(TestCase):
             run(loaded)
             #print(loaded.sink)
             self.assertEqual(graph.sink, loaded.sink)
-
-    # test NaN
+        qc_config.persist_kafka_topic = old_persist_topic
+        # test NaN
     def test_case_7(self, plotFigure=False):
         t0 = time.time()
         tolerance = 5 * 1e-2

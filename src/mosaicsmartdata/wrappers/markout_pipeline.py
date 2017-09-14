@@ -44,7 +44,7 @@ def pipeline_fun_unhedged(names_only=False,
 
         graph_2 = graph_1 | op.flat_map_by_group(lambda x: (x.trade_id, x.dt), PackageBuilder()) \
                  | op.map(aggregate_multi_leg_markouts) | op.map_by_group(lambda x: x.package_id, AllMarkoutFilter()) \
-                 | op.map(domain_to_json)
+                 | op.flatten() | op.map(domain_to_json)
 
         graph_3 = graph_2  > AsyncKafkaPublisher(output_topic, value_serializer = lambda x: x.encode('utf-8'))
 
