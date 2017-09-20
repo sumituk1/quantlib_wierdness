@@ -78,17 +78,17 @@ if __name__ == "__main__":
 
     # =============================== input ===================================================================
     # 1. Creating a Fixed Coupon Bond Corp.....
-    issueDate = dt.datetime(2014, 7, 25)  # -> python datetime
-    maturityDate = dt.datetime(2020, 7, 27)  # -> python datetime
+    issueDate = dt.datetime(2017, 2, 15)  # -> python datetime
+    maturityDate = dt.datetime(2047, 2, 15)  # -> python datetime
     frequency = Frequency.SEMI  # -> Coupon Frequency
-    holidayCities = HolidayCities.EUR  # -> Set the calendar
+    holidayCities = HolidayCities.USD  # -> Set the calendar
     daycount = DayCountConv.ACT_ACT  # -> Set the dayCount
     # businessConvention = ql.Unadjusted
     dateGeneration = ql.DateGeneration.Backward
     # monthEnd = False
-    coupon = 0.7
-    price = 101.962
-    settleDate = dt.datetime(2017, 2, 10)
+    coupon = 3
+    price = 103.8516
+    settleDate = dt.datetime(2017, 8, 15)
 
     # next coupon date (This is needed especially when there is a big short stub)
     nextCouponDate = bond.getNextCouponDate(issue_date=issueDate,

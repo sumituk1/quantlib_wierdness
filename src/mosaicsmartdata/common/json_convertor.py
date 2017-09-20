@@ -65,7 +65,7 @@ def json_to_trade(json_message):
                           duration=float(request.bondTrade.modifiedDuration),
                           maturity_date=dt.datetime.strptime(request.bondTrade.maturityDate, "%Y.%m.%d"),
                           coupon=float(float(request.bondTrade.coupon)),
-                          holidayCities=HolidayCities.convert_holidayCities_str(request.bondTrade.holidayCalendar),
+                          holidayCities=request.bondTrade.holidayCalendar, #HolidayCities.convert_holidayCities_str(request.bondTrade.holidayCalendar),
                           coupon_frequency=Frequency.convertFrequencyStr(request.bondTrade.couponFrequency),
                           day_count=DayCountConv.convertDayCountStr(request.bondTrade.dayCount),
                           issue_date=dt.datetime.strptime(request.bondTrade.issueDate, "%Y.%m.%d"),

@@ -1,5 +1,8 @@
 #from mosaicsmartdata.core.instrument import TenorTuple
 from datetime import timedelta
+from QuantLib import *
+from common.quantlib.bond.fixed_bond import *
+from mosaicsmartdata.common.constants import *
 
 class DateCalculatorBorg:
     _shared = {}
@@ -12,19 +15,32 @@ class DateCalculator(DateCalculatorBorg):
         super().__init__()
         self.intervals = set()
 
-    def date_add(self, today, interval, holiday_cities = None):
-        # TODO: call quantlib wrappers here instead
+    def date_add(self, today, interval, holiday_cities = HolidayCities.NYC):
+        calendar = HolidayCities.convert_holidayCities_str(holiday_cities)
+        ql_today = pydate_to_qldate(today)
+        end_date = None
+        if not calendar.isBusinessDay(ql_today):
+            ql_today = calendar.adjust(ql_today, ModifiedFollowing)
         if interval[-1].lower() == 'b': # really want to return the next BUSINESS DAY
-            days = float(interval[:-1])
+            if float(interval[:-1]) == 0.0:
+                # period = Period(1, Days)
+                end_date = ql_today
+            else:
+                period = Period(int(interval[:-1]), Days)
+                end_date = calendar.advance(ql_today, period)
+            # days = float(interval[:-1])
         elif interval[-1].lower() =='m':
-            days = 30*float(interval[:-1])
+            period = Period(int(interval[:-1]), Months)
+            end_date = calendar.advance(ql_today, period)
         elif interval[-1].lower() =='w':
-            days = 7*float(interval[:-1])
+            period = Period(int(interval[:-1]), Weeks)
+            end_date = calendar.advance(ql_today, period)
         elif interval[-1].lower() == 'y':
-            days = 365* float(interval[:-1])
+            period = Period(int(interval[:-1]), Years)
+            end_date = calendar.advance(ql_today, period)
 
-        delta = timedelta(days=days)
-        return today + delta
+        # delta = timedelta(days=days)
+        return qldate_to_pydate(end_date)
 
         # self.intervals.add(interval)
         # print(self.intervals)
