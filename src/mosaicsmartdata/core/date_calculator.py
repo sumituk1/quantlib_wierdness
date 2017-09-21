@@ -1,7 +1,7 @@
 #from mosaicsmartdata.core.instrument import TenorTuple
 from datetime import timedelta
 from QuantLib import *
-from common.quantlib.bond.fixed_bond import *
+from mosaicsmartdata.common.quantlib.bond.fixed_bond import *
 from mosaicsmartdata.common.constants import *
 
 class DateCalculatorBorg:
