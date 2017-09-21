@@ -273,8 +273,61 @@ class TestMarkouts(TestCase):
         trade_2 = json_to_domain(json)
         self.assertEqual(trade, trade_2)
 
-    # check the new json_to_domain single function for Quote
+    # test case to check parsing of historical Bond trade message
     def test_case_8(self):
+        json_message = '{\
+                          "bondTrade": {\
+                            "negotiationId": "123456789",\
+                            "orderId": "123456789::venue::date::DE10YT_OTR_111::BUY",\
+                            "packageId": "123456789::venue::date",\
+                            "productClass": "GovtBond",\
+                            "productClass1": "DE10YT",\
+                            "sym": "DE10YT=RR",\
+                            "tenor": 30,\
+                            "quantity": 114.235,\
+                            "tradedPx": 1.5,\
+                            "modifiedDuration": 18,\
+                            "side": "ASK",\
+                            "quantityDv01": 18,\
+                            "issueOldness": 1,\
+                            "timestamp": "2017.01.16D14:05:00.600000000",\
+                            "tradeDate": "2017.01.16",\
+                            "settlementDate": "2017.01.18",\
+                            "holidayCalendar": "NYC",\
+                            "spotSettlementDate": "2017.01.18",\
+                            "venue": "BBGUST",\
+                            "ccy": "USD",\
+                            "countryOfIssue": "US",\
+                            "dayCount": "ACT\/ACT",\
+                            "issueDate": "2016.10.31",\
+                            "coupon": 1.2,\
+                            "couponFrequency": "ANNUAL",\
+                            "maturityDate": "2047.01.18",\
+                            "midPrices": [\
+                              {\
+                                "timestamp": 1485941760000,\
+                                "entryType": "MID",\
+                                "entryPx": 1.11111\
+                              },\
+                              {\
+                                "timestamp": 1485991760000,\
+                                "entryType": "MID",\
+                                "entryPx": 1.22222\
+                              }\
+                            ]\
+                          }\
+                        }'
+        trade, quote_list = json_to_domain(json_message=json_message, historical=True)
+        # check if 2 mid prices are extracted
+        self.assertEqual(len(quote_list), 2)
+        self.assertAlmostEqual(quote_list[0].mid, 1.11111, places=4)
+        self.assertAlmostEqual(quote_list[1].mid, 1.22222, places=4)
+        self.assertEqual(trade.traded_px, 1.5)
+        self.assertEqual(trade.trade_date, dt.datetime(2017,1,16))
+        self.assertEqual(trade.trade_settle_date, dt.datetime(2017, 1, 18))
+
+    # check the new json_to_domain single function for Quote
+    def test_case_9(self):
         # test case to check the new  json_to_domain function
         json_message = '{\
             "marketDataSnapshotFullRefreshList": [\

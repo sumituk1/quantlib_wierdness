@@ -25,6 +25,7 @@ from mosaicsmartdata.core.pca_risk import *
 from mosaicsmartdata.common.json_convertor import *
 import os, inspect
 from aiostreams.config import QCConfigProvider
+from mosaicsmartdata.core.historical_markouts import *
 from aiostreams.main import main_function
 thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
 os.chdir(thisfiledir)
@@ -69,7 +70,20 @@ class TestMarkouts(TestCase):
         quote_trade_list.append(trades_list)
         return quote_trade_list
 
-    # create the graph
+    # create graph for historical
+    def create_graph_historical(self, trade_quote_tuple):
+        output_list = []
+        # run graph
+        # t0 = time.time()
+        # joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
+        graph_1 = [trade_quote_tuple] | op.map(historical_pca_risk)| op.flatten()|op.map(historical_markouts) | op.flatten()
+        graph_2 = graph_1 | op.map_by_group(lambda x: (x.trade_id, x.dt), PackageBuilder()) \
+                  | op.flatten() | op.map(aggregate_multi_leg_markouts) | \
+                  op.map_by_group(lambda x: x.package_id, AllMarkoutFilter()) | op.flatten() > output_list
+
+        return graph_2, output_list
+
+    # create the graph dumps the output to a list
     def create_graph(self, quote_trade_list):
         output_list = []
         # run graph
@@ -83,7 +97,7 @@ class TestMarkouts(TestCase):
 
         return graph_2,output_list
 
-    # create the graph
+    # create the graph which calls domain_to_json
     def create_graph_2(self, quote_trade_list):
         output_list = []
         # run graph
@@ -106,6 +120,12 @@ class TestMarkouts(TestCase):
     # runs the graph and returns the output_list
     def run_graph(self, quote_trade_list):
         graph,output_list = self.create_graph(quote_trade_list)
+        run(graph)
+        return output_list
+
+    # runs the graph and returns the output_list
+    def run_graph_historical(self, trade_quote_list_tpl):
+        graph, output_list = self.create_graph_historical(trade_quote_list_tpl)
         run(graph)
         return output_list
 
@@ -484,6 +504,7 @@ class TestMarkouts(TestCase):
             self.assertEqual(graph.sink, loaded.sink)
         qc_config.persist_kafka_topic = old_persist_topic
         # test NaN
+
     def test_case_7(self, plotFigure=False):
         t0 = time.time()
         tolerance = 5 * 1e-2
@@ -622,6 +643,124 @@ class TestMarkouts(TestCase):
 
         # except ValueError:# Exception:
         #     raise Exception
+
+    # Test case for Historical backfill pipeline
+    def test_case_9(self):
+        tolerance = 5 * 1e-2
+        thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+        os.chdir(thisfiledir)
+
+        # Load the configuration file
+        configurator = Configurator('config.csv')
+
+        json_message = '{\
+            "bondTrade": {\
+              "negotiationId": "DE10YT_OTR_111",\
+              "orderId": "DE10YT_OTR_111::venue::date::DE10YT_OTR_111::BUY",\
+              "packageId": "DE10YT_OTR_111::venue::date",\
+              "productClass": "GovtBond",\
+              "productClass1": "DE10YT",\
+              "sym": "DE10YT=RR",\
+              "tenor": 30,\
+              "quantity": 400000000,\
+              "tradedPx": 99.243,\
+              "modifiedDuration": 18,\
+              "side": "ASK",\
+              "quantityDv01": 720000,\
+              "issueOldness": 1,\
+              "timestamp": "2017.01.16D14:05:00.600000000",\
+              "tradeDate": "2017.01.16",\
+              "settlementDate": "2017.01.18",\
+              "holidayCalendar": "EUR",\
+              "spotSettlementDate": "2017.01.18",\
+              "venue": "BBGUST",\
+              "ccy": "EUR",\
+              "countryOfIssue": "DE",\
+              "dayCount": "ACT\/ACT",\
+              "issueDate": "2016.10.31",\
+              "coupon": 2,\
+              "couponFrequency": "ANNUAL",\
+              "maturityDate": "2027.01.16",\
+              "midPrices": [\
+                {\
+                  "timestamp": 1484574600000,\
+                  "entryType": "MID",\
+                  "entryPx": 99.27\
+                },\
+                {\
+                    "timestamp": 1484575440000,\
+                    "entryType": "MID",\
+                    "entryPx": 99.239\
+                  },\
+                {\
+                  "timestamp": 1484575500000,\
+                  "entryType": "MID",\
+                  "entryPx": 99.243\
+                },\
+                {\
+                    "timestamp": 1484575560000,\
+                    "entryType": "MID",\
+                    "entryPx": 99.258\
+                },\
+                {\
+                    "timestamp": 1484575800000,\
+                    "entryType": "MID",\
+                    "entryPx": 99.267\
+                },\
+                {\
+                    "timestamp": 1484579100000,\
+                    "entryType": "MID",\
+                    "entryPx": 99.346\
+                },\
+                {\
+                    "timestamp": 1484584200000,\
+                    "entryType": "MID",\
+                    "entryPx": 99.256\
+                },\
+                {\
+                    "timestamp": 1484670600000,\
+                    "entryType": "MID",\
+                    "entryPx": 99.395\
+                },\
+                {\
+                    "timestamp": 1484757000000,\
+                    "entryType": "MID",\
+                    "entryPx": 99.038\
+                }\
+              ]\
+            }\
+          }'
+        trade, quote_list = json_to_domain(json_message=json_message, historical=True)
+        # run the graph
+        output_list = self.run_graph_historical(tuple((trade, quote_list)))
+
+        # do assertions
+        self.assertEquals(len(set([(lambda x: x.trade_id)(x) for x in output_list])), 1, msg=None)
+        for mk_msg in output_list:
+            if mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '0':
+                self.assertEquals(np.abs(mk_msg.bps_markout), 0.0, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '-900':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.15)) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '-60':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - 0.022) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '60':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0833)) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '300':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.1333)) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == '3600':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.572)) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB0':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.0722)) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == "DE10YT_OTR_111" and mk_msg.dt == 'COB1':
+                self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.844)) / mk_msg.bps_markout),
+                                     tolerance, msg=None)
+
 
 if __name__ == '__main__':
     #    unittest.main()

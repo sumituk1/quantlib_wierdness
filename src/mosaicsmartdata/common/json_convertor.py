@@ -46,6 +46,8 @@ def parse_iso_timestamp(timestamp):
 
 # Convert json message to FixedIncomeTrade object
 def json_to_trade(json_message):
+    # if request is None:
+    #     request = json.loads(json_message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
     request = json.loads(json_message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
     tr = FixedIncomeBondTrade(trade_id=request.bondTrade.negotiationId,
                           sym=request.bondTrade.sym,
@@ -154,27 +156,39 @@ def mktmsg_to_json(markout_message):
 
 
 # Create a Quote object based on incoming json message
-def json_to_quote(json_message):
+def json_to_quote(json_message, historical=False):
     request = json.loads(json_message, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
-    # calculate a vwap of bids
-    # zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if str.upper(x.entryType) == "BID"]
-    zz = [[float(x.entrySize), float(x.entryPx)] for x in
-          request.marketDataSnapshotFullRefreshList[0].marketDataEntryList if str.upper(x.entryType) == "BID"]
+    if not historical:
+        # calculate a vwap of bids
+        # zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if str.upper(x.entryType) == "BID"]
+        zz = [[float(x.entrySize), float(x.entryPx)] for x in
+              request.marketDataSnapshotFullRefreshList[0].marketDataEntryList if str.upper(x.entryType) == "BID"]
 
-    bid_close = sum([x[0] * x[1] for x in zz]) / sum([x[0] for x in zz])
-    # calculate a vwap of ask
-    # zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if
-    #       str.upper(x.entryType) == "OFFER"]
-    zz = [[float(x.entrySize), float(x.entryPx)] for x in
-          request.marketDataSnapshotFullRefreshList[0].marketDataEntryList if str.upper(x.entryType) == "OFFER"]
+        bid_close = sum([x[0] * x[1] for x in zz]) / sum([x[0] for x in zz])
+        # calculate a vwap of ask
+        # zz = [[float(x.entrySize), float(x.entryPx)] for x in request[0][0].marketDataEntryList if
+        #       str.upper(x.entryType) == "OFFER"]
+        zz = [[float(x.entrySize), float(x.entryPx)] for x in
+              request.marketDataSnapshotFullRefreshList[0].marketDataEntryList if str.upper(x.entryType) == "OFFER"]
 
-    ask_close = sum([x[0] * x[1] for x in zz]) / sum([x[0] for x in zz])
-    quote = Quote(sym=request.marketDataSnapshotFullRefreshList[0].symbol,
-                  ask=ask_close,
-                  timestamp=dt.datetime.fromtimestamp(request.marketDataSnapshotFullRefreshList[0].timestamp / 1000),
-                  bid=bid_close)
-    return quote
+        ask_close = sum([x[0] * x[1] for x in zz]) / sum([x[0] for x in zz])
+        quote = Quote(sym=request.marketDataSnapshotFullRefreshList[0].symbol,
+                      ask=ask_close,
+                      timestamp=dt.datetime.fromtimestamp(request.marketDataSnapshotFullRefreshList[0].timestamp / 1000),
+                      bid=bid_close)
+        return quote
+    else:
+        ## this is being run in historical mode.
+        ## Extract the Quest in a list object
+        quote_list = []
+        for quote in request.bondTrade.midPrices:
+            quote_list.append(Quote(sym=request.bondTrade.sym,
+                                    ask=quote.entryPx + 0.0001,
+                                    timestamp=dt.datetime.fromtimestamp(
+                                        quote.timestamp / 1000),
+                                    bid=quote.entryPx - 0.0001))
 
+        return quote_list
 
 # Converts the govtbond config section to a json string
 def govtbond_config_to_json():
@@ -271,13 +285,20 @@ def govtbond_config_to_json():
     return zz
 
 # takes in a json message and accordingly converts to the relevant domain object
-def json_to_domain(json_message):
-    if "productClass" in json_message:
-        # convert tp Trade object
-        return json_to_trade(json_message=json_message)
+def json_to_domain(json_message, historical=False):
+    if historical:
+        # split into trade and quote
+        tr = json_to_trade(json_message=json_message)#, request=request)
+        request = json.loads(json_message, object_hook= lambda d: namedtuple('X', d.keys())(*d.values()))
+        quote_list = json_to_quote(json_message=json_message , historical=True)
+        return tuple((tr, quote_list))
     else:
-        # convert to Quote object
-        return json_to_quote(json_message=json_message)
+        if "productClass" in json_message:
+            # convert tp Trade object
+            return json_to_trade(json_message=json_message)
+        else:
+            # convert to Quote object
+            return json_to_quote(json_message=json_message)
 
 def domain_to_json(obj):
     res = dict()
@@ -387,133 +408,176 @@ def domain_to_json(obj):
 
 
 if __name__ == "__main__":
-    json_message = '{"bondTrade": {"negotiationId": "123456789", "orderId": "123456789::venue::date::DE10YT_OTR_111::BUY",\
-                   "packageId": "123456789::venue::date", "productClass": "GovtBond", "productClass1": "DE10YT",\
-                   "sym": "DE10YT=RR", "tenor": 30, "quantity": 114.235, "tradedPx": 1.5, "modifiedDuration": 18.0,\
-                   "side": "Ask", "quantityDv01": 18.0, "issueOldness": 1,' \
-                   '"timestamp": "2017.01.16D14:05:00.600000000",\
-                   "tradeDate": "2017.01.16", "settlementDate": "2017.01.24", "holidayCalendar": "NYC",\
-                   "spotSettlementDate": "2017.01.18",\
-                   "ccy": "USD",\
-                   "countryOfIssue": "US",\
-                   "dayCount": "ACT/ACT",\
-                   "issueDate": "2016.10.31",\
-                   "coupon": 1.2,\
-                   "couponFrequency": "ANNUAL",\
-                   "maturityDate": "2047.01.18","venue": "BBGUST"}}'
+    # json_message = '{"bondTrade": {"negotiationId": "123456789", "orderId": "123456789::venue::date::DE10YT_OTR_111::BUY",\
+    #                "packageId": "123456789::venue::date", "productClass": "GovtBond", "productClass1": "DE10YT",\
+    #                "sym": "DE10YT=RR", "tenor": 30, "quantity": 114.235, "tradedPx": 1.5, "modifiedDuration": 18.0,\
+    #                "side": "Ask", "quantityDv01": 18.0, "issueOldness": 1,' \
+    #                '"timestamp": "2017.01.16D14:05:00.600000000",\
+    #                "tradeDate": "2017.01.16", "settlementDate": "2017.01.24", "holidayCalendar": "NYC",\
+    #                "spotSettlementDate": "2017.01.18",\
+    #                "ccy": "USD",\
+    #                "countryOfIssue": "US",\
+    #                "dayCount": "ACT/ACT",\
+    #                "issueDate": "2016.10.31",\
+    #                "coupon": 1.2,\
+    #                "couponFrequency": "ANNUAL",\
+    #                "maturityDate": "2047.01.18","venue": "BBGUST"}}'
+    #
+    # # print("test")
+    # str_1 = json_to_trade(json_message=json_message)
+    # str_2 = json_to_domain(json_message=json_message)
+    # msg = '{\
+    #   "marketDataSnapshotFullRefreshList": [\
+    #     {\
+    #       "securityId": "CUSIP",\
+    #       "symbol": "912810RB6",\
+    #       "timestamp": 1485941760000,\
+    #       "marketDataEntryList": [\
+    #         {\
+    #           "entryId": "entryId101",\
+    #           "entryType": "BID",\
+    #           "entryPx": "1.1243",\
+    #           "currencyCode": "USD",\
+    #           "settlementCurrencyCode": "USD",\
+    #           "entrySize": "1000000",\
+    #           "quoteEntryId": "quoteEntryId101"\
+    #         },\
+    #         {\
+    #           "entryId": "entryId102",\
+    #           "entryType": "MID",\
+    #           "entryPx": "1.12345",\
+    #           "currencyCode": "USD",\
+    #           "settlementCurrencyCode": "USD",\
+    #           "entrySize": "1000000",\
+    #           "quoteEntryId": "quoteEntryId102"\
+    #         },\
+    #         {\
+    #           "entryId": "entryId103",\
+    #           "entryType": "OFFER",\
+    #           "entryPx": "1.1246",\
+    #           "currencyCode": "USD",\
+    #           "settlementCurrencyCode": "USD",\
+    #           "entrySize": "1000000",\
+    #           "quoteEntryId": "quoteEntryId103"\
+    #         },\
+    #         {\
+    #           "entryId": "entryId201",\
+    #           "entryType": "BID",\
+    #           "entryPx": "1.12445",\
+    #           "currencyCode": "USD",\
+    #           "settlementCurrencyCode": "USD",\
+    #           "entrySize": "500000",\
+    #           "quoteEntryId": "quoteEntryId201"\
+    #         },\
+    #         {\
+    #           "entryId": "entryId202",\
+    #           "entryType": "MID",\
+    #           "entryPx": "1.12345",\
+    #           "currencyCode": "USD",\
+    #           "settlementCurrencyCode": "USD",\
+    #           "entrySize": "500000",\
+    #           "quoteEntryId": "quoteEntryId202"\
+    #         },\
+    #         {\
+    #           "entryId": "entryId203",\
+    #           "entryType": "OFFER",\
+    #           "entryPx": "1.12445",\
+    #           "currencyCode": "USD",\
+    #           "settlementCurrencyCode": "USD",\
+    #           "entrySize": "500000",\
+    #           "quoteEntryId": "quoteEntryId203"\
+    #         }\
+    #       ]\
+    #     }\
+    #   ]\
+    # }'
+    #
+    # # "orderId": "0", \
+    # msg_2 = '{\
+    #           "orderId": "0", \
+    #           "marketDataSnapshotFullRefreshList": [\
+    #             {\
+    #               "key": "CUSIP1504582201933",\
+    #               "securityId": "CUSIP",\
+    #               "symbol": "912796KN7",\
+    #               "timestamp": 1504582201933,\
+    #               "marketDataEntryList": [\
+    #                 {\
+    #                   "entryId": "pxPre2hEntry_bid",\
+    #                   "entryType": "BID",\
+    #                   "entryPx": "92.71875",\
+    #                   "currencyCode": "USD",\
+    #                   "settlementCurrencyCode": "USD",\
+    #                   "entrySize": "10000000",\
+    #                   "quoteEntryId": "quoteEntryId"\
+    #                 },\
+    #                 {\
+    #                   "entryId": "pxPre2hEntry_mid",\
+    #                   "entryType": "MID",\
+    #                   "entryPx": "92.71875",\
+    #                   "currencyCode": "USD",\
+    #                   "settlementCurrencyCode": "USD",\
+    #                   "entrySize": "10000000",\
+    #                   "quoteEntryId": "quoteEntryId"\
+    #                 },\
+    #                 {\
+    #                   "entryId": "pxPre2hEntry_ask",\
+    #                   "entryType": "OFFER",\
+    #                   "entryPx": "92.71875",\
+    #                   "currencyCode": "USD",\
+    #                   "settlementCurrencyCode": "USD",\
+    #                   "entrySize": "10000000",\
+    #                   "quoteEntryId": "quoteEntryId"\
+    #                 }\
+    #               ]\
+    #             }\
+    #           ]\
+    #         }'
+    # quote = json_to_quote(msg_2)
+    # print(quote)
 
-    # print("test")
-    str_1 = json_to_trade(json_message=json_message)
-    str_2 = json_to_domain(json_message=json_message)
-    msg = '{\
-      "marketDataSnapshotFullRefreshList": [\
-        {\
-          "securityId": "CUSIP",\
-          "symbol": "912810RB6",\
-          "timestamp": 1485941760000,\
-          "marketDataEntryList": [\
+    ## new historical message
+    json_message = '{\
+        "bondTrade": {\
+          "negotiationId": "123456789",\
+          "orderId": "123456789::venue::date::DE10YT_OTR_111::BUY",\
+          "packageId": "123456789::venue::date",\
+          "productClass": "GovtBond",\
+          "productClass1": "DE10YT",\
+          "sym": "DE10YT=RR",\
+          "tenor": 30,\
+          "quantity": 114.235,\
+          "tradedPx": 1.5,\
+          "modifiedDuration": 18,\
+          "side": "ASK",\
+          "quantityDv01": 18,\
+          "issueOldness": 1,\
+          "timestamp": "2017.01.16D14:05:00.600000000",\
+          "tradeDate": "2017.01.16",\
+          "settlementDate": "2017.01.18",\
+          "holidayCalendar": "NYC",\
+          "spotSettlementDate": "2017.01.18",\
+          "venue": "BBGUST",\
+          "ccy": "USD",\
+          "countryOfIssue": "US",\
+          "dayCount": "ACT\/ACT",\
+          "issueDate": "2016.10.31",\
+          "coupon": 1.2,\
+          "couponFrequency": "ANNUAL",\
+          "maturityDate": "2047.01.18",\
+          "midPrices": [\
             {\
-              "entryId": "entryId101",\
-              "entryType": "BID",\
-              "entryPx": "1.1243",\
-              "currencyCode": "USD",\
-              "settlementCurrencyCode": "USD",\
-              "entrySize": "1000000",\
-              "quoteEntryId": "quoteEntryId101"\
-            },\
-            {\
-              "entryId": "entryId102",\
+              "timestamp": 1485941760000,\
               "entryType": "MID",\
-              "entryPx": "1.12345",\
-              "currencyCode": "USD",\
-              "settlementCurrencyCode": "USD",\
-              "entrySize": "1000000",\
-              "quoteEntryId": "quoteEntryId102"\
+              "entryPx": 1.11111\
             },\
             {\
-              "entryId": "entryId103",\
-              "entryType": "OFFER",\
-              "entryPx": "1.1246",\
-              "currencyCode": "USD",\
-              "settlementCurrencyCode": "USD",\
-              "entrySize": "1000000",\
-              "quoteEntryId": "quoteEntryId103"\
-            },\
-            {\
-              "entryId": "entryId201",\
-              "entryType": "BID",\
-              "entryPx": "1.12445",\
-              "currencyCode": "USD",\
-              "settlementCurrencyCode": "USD",\
-              "entrySize": "500000",\
-              "quoteEntryId": "quoteEntryId201"\
-            },\
-            {\
-              "entryId": "entryId202",\
+              "timestamp": 1485991760000,\
               "entryType": "MID",\
-              "entryPx": "1.12345",\
-              "currencyCode": "USD",\
-              "settlementCurrencyCode": "USD",\
-              "entrySize": "500000",\
-              "quoteEntryId": "quoteEntryId202"\
-            },\
-            {\
-              "entryId": "entryId203",\
-              "entryType": "OFFER",\
-              "entryPx": "1.12445",\
-              "currencyCode": "USD",\
-              "settlementCurrencyCode": "USD",\
-              "entrySize": "500000",\
-              "quoteEntryId": "quoteEntryId203"\
+              "entryPx": 1.22222\
             }\
           ]\
         }\
-      ]\
-    }'
-
-    # "orderId": "0", \
-    msg_2 = '{\
-              "orderId": "0", \
-              "marketDataSnapshotFullRefreshList": [\
-                {\
-                  "key": "CUSIP1504582201933",\
-                  "securityId": "CUSIP",\
-                  "symbol": "912796KN7",\
-                  "timestamp": 1504582201933,\
-                  "marketDataEntryList": [\
-                    {\
-                      "entryId": "pxPre2hEntry_bid",\
-                      "entryType": "BID",\
-                      "entryPx": "92.71875",\
-                      "currencyCode": "USD",\
-                      "settlementCurrencyCode": "USD",\
-                      "entrySize": "10000000",\
-                      "quoteEntryId": "quoteEntryId"\
-                    },\
-                    {\
-                      "entryId": "pxPre2hEntry_mid",\
-                      "entryType": "MID",\
-                      "entryPx": "92.71875",\
-                      "currencyCode": "USD",\
-                      "settlementCurrencyCode": "USD",\
-                      "entrySize": "10000000",\
-                      "quoteEntryId": "quoteEntryId"\
-                    },\
-                    {\
-                      "entryId": "pxPre2hEntry_ask",\
-                      "entryType": "OFFER",\
-                      "entryPx": "92.71875",\
-                      "currencyCode": "USD",\
-                      "settlementCurrencyCode": "USD",\
-                      "entrySize": "10000000",\
-                      "quoteEntryId": "quoteEntryId"\
-                    }\
-                  ]\
-                }\
-              ]\
-            }'
-    quote = json_to_quote(msg_2)
-    print(quote)
-
-    # zz = govtbond_config_to_json()
+      }'
+    json_to_domain(json_message, historical=True)    # zz = govtbond_config_to_json()
     # print(zz)
