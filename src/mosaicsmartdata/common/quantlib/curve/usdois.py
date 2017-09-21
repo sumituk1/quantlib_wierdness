@@ -2,7 +2,6 @@ from QuantLib import *
 import datetime as dt
 import numpy as np
 from mosaicsmartdata.common.constants import BootStrapMethod
-from common.quantlib.bond import fixed_bond
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
 
 class USDOIS:

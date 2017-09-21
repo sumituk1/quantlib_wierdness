@@ -3,7 +3,7 @@ import datetime as dt
 import numpy as np
 from QuantLib import *
 
-from common.quantlib.bond import fixed_bond
+from mosaicsmartdata.common.quantlib.bond import fixed_bond
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
 from mosaicsmartdata.common.quantlib.curve.usdois import USDOIS
 
