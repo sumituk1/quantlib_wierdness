@@ -45,22 +45,39 @@ class sym_to_instrument:
                     self.instr_cache[(sym, today)] = spot_instr
                 else: # it must be an FX Swap, so get the other leg
                     if tenor == 'ON':
-                        other_date = date_calc.date_add(today,'0b') # next business day
-                        outright_tenor = 'O'
+                        o_date = date_calc.date_add(today,'0b') # next business day
+                        o_instr = FXForward(ccy=pair,
+                                            settle_date=o_date,
+                                            sym=sym,
+                                            tenor='O')
+                        t_date = date_calc.date_add(today,'1b')
+                        t_instr = FXForward(ccy=pair,
+                                            settle_date=t_date,
+                                            sym=sym,
+                                            tenor='T')
+                        legs = [o_instr, t_instr]
                     elif tenor == 'TN':
-                        other_date = date_calc.date_add(today,'1b')
-                        outright_tenor = 'T'
+                        t_date = date_calc.date_add(today,'1b')
+                        t_instr = FXForward(ccy=pair,
+                                            settle_date=t_date,
+                                            sym=sym,
+                                            tenor='T')
+                        legs = [t_instr, spot_instr]
                     else:
+                        if tenor == 'SN':
+                            tenor = '1b'
+                        if tenor == 'SW':
+                            tenor = '1w'
                         other_date = date_calc.date_add(spot_date, tenor)
                         outright_tenor = tenor
 
-                    other_instr = FXForward(ccy = pair, settle_date = other_date, sym = sym, tenor = outright_tenor)
-                    if tenor in ['ON','TN']:
-                        legs = [other_instr, spot_instr]
-                    else:
+                        other_instr = FXForward(ccy = pair,
+                                                settle_date = other_date,
+                                                sym = sym,
+                                                tenor = outright_tenor)
                         legs = [spot_instr, other_instr]
 
-                    self.instr_cache[(sym, today)] = FXSwap(legs, tenor=tenor)
+                    self.instr_cache[(sym, today)] = FXSwap(legs, tenor=tenor, sym=sym, ccy=pair)
             elif instr_type=='ois':
                 # only get SW or later here
                 if tenor == 'SW':
@@ -68,7 +85,7 @@ class sym_to_instrument:
                 else:
                     end_date = date_calc.date_add(spot_date, tenor)
 
-                my_instr = OIS(ccy=pair, spot_settle_date=spot_date, maturity_date=end_date)
+                my_instr = OIS(ccy=pair, spot_settle_date=spot_date, maturity_date=end_date, sym=sym)
 
                 self.instr_cache[(sym, today)] = my_instr
 

@@ -6,6 +6,7 @@ from QuantLib import *
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
 from mosaicsmartdata.common.quantlib.curve.usdois import USDOIS
+from mosaicsmartdata.common.quantlib.bond.fixed_bond import pydate_to_qldate
 
 ''' Class to contain a calibrated USD 3m libor curve with OIS discounting'''
 
@@ -133,14 +134,14 @@ def construct_OIS_curve(usd_ois_quotes):
     # create the OIS curve
     us_calendar = UnitedStates()
     valuation_date = [key for key in usd_ois_quotes][0][0]
-    usd_ois = USDOIS(fixed_bond.pydate_to_qldate(valuation_date),
+    usd_ois = USDOIS(pydate_to_qldate(valuation_date),
                      us_calendar)  # Pass in the Trade date- not the settle_date
     ois_rates = usd_ois_quotes
     usd_ois.create_ois_swaps(ois_rates)
     return usd_ois
 
 
-def get_rate(ois_curve, start_date, end_date, **kwargs):
+def get_rate(ois_curve, start_date, end_date, daycount = Actual360()):
     '''
     :param curve:
     :param start_date:
@@ -149,11 +150,11 @@ def get_rate(ois_curve, start_date, end_date, **kwargs):
     :return: a double: value of the rate implied by the curve between the two dates
     '''
     # c = ois_curve.ois_curve_c
-    return ois_curve.ois_curve_c.forwardRate(fixed_bond.pydate_to_qldate(start_date),
-                         fixed_bond.pydate_to_qldate(end_date),
-                         Actual360(), Simple).rate()*100
+    return ois_curve.ois_curve_c.forwardRate(pydate_to_qldate(start_date),
+                         pydate_to_qldate(end_date),
+                         daycount, Simple).rate()*100
 
-def discounting_factor(ois_curve, end_date):
+def discounting_factor(ois_curve, date_1, date_2 = None, one_pre_spot = False):
     '''
     Returns the discounting factor from the second date onto the first
     :param curve:
@@ -161,20 +162,62 @@ def discounting_factor(ois_curve, end_date):
     :param end_date:
     :return: discounting factor
     '''
-    return np.exp(-get_rate(ois_curve, ois_curve.valuationDate, end_date) *
-                            ois_curve.calendar.businessDaysBetween(ois_curve.valuationDate,
-                                                                   fixed_bond.pydate_to_qldate(end_date)) / 360)
+    if date_2 is None:
+        valuation_date = ois_curve.valuationDate
+        end_date = date_1
+    else:
+        valuation_date = date_1
+        end_date = date_2
+
+    end_date = pydate_to_qldate(end_date)
+    valuation_date = pydate_to_qldate(valuation_date)
+
+    if valuation_date > end_date:
+        if one_pre_spot: # use this flag to extend the USD OIS curve to 0 at pre-spot, as we only care about yield differential anyway
+            return 1.0
+        else: # at least make sure the dates are in proper order
+            end_date, valuation_date = valuation_date,end_date
+            invert = True
+    elif valuation_date == end_date:
+        return 1.0
+    else:
+        invert = False
+
+    dt = ois_curve.calendar.businessDaysBetween(valuation_date,end_date)/ 360
+    if dt<0:
+        pass
+    #print(valuation_date,end_date)
+    dr = get_rate(ois_curve, valuation_date, end_date)
+    #print('*** success!!! ***')
+    df =  np.exp(- dr * dt)
+
+    if invert:
+        df = 1/df
+
+    return df
 
 
-def curve_from_disc_factors(disc_factors, calendar = UnitedStates()):
+def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
     '''
     Constructs a discounting curve from a list of discount factors
     :param disc_factors: list of tuples (disc_factor, start_date, end_date)
     :param kwargs: Extra stuff like daycount conventions etc
     :return:
     '''
+
+    if calendar == None:
+        # TODO: guess calendar from currency?
+        calendar = UnitedStates()
     rates_dict = dict()
-    for disc_factor,start_date, end_date in disc_factors:
+    for disc_factor, start_date, end_date in disc_factors:
+        if start_date is None or end_date is None:
+            pass
+        try:
+            if start_date > end_date: # for ON, TN tenors
+                start_date, end_date = end_date,start_date
+                disc_factor = 1/disc_factor
+        except:
+            pass
         dt = calendar.businessDaysBetween(fixed_bond.pydate_to_qldate(start_date),
                                           fixed_bond.pydate_to_qldate(end_date)) / 360
         rates_dict[(start_date, end_date)] = -(1 / dt) * np.log(disc_factor)

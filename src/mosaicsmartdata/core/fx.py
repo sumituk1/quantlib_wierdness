@@ -6,16 +6,22 @@ from mosaicsmartdata.core.instrument_static_singleton import InstrumentStaticSin
 from mosaicsmartdata.core.quote import Quote
 
 
-def implied_discounting_curve(spot_mid, outrights, usd_curve, spot_date, ccy=None, valuation_date = None):
+def implied_discounting_curve(spot_mid, outrights, usd_curve, spot_date, ccy):#, valuation_date = None):
     disc_factors = []
     for fwd_date, fwd_mid in outrights.items():
-        usd_df = discounting_factor(usd_curve, spot_date, fwd_date)
+        if fwd_date is None or spot_date is None:
+            pass
+        # get the USD discounting factors;
+        # as we only care about yield differential for pricing,
+        # the one_pre_spot flag makes sure we return 1.0 as pre-spot USD disc factor
+        usd_df = discounting_factor(usd_curve, spot_date, fwd_date, one_pre_spot= True)
         df_ratio = fwd_mid / spot_mid
         implied_df = df_ratio * usd_df  # TODO: or divide? write this out
         disc_factors.append((implied_df, spot_date, fwd_date))
 
     # TODO: where do we get daycount conventions etc?
     curve = curve_from_disc_factors(disc_factors, ccy=ccy)
+    return curve
 
 
 class FXPricingContextGenerator:
@@ -82,6 +88,9 @@ class FXPricingContextGenerator:
                 elif quote.instrument.legs[1].is_spot(today): # pre-spot
                     direction = -1
                     outright_date = quote.instrument.settle_date
+                elif quote.instrument.tenor == 'ON':
+                    # TODO: calculate fair rates to today from ON, TN and spot
+                    return []
                 else:
                     raise ValueError('One of the FXSwap legs must be spot!')
 
@@ -92,6 +101,8 @@ class FXPricingContextGenerator:
                 else:
                     used_mid = my_spot + direction*quote.mid*pip_size
 
+                if outright_date is None:
+                    pass
                 self.outright_rate[non_usd_ccy][outright_date] = used_mid
         else:
             raise ValueError(quote, ' has an instrument type I can''t handle:', quote.instrument)
@@ -99,19 +110,24 @@ class FXPricingContextGenerator:
         # re-generate the discounting curve bundle
         # TODO: only update disc curves when fwpt or OIS tick, NOT when spot ticks!
         curves={}
-        print(self.spot_rate, self.outright_rate, self.usd_ois)
+        #print(self.spot_rate, self.outright_rate, self.usd_ois)
         if len(self.usd_ois)>=2: # want at least 2 points for OIS curve
-            curves['USD'] = construct_OIS_curve(self.usd_ois)
+            self.curves['USD'] = construct_OIS_curve(self.usd_ois)
             for ccy in self.spot_rate:
                 if ccy in self.outright_rate and len(self.outright_rate[ccy])>=2:
-                    curves[ccy] = implied_discounting_curve(self.spot_rate[ccy],
+                    tmp = implied_discounting_curve(self.spot_rate[ccy],
                                                             self.outright_rate[ccy],
-                                                            curves['USD'],
+                                                            self.curves['USD'],
                                                             self.spot_date[ccy],
-                                                            today, ccy = ccy)
+                                                            ccy = ccy)#,
+                                                            #valuation_date=today)
+                    self.curves[ccy] = tmp
 
+            context = PricingContext(self.curves, self.spot_rate, quote.timestamp)
+            return [context]
+        else:
+            return []
 
-            return PricingContext(curves, self.spot_rate, quote.timestamp)
 
 
 if __name__ == '__main__':
