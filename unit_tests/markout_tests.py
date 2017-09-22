@@ -685,47 +685,56 @@ class TestMarkouts(TestCase):
                 {\
                   "timestamp": 1484574600000,\
                   "entryType": "MID",\
-                  "entryPx": 99.27\
+                  "entryPx": 99.27,\
+                  "sym": "DE10YT=RR"\
                 },\
                 {\
                     "timestamp": 1484575440000,\
                     "entryType": "MID",\
-                    "entryPx": 99.239\
+                    "entryPx": 99.239,\
+                    "sym": "DE10YT=RR"\
                   },\
                 {\
                   "timestamp": 1484575500000,\
                   "entryType": "MID",\
-                  "entryPx": 99.243\
+                  "entryPx": 99.243,\
+                  "sym": "DE10YT=RR"\
                 },\
                 {\
                     "timestamp": 1484575560000,\
                     "entryType": "MID",\
-                    "entryPx": 99.258\
+                    "entryPx": 99.258,\
+                    "sym": "DE10YT=RR"\
                 },\
                 {\
                     "timestamp": 1484575800000,\
                     "entryType": "MID",\
-                    "entryPx": 99.267\
+                    "entryPx": 99.267,\
+                    "sym": "DE10YT=RR"\
                 },\
                 {\
                     "timestamp": 1484579100000,\
                     "entryType": "MID",\
-                    "entryPx": 99.346\
+                    "entryPx": 99.346,\
+                    "sym": "DE10YT=RR"\
                 },\
                 {\
                     "timestamp": 1484584200000,\
                     "entryType": "MID",\
-                    "entryPx": 99.256\
+                    "entryPx": 99.256,\
+                    "sym": "DE10YT=RR"\
                 },\
                 {\
                     "timestamp": 1484670600000,\
                     "entryType": "MID",\
-                    "entryPx": 99.395\
+                    "entryPx": 99.395,\
+                    "sym": "DE10YT=RR"\
                 },\
                 {\
                     "timestamp": 1484757000000,\
                     "entryType": "MID",\
-                    "entryPx": 99.038\
+                    "entryPx": 99.038,\
+                    "sym": "DE10YT=RR"\
                 }\
               ]\
             }\
@@ -761,7 +770,36 @@ class TestMarkouts(TestCase):
                 self.assertLessEqual(np.abs((mk_msg.bps_markout - (-0.844)) / mk_msg.bps_markout),
                                      tolerance, msg=None)
 
+    ## Jmes test - Should produce empty markouts
+    def test_case_10(self):
+        json_message = '{"bondTrade": {"negotiationId": "2", "orderId": ' \
+                   '"2017.09.21::2::25::Buy::TRADEWEBUST_ASIA::912796KN8::DealerAcceptOrder::Done", ' \
+                   '"packageId": "2017.09.21::2::25::Buy::TRADEWEBUST_ASIA::912796KN8::DealerAcceptOrder::Done", ' \
+                   '"productClass": "GovtBond", "productClass1": "productClass1", "sym": "912796KN8", "tenor": 0, ' \
+                   '"quantity": 1.0E7, "tradedPx": 101.1367, "modifiedDuration": 8.930291, "side": "BID", ' \
+                   '"quantityDv01": 8930.291, "issueOldness": 0, "timestamp": "2017.09.21D05:30:01.933", ' \
+                   '"tradeDate": "2017.09.21", "settlementDate": "2017.09.21", "holidayCalendar": "NYC", ' \
+                   '"spotSettlementDate": "2017.09.21", "venue": "TRADEWEBUST_ASIA", "ccy": "USD", ' \
+                   '"countryOfIssue": "US", "dayCount": "ACT/ACT", "issueDate": "2017.05.15", ' \
+                   '"coupon": 2.375, "couponFrequency": "SEMI", "maturityDate": "2017.09.21", ' \
+                   '"midPrices": [{"timestamp": 1505964601933, "entryType": "MID", "entryPx": 92.71875, ' \
+                   '"sym": "912796KN8"}, {"timestamp": 1505968201933, "entryType": "MID", "entryPx": 92.73438, ' \
+                   '"sym": "912796KN8"}, {"timestamp": 1505970001933, "entryType": "MID", "entryPx": 92.73438, "sym": "912796KN8"}, {"timestamp": 1505971501933, "entryType": "MID", "entryPx": 92.71875, "sym": "912796KN8"}, {"timestamp": 1505971771933, "entryType": "MID", "entryPx": 99.716, "sym": "912796KN8"}, {"timestamp": 1505971801933, "entryType": "MID", "entryPx": 92.76563, "sym": "912796KN8"}, {"timestamp": 1505971831933, "entryType": "MID", "entryPx": 99.76563, "sym": "912796KN8"}, {"timestamp": 1505972101933, "entryType": "MID", "entryPx": 92.7188, "sym": "912796KN8"}, {"timestamp": 1505973601933, "entryType": "MID", "entryPx": 99.785, "sym": "912796KN8"}, {"timestamp": 1505975401933, "entryType": "MID", "entryPx": 92.75, "sym": "912796KN8"}, {"timestamp": 1505979001933, "entryType": "MID", "entryPx": 92.76563, "sym": "912796KN8"}]}}'
+        a= ""
+        trade, quote_list = json_to_domain(json_message=json_message, historical=True)
+        # run the graph
+        output_list = []
+        # run graph
+        # t0 = time.time()
+        # joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
+        graph_1 = [tuple((trade, quote_list))] | op.map(historical_pca_risk) | op.flatten() | op.map(
+            historical_markouts) | op.flatten()
+        graph_2 = graph_1 | op.map_by_group(lambda x: (x.trade_id, x.dt), PackageBuilder()) \
+                  | op.flatten() | op.map(aggregate_multi_leg_markouts) | \
+                  op.map_by_group(lambda x: x.package_id, AllMarkoutFilter()) | op.flatten() | op.map(domain_to_json) > output_list
 
+        run(graph_2)
+        self.assertEqual(len(output_list),0)
 if __name__ == '__main__':
     #    unittest.main()
     k= TestMarkouts()

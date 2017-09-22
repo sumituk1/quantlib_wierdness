@@ -307,12 +307,14 @@ class TestMarkouts(TestCase):
                               {\
                                 "timestamp": 1485941760000,\
                                 "entryType": "MID",\
-                                "entryPx": 1.11111\
+                                "entryPx": 1.11111,\
+                                "sym": "DE10YT=RR"\
                               },\
                               {\
                                 "timestamp": 1485991760000,\
                                 "entryType": "MID",\
-                                "entryPx": 1.22222\
+                                "entryPx": 1.22222,\
+                                "sym": "DE10YT=RR"\
                               }\
                             ]\
                           }\

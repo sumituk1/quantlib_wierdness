@@ -21,6 +21,8 @@ from mosaicsmartdata.core.markout_basket_builder import *
 from mosaicsmartdata.core.hedger import *
 from mosaicsmartdata.core.pca_risk import *
 import os, inspect
+from mosaicsmartdata.common.json_convertor import *
+from mosaicsmartdata.core.historical_markouts import *
 
 thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
 os.chdir(thisfiledir)
@@ -88,6 +90,34 @@ class TestHedgeMarkouts(TestCase):
         run(leg_markout_final)
         return output_list
 
+    # create graph for historical
+    def run_graph_historical(self, trade_quote_tuple,product_class = ProductClass.GovtBond.value):
+        output_list = []
+        quote_trade_list = []
+        # hedger = Hedger(my_hedge_calculator, product_class=product_class)
+
+        def get_legs(x):
+            try:
+                return copy(x.legs)
+            except:
+                return [x]
+        # 1. set up initial hedges at point of trade
+        new_trades = [trade_quote_tuple] | op.map(historical_hedge_package_builder)| op.flatten() \
+                     | op.flat_map(get_legs)
+
+        # run(new_trades)
+        # joint_stream = op.merge_sorted(quote_trade_list, lambda x: x.timestamp)
+        leg_markout = new_trades | op.map(PCARisk()) | op.flatten() | \
+                      op.map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator()) | op.flatten()
+
+        # run(leg_markout)
+        # 2. Aggregate all the markouts per package_id
+        leg_markout_final = leg_markout | op.map_by_group(lambda x: (x.trade_id, x.dt), PackageBuilder()) \
+                              | op.flatten() | op.map(aggregate_multi_leg_markouts) | \
+                              op.map_by_group(lambda x: x.package_id, AllMarkoutFilter()) | op.flatten() > output_list
+        run(leg_markout_final)
+
+        return output_list
     # Test hedge with Cash
     def test_case_1(self, plotFigure=False):
         tolerance = 5 * 1e-2
@@ -628,6 +658,361 @@ class TestHedgeMarkouts(TestCase):
         except Exception:
             raise Exception
 
+    # Test hedge with Cash historical
+    def test_case_8(self, plotFigure=False):
+        tolerance = 5 * 1e-2
+        t0 = time.time()
+        # Create a singleton configurator and instrument_static
+        configurator = Configurator('config.csv')
+        instrument_static = InstrumentStaticSingleton()  # required for hedge instrument duration
+
+        json_message = '{\
+            "bondTrade": {\
+              "negotiationId": "456",\
+              "orderId": "456::venue::date::DE10YT_OTR_111::BUY",\
+              "packageId": "DE10YT_OTR_111::venue::date",\
+              "productClass": "GovtBond",\
+              "productClass1": "GT7",\
+              "sym": "912828T91",\
+              "tenor": 7,\
+              "quantity": 10000000,\
+              "tradedPx": 96.071,\
+              "modifiedDuration": 6.159,\
+              "side": "BID",\
+              "quantityDv01": 6159,\
+              "issueOldness": 1,\
+              "timestamp": "2017.03.21D11:19:45.605000000",\
+              "tradeDate": "2017.03.21",\
+              "settlementDate": "2017.03.22",\
+              "holidayCalendar": "EUR",\
+              "spotSettlementDate": "2017.03.22",\
+              "venue": "BBGUST",\
+              "ccy": "USD",\
+              "countryOfIssue": "US",\
+              "dayCount": "ACT\/ACT",\
+              "issueDate": "2015.04.16",\
+              "coupon": 2,\
+              "couponFrequency": "ANNUAL",\
+              "maturityDate": "2022.04.16",\
+              "midPrices": [\
+                {\
+                  "timestamp": 1490094286000,\
+                  "entryType": "MID",\
+                  "entryPx": 96.078125,\
+                  "sym":"912828T91"\
+                },\
+                {\
+                  "timestamp": 1490095126000,\
+                  "entryType": "MID",\
+                  "entryPx": 96.078125,\
+                  "sym":"912828T91"\
+                },\
+                {\
+                  "timestamp": 1490095186000,\
+                  "entryType": "MID",\
+                  "entryPx": 96.078125,\
+                  "sym":"912828T91"\
+                },\
+                {\
+                  "timestamp": 1490095246000,\
+                  "entryType": "MID",\
+                  "entryPx": 96.078125,\
+                  "sym":"912828T91"\
+                },\
+                {\
+                  "timestamp": 1490095486000,\
+                  "entryType": "MID",\
+                  "entryPx": 96.08203125,\
+                  "sym":"912828T91"\
+                },\
+                {\
+                  "timestamp": 1490098786000,\
+                  "entryType": "MID",\
+                  "entryPx": 96.125,\
+                  "sym":"912828T91"\
+                },\
+                {\
+                  "timestamp": 1490133600000,\
+                  "entryType": "MID",\
+                  "entryPx": 96.484375,\
+                  "sym":"912828T91"\
+                },\
+                {\
+                  "timestamp": 1490220000000,\
+                  "entryType": "MID",\
+                  "entryPx": 96.53515625,\
+                  "sym":"912828T91"\
+                },\
+                {\
+                  "timestamp": 1490306400000,\
+                  "entryType": "MID",\
+                  "entryPx": 96.44921875,\
+                  "sym":"912828T91"\
+                },\
+                {\
+                  "timestamp": 1490094286000,\
+                  "entryType": "MID",\
+                  "entryPx": 97.8984375,\
+                  "sym":"US10YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490095126000,\
+                  "entryType": "MID",\
+                  "entryPx": 97.8984375,\
+                  "sym":"US10YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490095186000,\
+                  "entryType": "MID",\
+                  "entryPx": 97.8984375,\
+                  "sym":"US10YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490095246000,\
+                  "entryType": "MID",\
+                  "entryPx": 97.8984375,\
+                  "sym":"US10YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490095486000,\
+                  "entryType": "MID",\
+                  "entryPx": 97.8984375,\
+                  "sym":"US10YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490098786000,\
+                  "entryType": "MID",\
+                  "entryPx": 97.9609375,\
+                  "sym":"US10YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490133600000,\
+                  "entryType": "MID",\
+                  "entryPx": 98.5234375,\
+                  "sym":"US10YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490220000000,\
+                  "entryType": "MID",\
+                  "entryPx": 98.6328125,\
+                  "sym":"US10YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490306400000,\
+                  "entryType": "MID",\
+                  "entryPx": 98.5078125,\
+                  "sym":"US10YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490094286000,\
+                  "entryType": "MID",\
+                  "entryPx": 99.35546875,\
+                  "sym":"US5YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490095126000,\
+                  "entryType": "MID",\
+                  "entryPx": 99.35546875,\
+                  "sym":"US5YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490095186000,\
+                  "entryType": "MID",\
+                  "entryPx": 99.35546875,\
+                  "sym":"US5YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490095246000,\
+                  "entryType": "MID",\
+                  "entryPx": 99.35546875,\
+                  "sym":"US5YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490095486000,\
+                  "entryType": "MID",\
+                  "entryPx": 99.35546875,\
+                  "sym":"US5YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490098786000,\
+                  "entryType": "MID",\
+                  "entryPx": 99.39453125,\
+                  "sym":"US5YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490133600000,\
+                  "entryType": "MID",\
+                  "entryPx": 99.66015625,\
+                  "sym":"US5YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490220000000,\
+                  "entryType": "MID",\
+                  "entryPx": 99.70703125,\
+                  "sym":"US5YT=RR"\
+                },\
+                {\
+                  "timestamp": 1490306400000,\
+                  "entryType": "MID",\
+                  "entryPx": 99.63671875,\
+                  "sym":"US5YT=RR"\
+                }\
+              ]\
+            }\
+          }'
+
+        trade, quote_list = json_to_domain(json_message=json_message, historical=True)
+        # run the graph
+        output_list = self.run_graph_historical(tuple((trade, quote_list)))
+
+        # do assertions
+        self.assertEquals(len(output_list), 8, msg=None)
+        for mk_msg in output_list:
+            if mk_msg.trade_id == 456 and mk_msg.dt == '-900':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+                                     msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
+                                     tolerance, msg=None)
+            if mk_msg.trade_id == 456 and mk_msg.dt == '-60':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+                                     msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
+                                     tolerance, msg=None)
+            if mk_msg.trade_id == 456 and mk_msg.dt == '0':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+                                     msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == 456 and mk_msg.dt == '60':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+                                     msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == 456 and mk_msg.dt == '300':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.09277) / mk_msg.hedged_bps), tolerance,
+                                     msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 1.10313) / mk_msg.hedged_cents),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == 456 and mk_msg.dt == '3600':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.01609) / mk_msg.hedged_bps), tolerance,
+                                     msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 5.4) / mk_msg.hedged_cents), tolerance,
+                                     msg=None)
+            elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB0':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.19828)) / mk_msg.hedged_bps),
+                                     tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 41.3375) / mk_msg.hedged_cents),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB1':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.49894)) / mk_msg.hedged_bps),
+                                     tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 46.4156) / mk_msg.hedged_cents),
+                                     tolerance, msg=None)
+            elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB2':
+                self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.42919)) / mk_msg.hedged_bps),
+                                     tolerance, msg=None)
+                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 37.8219) / mk_msg.hedged_cents),
+                                     tolerance, msg=None)
+
+        print("Time taken: %s" % (time.time() - t0))
+        # plot figure
+        if plotFigure:
+            fig, ax = plt.subplots()
+            x_data = [x.dt for x in output_list]
+
+            plt.plot([x.hedged_bps for x in output_list], label="hedged markout_bps", color="red")
+            plt.plot([x.bps_markout for x in output_list], label="unhedged markout_bps", color="blue")
+            ax.set_xticklabels(x_data)
+            plt.xlabel("time")
+            plt.ylabel("markout(bps)")
+            plt.legend()
+            plt.grid(True)
+            plt.show()
+                    # except Exception:
+                    #     raise Exception
+                    #     pass
+
+
+        # # try:
+        # if True:
+        #     with ExceptionLoggingContext():
+        #
+        #         quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/hedged_markout_tests/",
+        #                                                             quote_file_list=["912828T91_quotes.csv",
+        #                                                                              "US30YT_RR_quotes.csv",
+        #                                                                              "US10YT_RR_quotes.csv",
+        #                                                                              "US5YT_RR_quotes.csv"],
+        #                                                             trade_file="trades_hedge_test.csv")
+        #
+        #         # run the graph
+        #         output_list = self.run_graph(quote_trade_list)
+        #
+        #         # do assertions
+        #         self.assertEquals(len(output_list), 9, msg=None)
+        #         for mk_msg in output_list:
+        #             if mk_msg.trade_id == 456 and mk_msg.dt == '-900':
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+        #                                      msg=None)
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
+        #                                      tolerance, msg=None)
+        #             if mk_msg.trade_id == 456 and mk_msg.dt == '-60':
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+        #                                      msg=None)
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
+        #                                      tolerance, msg=None)
+        #             if mk_msg.trade_id == 456 and mk_msg.dt == '0':
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+        #                                      msg=None)
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
+        #                                      tolerance, msg=None)
+        #             elif mk_msg.trade_id == 456 and mk_msg.dt == '60':
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
+        #                                      msg=None)
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
+        #                                      tolerance, msg=None)
+        #             elif mk_msg.trade_id == 456 and mk_msg.dt == '300':
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.09277) / mk_msg.hedged_bps), tolerance,
+        #                                      msg=None)
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_cents - 1.10313) / mk_msg.hedged_cents),
+        #                                      tolerance, msg=None)
+        #             elif mk_msg.trade_id == 456 and mk_msg.dt == '3600':
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.01609) / mk_msg.hedged_bps), tolerance,
+        #                                      msg=None)
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_cents - 5.4) / mk_msg.hedged_cents), tolerance,
+        #                                      msg=None)
+        #             elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB0':
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.19828)) / mk_msg.hedged_bps),
+        #                                      tolerance, msg=None)
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_cents - 41.3375) / mk_msg.hedged_cents),
+        #                                      tolerance, msg=None)
+        #             elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB1':
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.49894)) / mk_msg.hedged_bps),
+        #                                      tolerance, msg=None)
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_cents - 46.4156) / mk_msg.hedged_cents),
+        #                                      tolerance, msg=None)
+        #             elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB2':
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.42919)) / mk_msg.hedged_bps),
+        #                                      tolerance, msg=None)
+        #                 self.assertLessEqual(np.abs((mk_msg.hedged_cents - 37.8219) / mk_msg.hedged_cents),
+        #                                      tolerance, msg=None)
+        #
+        #         print("Time taken: %s" % (time.time() - t0))
+        #         # plot figure
+        #         if plotFigure:
+        #             fig, ax = plt.subplots()
+        #             x_data = [x.dt for x in output_list]
+        #
+        #             plt.plot([x.hedged_bps for x in output_list], label="hedged markout_bps", color="red")
+        #             plt.plot([x.bps_markout for x in output_list], label="unhedged markout_bps", color="blue")
+        #             ax.set_xticklabels(x_data)
+        #             plt.xlabel("time")
+        #             plt.ylabel("markout(bps)")
+        #             plt.legend()
+        #             plt.grid(True)
+        #             plt.show()
+        #             # except Exception:
+        #             #     raise Exception
+        #             #     pass
 
 if __name__ == '__main__':
     #    unittest.main()

@@ -182,7 +182,7 @@ def json_to_quote(json_message, historical=False):
         ## Extract the Quest in a list object
         quote_list = []
         for quote in request.bondTrade.midPrices:
-            quote_list.append(Quote(sym=request.bondTrade.sym,
+            quote_list.append(Quote(sym= quote.sym,#request.bondTrade.sym,
                                     ask=quote.entryPx + 0.0001,
                                     timestamp=dt.datetime.fromtimestamp(
                                         quote.timestamp / 1000),
