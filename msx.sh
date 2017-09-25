@@ -1,5 +1,43 @@
 #! /bin/bash
 
+function do_bitbucket_pyb {
+
+	echo "Running do_bitbucket_pyb"
+
+	pyb install_dependencies && pyb clean publish --debug
+	status=$?
+
+	if [ ${status} -ne 0 ]; then
+    echo "Failure during build...exiting"
+		exit 1
+	fi
+
+	echo "Completed do_bitbucket_pyb: status $status"
+}
+
+function do_bitbucket_docker_build_push {
+
+	echo "Working dir should be msq-domain"
+
+	if [ ! -f Dockerfile ]; then
+	    echo "Dockerfile not found, this needs to be run from the root of the project"
+	    return 255
+	fi
+
+	echo "Building and Pushing nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest"
+
+	docker build -t nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest . \
+	  && docker push nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest
+	status=$?
+
+	if [ ${status} -ne 0 ]; then
+		echo "Failure during build...exiting"
+		exit 1
+	fi
+
+	echo "Completed do_bitbucket_docker_build_push status $status"
+}
+
 function do_build {
 
 	echo "Working dir should be msq-domain"
@@ -128,6 +166,21 @@ function do_pyb_build_all_from_source {
 	cd /code/msq-domain
 	pyb install_dependencies
 	pyb --debug
+}
+
+function do_load_bond_trades {
+
+	# Designed to be run from wthin the container
+
+	install_devtools
+
+	# Run the build and tests with debug flag on to get some help
+
+	cd /code
+	echo Loading bond trades from file into Kafka console consumer
+
+	kafka-console-producer.sh --broker-list localhost:9092 --topic topic-a < my_file.txt
+
 }
 
 function do_integration_test {
