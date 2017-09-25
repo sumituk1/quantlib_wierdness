@@ -8,7 +8,8 @@ function do_bitbucket_pyb {
 
 	echo "Running do_bitbucket_pyb"
 
-	pyb install_dependencies && pyb clean publish --debug
+	pyb install_dependencies
+	pyb clean publish --debug
 	status=$?
 
 	if [ ${status} -ne 0 ]; then
@@ -30,8 +31,8 @@ function do_bitbucket_docker_build_push {
 
 	echo "Building and Pushing nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest"
 
-	docker build -t nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest . \
-	  && docker push nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest
+	docker build -t nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest .
+	docker push nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest
 	status=$?
 
 	if [ ${status} -ne 0 ]; then
