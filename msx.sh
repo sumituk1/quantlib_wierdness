@@ -296,7 +296,13 @@ attach)
 attach_msq_domain)
    do_attach_msq_domain
    ;;
- *)
+bitbucket_pyb)
+   do_bitbucket_pyb
+	 ;;
+bitbucket_docker_build_push)
+   do_bitbucket_docker_build_push
+	 ;;
+*)
    echo "Usage: dockerctrl {build_image|tag_image|push_image|pull_image|btp_image|link_source|run_build|ps}" >&2
    echo
    echo "link_source              - links current source directory into docker container" >&2
