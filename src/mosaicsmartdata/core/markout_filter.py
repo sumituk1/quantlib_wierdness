@@ -1,7 +1,4 @@
-bps_tol = 3.0
-
-
-def filter_markouts(mkmsg):
+def filter_markouts(mkmsg, bps_tol = 3.0):
     if mkmsg.nonpaper_legs_count > 1:
         # filter on factor_bps_markout
         if abs(mkmsg.factor_bps_markout) > bps_tol:

@@ -93,7 +93,7 @@ def pipeline_fun_hist_unhedged(names_only=False,
                   op.map(historical_markouts) | op.flatten()
         graph_2 = graph_1 | op.map_by_group(lambda x: (x.trade_id, x.dt), PackageBuilder()) \
                   | op.flatten() | op.map(aggregate_multi_leg_markouts) | \
-                  op.map_by_group(lambda x: x.package_id, AllMarkoutFilter()) | op.flatten()
+                  op.map_by_group(lambda x: x.package_id, AllMarkoutFilter(bps_tol=3.0)) | op.flatten()
         # stream = op.merge_sorted(sources, lambda x: x.timestamp) | op.map(PCARisk())| op.flatten()
         # graph_1 = stream | op.flat_map_by_group(lambda x: x.sym, GovtBondMarkoutCalculator())
         #
