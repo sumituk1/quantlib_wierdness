@@ -1,7 +1,8 @@
 import datetime as dt
-
+import cloudpickle
 import numpy as np
 from QuantLib import *
+
 
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
@@ -204,7 +205,6 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
     :param kwargs: Extra stuff like daycount conventions etc
     :return:
     '''
-
     if calendar == None:
         # TODO: guess calendar from currency?
         calendar = UnitedStates()
@@ -222,8 +222,11 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
                                           fixed_bond.pydate_to_qldate(end_date)) / 360
         rates_dict[(start_date, end_date)] = -(1 / dt) * np.log(disc_factor)
     # [(lambda df, sd, ed : (rates_dict[(sd, ed)] = -(1/calendar.businessDaysBetween(sd,fixed_bond.pydate_to_qldate(ed)) / 360)*np.log(df)) for disc_factor,start_date, end_date in disc_factors]
-
-    return construct_OIS_curve(rates_dict)
+    if ccy is not None:
+        with open(ccy + '_curve.pickle', 'wb') as f:
+            cloudpickle.dump(rates_dict, f)
+    curve = construct_OIS_curve(rates_dict)
+    return curve
 
 if __name__ == "__main__":
     spot_date = dt.date(2017, 9, 19)

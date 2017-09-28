@@ -15,8 +15,7 @@ def implied_discounting_curve(spot_mid, outrights, usd_curve, spot_date, ccy):#,
         # as we only care about yield differential for pricing,
         # the one_pre_spot flag makes sure we return 1.0 as pre-spot USD disc factor
         usd_df = discounting_factor(usd_curve, spot_date, fwd_date, one_pre_spot= True)
-        df_ratio = fwd_mid / spot_mid
-        implied_df = df_ratio * usd_df  # TODO: or divide? write this out
+        implied_df =  usd_df * spot_mid/ fwd_mid# d2 = d1*S/F
         disc_factors.append((implied_df, spot_date, fwd_date))
 
     # TODO: where do we get daycount conventions etc?
@@ -36,6 +35,7 @@ class FXPricingContextGenerator:
         self.date_calculator = DateCalculator()
         self.static = InstrumentStaticSingleton()
         self.today = None
+        self.quotes_pending_spot = {}
 
     def __call__(self, quote: Quote):
         today = quote.timestamp.date()
@@ -46,6 +46,7 @@ class FXPricingContextGenerator:
             self.usd_ois = {}
             self.curves = {}
             self.today = today
+            self.quotes_pending_spot = {}
 
 
         # insert the latest quote into the correct storage
@@ -64,7 +65,8 @@ class FXPricingContextGenerator:
                 pass
 
             if non_usd_ccy not in self.spot_rate:
-                self.spot_rate[non_usd_ccy] = float('NaN')
+                self.spot_rate[non_usd_ccy] = None
+                self.quotes_pending_spot[non_usd_ccy] = []
                 self.spot_date[non_usd_ccy] = self.date_calculator.spot_date('fx', ('USD',non_usd_ccy), today)
             if non_usd_ccy not in self.outright_rate:
                 self.outright_rate[non_usd_ccy] = {}
@@ -77,15 +79,22 @@ class FXPricingContextGenerator:
 
                 if quote.instrument.is_spot(today):
                     self.spot_rate[non_usd_ccy] = used_mid
+                    for q in self.quotes_pending_spot[non_usd_ccy]:
+                        self.__call__(q)
+                        self.quotes_pending_spot[non_usd_ccy] = []
                 else: # an outright
                     self.outright_rate[non_usd_ccy][quote.instrument.settle_date] = used_mid
             elif isinstance(quote.instrument, FXSwap): # FXSwap
+                if self.spot_rate[non_usd_ccy] is None: # need spot rates to convert!
+                    self.quotes_pending_spot[non_usd_ccy].append(quote)
+                    return []
                 # convert from fx swap quote in pips to implied outright for USDXXX
                 # determine whether the quote is post- or pre-spot
                 if quote.instrument.legs[0].is_spot(today):
                     direction = 1
                     outright_date = quote.instrument.maturity_date
-                elif quote.instrument.legs[1].is_spot(today): # pre-spot
+                elif quote.instrument.legs[1].is_spot(today): # pre-spot, TN
+                    #return []
                     direction = -1
                     outright_date = quote.instrument.settle_date
                 elif quote.instrument.tenor == 'ON':
@@ -123,7 +132,7 @@ class FXPricingContextGenerator:
                                                             #valuation_date=today)
                     self.curves[ccy] = tmp
 
-            context = PricingContext(self.curves, self.spot_rate, quote.timestamp)
+            context = PricingContext(self.curves, self.spot_rate, quote.timestamp, extra = self.outright_rate)
             return [context]
         else:
             return []

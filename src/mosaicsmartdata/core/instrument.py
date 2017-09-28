@@ -5,15 +5,16 @@ from mosaicsmartdata.common.constants import Country
 from mosaicsmartdata.core.date_calculator import DateCalculator
 from mosaicsmartdata.core.generic_parent import GenericParent
 from mosaicsmartdata.core.instrument_static_singleton import InstrumentStaticSingleton
+from mosaicsmartdata.core.curve_utils import discounting_factor
 
 TenorTuple = namedtuple('TenorTuple','tenor today instr')
 SpotRate = namedtuple('SpotRate','ccy1  ccy2 today spot_date mid')
 
 date_calc = DateCalculator()
-
+static = InstrumentStaticSingleton()
 
 class PricingContext:
-    def __init__(self, curves, spots, timestamp):
+    def __init__(self, curves, spots, timestamp, extra = None):
         '''
         A bundle of spot rates and matching discounting curves, derived from the
         FX spot and swap markets
@@ -28,17 +29,37 @@ class PricingContext:
         self.today = timestamp.date()
         self.spot = spots
         self.spot['USD'] = 1
+        self.extra = extra
 
     def spot_rate(self, ccypair):
         if ccypair[0] in self.spot and ccypair[1] in self.spot:
             return self.spot[ccypair[1]]/self.spot[ccypair[0]]
         else:
-            return float('NaN')
+            raise ValueError('Invalid currency pair ' + str(ccypair) + ' I only know ' + str(self.spot.keys))
 
-    def fwd_points(self, ccypair, start_date, end_date):
-        # TODO: use discounting curves to derive correct forward points
-        return float('NaN')
+    def fair_forward(self, ccypair, date):
+        spot_rate = self.spot_rate(ccypair)
+        spot_date = date_calc.spot_date('fx', ccypair, self.today)
+        if date == spot_date:
+            return spot_rate
 
+        d1 = discounting_factor(self.curve[ccypair[0]],
+                                spot_date,
+                                date,
+                                one_pre_spot = True if ccypair[0]=='USD' else False
+                                )
+        d2 = discounting_factor(self.curve[ccypair[1]],
+                                spot_date,
+                                date,
+                                one_pre_spot=True if ccypair[1] == 'USD' else False
+                                )
+        fwd = d1*spot_rate / d2
+        return fwd
+
+    def fair_fwd_points(self, ccypair, start_date, end_date):
+        pip_size = static.pip_size(ccypair)
+        fwd_diff = self.fair_forward(ccypair, end_date) - self.fair_forward(ccypair, start_date)
+        return fwd_diff / pip_size
 
 class Instrument(GenericParent):
     def __init__(self, *args, **kwargs):
@@ -66,9 +87,11 @@ class FXForward(FXInstrument):
     def rate(self):
         return abs(self.notionals[1]/self.notionals[0])
 
-    def price(self, pricing_context: PricingContext):
-        # TODO: augment for forwards
-        return pricing_context.spot_rate(self.ccy)
+    def price(self, pc: PricingContext):
+        if self.is_spot(pc.today):
+            return pc.spot_rate(self.ccy)
+        else:
+            return pc.fair_forward(self.ccy, self.settle_date)
 
     def pv(self, pricingContext, today, accounting_ccy = 'USD', ignoreDiscountFromSpotToToday = True):
         if not self.is_spot(today):
@@ -128,6 +151,9 @@ class FXSwap(FXInstrument):
 
     def pv(self,  pc: PricingContext):
         return sum([self.leg.pv(pc) for leg in self.legs])
+
+    def price(self, pc: PricingContext ):
+        return pc.fair_fwd_points(self.ccy, self.legs[0].settle_date, self.legs[1].settle_date)
 
     def __getattr__(self, item):
         if item in self.legs[0].__dict__:

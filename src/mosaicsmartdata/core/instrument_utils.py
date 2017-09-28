@@ -65,10 +65,12 @@ class sym_to_instrument:
                         legs = [t_instr, spot_instr]
                     else:
                         if tenor == 'SN':
-                            tenor = '1b'
-                        if tenor == 'SW':
-                            tenor = '1w'
-                        other_date = date_calc.date_add(spot_date, tenor)
+                            eff_tenor = '1b'
+                        elif tenor == 'SW':
+                            eff_tenor = '1w'
+                        else:
+                            eff_tenor = tenor
+                        other_date = date_calc.date_add(spot_date, eff_tenor)
                         outright_tenor = tenor
 
                         other_instr = FXForward(ccy = pair,
