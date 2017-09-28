@@ -79,7 +79,7 @@ class TestMarkouts(TestCase):
         graph_1 = [trade_quote_tuple] | op.map(historical_pca_risk)| op.flatten()|op.map(historical_markouts) | op.flatten()
         graph_2 = graph_1 | op.map_by_group(lambda x: (x.trade_id, x.dt), PackageBuilder()) \
                   | op.flatten() | op.map(aggregate_multi_leg_markouts) | \
-                  op.map_by_group(lambda x: x.package_id, AllMarkoutFilter()) | op.flatten() > output_list
+                  op.map_by_group(lambda x: x.package_id, AllMarkoutFilter(bps_tol=3.0)) | op.flatten() > output_list
 
         return graph_2, output_list
 
@@ -93,7 +93,7 @@ class TestMarkouts(TestCase):
 
         graph_2 = graph_1 | op.map_by_group(lambda x: (x.trade_id, x.dt), PackageBuilder()) \
                             | op.flatten() | op.map(aggregate_multi_leg_markouts) | \
-                            op.map_by_group(lambda x: x.package_id, AllMarkoutFilter()) | op.flatten() > output_list
+                            op.map_by_group(lambda x: x.package_id, AllMarkoutFilter(bps_tol=3.0)) | op.flatten() > output_list
 
         return graph_2,output_list
 
@@ -796,7 +796,7 @@ class TestMarkouts(TestCase):
             historical_markouts) | op.flatten()
         graph_2 = graph_1 | op.map_by_group(lambda x: (x.trade_id, x.dt), PackageBuilder()) \
                   | op.flatten() | op.map(aggregate_multi_leg_markouts) | \
-                  op.map_by_group(lambda x: x.package_id, AllMarkoutFilter()) | op.flatten() | op.map(domain_to_json) > output_list
+                  op.map_by_group(lambda x: x.package_id, AllMarkoutFilter(bps_tol=3.0)) | op.flatten() | op.map(domain_to_json) > output_list
 
         run(graph_2)
         self.assertEqual(len(output_list),0)

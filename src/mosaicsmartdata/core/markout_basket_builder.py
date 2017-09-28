@@ -33,19 +33,20 @@ class PackageBuilder:
             return [msg]
 
 class AllMarkoutFilter:
-    def __init__(self):
+    def __init__(self, bps_tol = 3.0):
         # filter_markout_state
         # True: do not transmit any of the mkt_msgs in a package
         # False: pass-through all the mkt messages
         self.filter_markout_state = True
         self.packages = []
+        self.bps_tol = bps_tol
 
     def __call__(self,pkg):
         self.packages.append(pkg)
 
         # if received the zero lag, do smart stuff
         if pkg.dt == '0':
-            self.filter_markout_state = filter_markouts(pkg)
+            self.filter_markout_state = filter_markouts(pkg, self.bps_tol)
             # print("")
 
         if self.filter_markout_state:
