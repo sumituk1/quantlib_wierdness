@@ -7,6 +7,7 @@ services:
       - zookeeper
     volumes:
       - .:/code
+    # command: "/bin/bash /code/msx.sh bitbucket_pyb"
     command: "/bin/bash /code/msx.sh integration_test"
     #command: "/bin/bash /code/msx.sh jupyter"
     ports:

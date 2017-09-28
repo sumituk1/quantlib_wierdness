@@ -35,9 +35,6 @@ services:
       KAFKA_ADVERTISED_PORT: "9092"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_CREATE_TOPICS: bond-trades-topic:1:1
-    #command: "/bin/bash /broker_helpers/configure_and_start_broker.sh"
     volumes:
       - ./broker_helpers:/broker_helpers
       - /var/run/docker.sock:/var/run/docker.sock
-#      - ${DEPLOYMENT_HOME}/volumes/kafka/opt/kafka/logs:/opt/kafka/logs
-
