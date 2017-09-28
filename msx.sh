@@ -272,17 +272,25 @@ function do_keep_alive {
 # }
 
 function do_start_unhedged {
+  echo "Installing devtools"
 	install_devtools
   cd /code
 	ls -1
-	echo Installing dependencies
+	echo "Installing dependencies"
 	pyb install_dependencies
+	echo "Building local code fast without tests"
   pyb -x run_unit_tests -x verify clean publish
+	echo "Changing into /code/target/dist/msq-domain-1.0.dev0"
   cd /code/target/dist/msq-domain-1.0.dev0
+	echo "Installing the application on to the quant-container image"
   pip install .
+	echo "Copying csv files to /opt/conda/lib/python3.5/site-packages/mosaicsmartdata/configuration"
   cp mosaicsmartdata/configuration/*.csv  /opt/conda/lib/python3.5/site-packages/mosaicsmartdata/configuration/
-  python ./scripts/start-app-hist-unhedged.py --persist True --kafka_broker kafka --loglevel INFO --input_topics bond-trades-topic --output_topic output-topic --logfile /code/target/application.log
-  jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
+  pwd
+	echo "Executing ./scripts/start-app-hist-unhedged.py"
+	python ./scripts/start-app-hist-unhedged.py --kafka_broker kafka --loglevel DEBUG --input_topics bond-trades-topic --output_topic output-topic --logfile /code/target/application.log
+  echo "Start jupyter notebook"
+	jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
 }
 
 function do_start_debug {
