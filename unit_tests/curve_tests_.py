@@ -63,6 +63,22 @@ class TestCurves(TestCase):
         #    This will be close but not exact to the input rates used for calibration
         for md, rate in zip(maturity_dates,ois_rates):
             self.assertAlmostEqual(rate, get_rate(ois_curve, spot_date, md), places=4)
+    def test_pre_spot_curve(self):
+        rates_dict = {}
+        rates_dict[(datetime.date(2017, 6, 27), datetime.date(2017, 6, 28))]=1
+        rates_dict[(datetime.date(2017, 6, 28), datetime.date(2017, 6, 29))]=1.13257537723
+        rates_dict[(datetime.date(2017, 6, 28), datetime.date(2017, 12, 28))]=1.15646526169
+        rates_dict[(datetime.date(2017, 6, 28), datetime.date(2018, 6, 28))]=1.22111758501
+        rates_dict[(datetime.date(2017, 6, 28), datetime.date(2017, 7, 5))]=1.10253256208
+        rates_dict[(datetime.date(2017, 6, 28), datetime.date(2017, 7, 28))]=1.12162081528
+        rates_dict[(datetime.date(2017, 6, 28), datetime.date(2017, 9, 28))]=1.13030866308
+
+        a = datetime.date(2017, 6, 27)
+        b = datetime.date(2017, 6, 28)
+
+        eur_curve =  construct_OIS_curve(rates_dict)
+        df = discounting_factor(eur_curve,a,b)
+        self.assertEqual(df, rates_dict[(a,b)])
 
 if __name__ == '__main__':
     #    unittest.main()
