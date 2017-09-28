@@ -208,8 +208,8 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
     if calendar == None:
         # TODO: guess calendar from currency?
         calendar = UnitedStates()
-    rates_dict = dict()
-    for disc_factor, start_date, end_date in disc_factors:
+    rates_list = []
+    for disc_factor, start_date, end_date, tenor in disc_factors:
         if start_date is None or end_date is None:
             pass
         try:
@@ -220,12 +220,23 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
             pass
         dt = calendar.businessDaysBetween(fixed_bond.pydate_to_qldate(start_date),
                                           fixed_bond.pydate_to_qldate(end_date)) / 360
-        rates_dict[(start_date, end_date)] = -(1 / dt) * np.log(disc_factor)
-    # [(lambda df, sd, ed : (rates_dict[(sd, ed)] = -(1/calendar.businessDaysBetween(sd,fixed_bond.pydate_to_qldate(ed)) / 360)*np.log(df)) for disc_factor,start_date, end_date in disc_factors]
+        df = -(1 / dt) * np.log(disc_factor)
+        rates_list.append((start_date, end_date, df, tenor))
+
+    # sort the tenors:
+    # ontn = [x for x in rates_list if x[3] == 'ONTN']
+    # tn = [x for x in rates_list if x[3] == 'TN']
+    # rest = [x for x in rates_list if x[3] not in ['ONTN','TN']]
+    # rest.sort(key = lambda x: x[1])
+    # rates_list = ontn + tn + rest
+
     if ccy is not None:
         with open(ccy + '_curve.pickle', 'wb') as f:
-            cloudpickle.dump(rates_dict, f)
-    curve = construct_OIS_curve(rates_dict)
+            cloudpickle.dump(rates_list, f)
+    print(rates_list)
+    # TODO: uncomment!
+    curve = None
+    #curve = construct_OIS_curve(rates_list)
     return curve
 
 if __name__ == "__main__":

@@ -8,16 +8,18 @@ from mosaicsmartdata.core.quote import Quote
 
 def implied_discounting_curve(spot_mid, outrights, usd_curve, spot_date, ccy):#, valuation_date = None):
     disc_factors = []
-    for fwd_date, fwd_mid in outrights.items():
+    for fwd_date, tmp in outrights.items():
+        fwd_mid, tenor = tmp
         if fwd_date is None or spot_date is None:
-            pass
+            raise ValueError('fwd date and spot date must be valid!')
         # get the USD discounting factors;
         # as we only care about yield differential for pricing,
         # the one_pre_spot flag makes sure we return 1.0 as pre-spot USD disc factor
         usd_df = discounting_factor(usd_curve, spot_date, fwd_date, one_pre_spot= True)
-        implied_df =  usd_df * spot_mid/ fwd_mid# d2 = d1*S/F
-        disc_factors.append((implied_df, spot_date, fwd_date))
+        implied_df = usd_df * spot_mid/ fwd_mid# d2 = d1*S/F
+        disc_factors.append((implied_df, spot_date, fwd_date, tenor))
 
+    disc_factors.sort(key=lambda x: x[2])
     # TODO: where do we get daycount conventions etc?
     curve = curve_from_disc_factors(disc_factors, ccy=ccy)
     return curve
@@ -97,12 +99,14 @@ class FXPricingContextGenerator:
                     direction = 1
                     outright_date = quote.instrument.maturity_date
                     quote_mid = quote.mid
+                    tenor = quote.instrument.tenor
                 elif quote.instrument.legs[1].is_spot(today): #TN
                     #return []
                     direction = -1
                     outright_date = quote.instrument.settle_date
                     self.quotes_tn_latest[non_usd_ccy] = quote
                     quote_mid = quote.mid
+                    tenor = quote.instrument.tenor
                     if self.quotes_on_pending_tn[non_usd_ccy] is not None:
                         self.__call__(self.quotes_on_pending_tn[non_usd_ccy])
                         self.quotes_on_pending_tn[non_usd_ccy] = None
@@ -117,6 +121,7 @@ class FXPricingContextGenerator:
                         quote_mid = quote.mid + tn_quote.mid
                         outright_date = quote.instrument.settle_date
                         direction = -1
+                        tenor = 'ONTN'
                 else:
                     raise ValueError('Can only handle ON, TN and post-spot tenors!')
 
@@ -133,7 +138,7 @@ class FXPricingContextGenerator:
                 if used_mid is None or used_mid==float('nan'):
                     raise ValueError("Invalid used_mid!")
 
-                self.outright_rate[non_usd_ccy][outright_date] = used_mid
+                self.outright_rate[non_usd_ccy][outright_date] = (used_mid, tenor)
         else:
             raise ValueError(quote, ' has an instrument type I can''t handle:', quote.instrument)
 
