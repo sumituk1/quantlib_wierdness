@@ -1,0 +1,35 @@
+version: '2'
+services:
+  producer:
+    image: wurstmeister/kafka
+    depends_on:
+      - kafka
+      - zookeeper
+      - myapp
+    command: "/bin/bash /broker_helpers/load_bond_trades.sh"
+    volumes:
+      - ./broker_helpers:/broker_helpers
+  myapp:
+    image: nexus.mosaicsmartdata.com:8083/mosaicsmartdata/quant-container:latest
+    depends_on:
+      - kafka
+      - zookeeper
+    volumes:
+      - .:/code
+    command: "/bin/bash /code/msx.sh start_unhedged"
+    ports:
+      - "8888:8888"
+      - "8000:8000"
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+        - "9092:9092"
+    links:
+      - zookeeper
+    command: "/bin/bash /broker_helpers/configure_and_start_broker.sh"
+    volumes:
+      - ./broker_helpers:/broker_helpers

@@ -1,5 +1,48 @@
 #! /bin/bash
 
+#
+#
+#
+
+function do_bitbucket_pyb {
+
+	echo "Running do_bitbucket_pyb"
+
+	pyb install_dependencies
+	pyb clean publish --debug
+	status=$?
+
+	if [ ${status} -ne 0 ]; then
+    echo "Failure during build...exiting"
+		exit 1
+	fi
+
+	echo "Completed do_bitbucket_pyb: status $status"
+}
+
+function do_bitbucket_docker_build_push {
+
+	echo "Working dir should be msq-domain"
+
+	if [ ! -f Dockerfile ]; then
+	    echo "Dockerfile not found, this needs to be run from the root of the project"
+	    return 255
+	fi
+
+	echo "Building and Pushing nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest"
+
+	docker build -t nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest .
+	docker push nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-domain:latest
+	status=$?
+
+	if [ ${status} -ne 0 ]; then
+		echo "Failure during build...exiting"
+		exit 1
+	fi
+
+	echo "Completed do_bitbucket_docker_build_push status $status"
+}
+
 function do_build {
 
 	echo "Working dir should be msq-domain"
@@ -130,6 +173,21 @@ function do_pyb_build_all_from_source {
 	pyb --debug
 }
 
+function do_load_bond_trades {
+
+	# Designed to be run from wthin the container
+
+	install_devtools
+
+	# Run the build and tests with debug flag on to get some help
+
+	cd /code
+	echo Loading bond trades from file into Kafka console consumer
+
+	kafka-console-producer.sh --broker-list localhost:9092 --topic topic-a < my_file.txt
+
+}
+
 function do_integration_test {
 
 	# Designed to be run from wthin the container
@@ -151,14 +209,11 @@ function start_jupyter {
 
 	install_devtools
 
-
-
-
 	# Start jupyter
-    cd /code
+  cd /code
 	echo Installing dependencies
 	pyb install_dependencies
-    pyb -x run_unit_tests -x verify clean publish
+  pyb -x run_unit_tests -x verify clean publish
 
 #    RUN pip install --upgrade pip \
 #    && cd msq-domain-1.0.dev0 \
@@ -175,7 +230,7 @@ function start_jupyter {
     #cd scripts
     python ./start-app-hedged.py --kafka_broker kafka --loglevel DEBUG --input_topics topic-a,topic-b --output_topic output-topic
 
-	jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
+	  jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
 
 
 }
@@ -188,6 +243,57 @@ function do_attach {
 function do_attach_msq_domain {
 
 	do_attach msqdomain_myapp_1
+}
+
+function do_wait_for_kafka {
+  echo "Waiting upto 120 seconds for Kafka:9092 to be online"
+  ./broker_helpers/wait-for-it.sh -t 120 kafka:9092
+  result=$?
+}
+
+function do_keep_alive {
+  echo "Executing keep_alive"
+  tail -f /dev/null
+}
+
+# function do_start_hedged {
+#   echo "Executing start-app-hedged.py"
+#   do_wait_for_kafka
+#   python /scripts/start-app-hedged.py --kafka_broker kafka --loglevel DEBUG --input_topics bond-trades-topic,bond-quotes-topic --output_topic output-topic
+# }
+#
+# function do_start_unhedged {
+#   echo "Executing start-app-hist-unhedged.py"
+#   do_wait_for_kafka
+#   cd /
+#   ls -l scripts
+#   jupyter notebook --no-browser --ip=0.0.0.0 --port=8999 &
+#   python /scripts/start-app-hist-unhedged.py --kafka_broker kafka --loglevel DEBUG --input_topics bond-trades-topic --output_topic output-topic --logfile /code/logs/application.log
+# }
+
+function do_start_unhedged {
+	install_devtools
+  cd /code
+	ls -1
+	echo Installing dependencies
+	pyb install_dependencies
+  pyb -x run_unit_tests -x verify clean publish
+  cd /code/target/dist/msq-domain-1.0.dev0
+  pip install .
+  cp mosaicsmartdata/configuration/*.csv  /opt/conda/lib/python3.5/site-packages/mosaicsmartdata/configuration/
+  python ./scripts/start-app-hist-unhedged.py --kafka_broker kafka --loglevel DEBUG --input_topics bond-trades-topic --output_topic output-topic --logfile /code/target/application.log
+	jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
+}
+
+function do_start_debug {
+
+	docker-compose -f docker-compose-debug.yml down
+	docker-compose -f docker-compose-debug.yml up -d
+}
+
+function do_stop_debug {
+
+	docker-compose -f docker-compose-debug.yml down
 }
 
 case "$1" in
@@ -239,7 +345,22 @@ attach)
 attach_msq_domain)
    do_attach_msq_domain
    ;;
- *)
+bitbucket_pyb)
+   do_bitbucket_pyb
+	 ;;
+bitbucket_docker_build_push)
+   do_bitbucket_docker_build_push
+	 ;;
+start_unhedged)
+  do_start_unhedged
+	;;
+start_debug)
+  do_start_debug
+	;;
+stop_debug)
+  do_stop_debug
+	;;
+*)
    echo "Usage: dockerctrl {build_image|tag_image|push_image|pull_image|btp_image|link_source|run_build|ps}" >&2
    echo
    echo "link_source              - links current source directory into docker container" >&2

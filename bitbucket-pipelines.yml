@@ -1,5 +1,5 @@
 image:
-  name: nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-docker
+  name: nexus.mosaicsmartdata.com:8083/mosaicsmartdata/msq-docker:latest
   username: $DOCKER_REPO_USERNAME
   password: $DOCKER_REPO_PASSWORD
   email: james@mosaicsmartdata.com
@@ -9,6 +9,7 @@ pipelines:
       - step:
           script:
             - docker login nexus.mosaicsmartdata.com:8083 -u $DOCKER_REPO_USERNAME -p $DOCKER_REPO_PASSWORD
+            - export KAFKA_BROKER=localhost
             - pyb install_dependencies
             - pyb clean publish
           services:
@@ -19,7 +20,13 @@ pipelines:
       - step:
           script:
             - docker login nexus.mosaicsmartdata.com:8083 -u $DOCKER_REPO_USERNAME -p $DOCKER_REPO_PASSWORD
-            - bash msx.sh btp_image
+            - export KAFKA_BROKER=localhost
+            - pyb install_dependencies
+            - bash msx.sh bitbucket_pyb
+            - bash msx.sh bitbucket_docker_build_push
+          services:
+            - zookeeper
+            - kafka
 definitions:
   services:
     zookeeper:
@@ -27,6 +34,6 @@ definitions:
     kafka:
       image: wurstmeister/kafka
       environment:
-        KAFKA_ADVERTISED_HOST_NAME: "kafka"
+        KAFKA_ADVERTISED_HOST_NAME: "localhost"
 options:
   docker: true
