@@ -36,6 +36,8 @@ class FXPricingContextGenerator:
         self.static = InstrumentStaticSingleton()
         self.today = None
         self.quotes_pending_spot = {}
+        self.quotes_on_pending_tn = {}
+        self.quotes_tn_latest = {}
 
     def __call__(self, quote: Quote):
         today = quote.timestamp.date()
@@ -47,7 +49,6 @@ class FXPricingContextGenerator:
             self.curves = {}
             self.today = today
             self.quotes_pending_spot = {}
-
 
         # insert the latest quote into the correct storage
         if isinstance(quote.instrument, OIS):
@@ -66,13 +67,15 @@ class FXPricingContextGenerator:
 
             if non_usd_ccy not in self.spot_rate:
                 self.spot_rate[non_usd_ccy] = None
-                self.quotes_pending_spot[non_usd_ccy] = []
+                self.quotes_pending_spot[non_usd_ccy] = [] # can be multiple tenors
+                self.quotes_on_pending_tn[non_usd_ccy]=None # at most one per currency
+                self.quotes_tn_latest[non_usd_ccy]= None
                 self.spot_date[non_usd_ccy] = self.date_calculator.spot_date('fx', ('USD',non_usd_ccy), today)
             if non_usd_ccy not in self.outright_rate:
                 self.outright_rate[non_usd_ccy] = {}
 
             # calculate normalized mid
-            if isinstance(quote.instrument, FXForward): # forwards or spot
+            if isinstance(quote.instrument, FXForward): # forward or spot
                 used_mid = quote.mid
                 if invert:
                     used_mid = 1 / used_mid
@@ -81,7 +84,7 @@ class FXPricingContextGenerator:
                     self.spot_rate[non_usd_ccy] = used_mid
                     for q in self.quotes_pending_spot[non_usd_ccy]:
                         self.__call__(q)
-                        self.quotes_pending_spot[non_usd_ccy] = []
+                    self.quotes_pending_spot[non_usd_ccy] = []
                 else: # an outright
                     self.outright_rate[non_usd_ccy][quote.instrument.settle_date] = used_mid
             elif isinstance(quote.instrument, FXSwap): # FXSwap
@@ -93,25 +96,43 @@ class FXPricingContextGenerator:
                 if quote.instrument.legs[0].is_spot(today):
                     direction = 1
                     outright_date = quote.instrument.maturity_date
-                elif quote.instrument.legs[1].is_spot(today): # pre-spot, TN
+                    quote_mid = quote.mid
+                elif quote.instrument.legs[1].is_spot(today): #TN
                     #return []
                     direction = -1
                     outright_date = quote.instrument.settle_date
+                    self.quotes_tn_latest[non_usd_ccy] = quote
+                    quote_mid = quote.mid
+                    if self.quotes_on_pending_tn[non_usd_ccy] is not None:
+                        self.__call__(self.quotes_on_pending_tn[non_usd_ccy])
+                        self.quotes_on_pending_tn[non_usd_ccy] = None
+
                 elif quote.instrument.tenor == 'ON':
-                    # TODO: calculate fair rates to today from ON, TN and spot
-                    return []
+                    tn_quote = self.quotes_tn_latest[non_usd_ccy]
+                    if tn_quote is None:
+                        self.quotes_on_pending_tn[non_usd_ccy] = quote
+                        return []
+                    else:
+                        # construct a synthetic price from O to spot
+                        quote_mid = quote.mid + tn_quote.mid
+                        outright_date = quote.instrument.settle_date
+                        direction = -1
                 else:
-                    raise ValueError('One of the FXSwap legs must be spot!')
+                    raise ValueError('Can only handle ON, TN and post-spot tenors!')
+
 
                 my_spot = self.spot_rate[non_usd_ccy]
                 pip_size = self.static.pip_size(quote.instrument.ccy)
                 if invert:
-                    used_mid = 1/(1/my_spot + direction*quote.mid*pip_size)
+                    used_mid = 1/(1/my_spot + direction*quote_mid*pip_size)
                 else:
-                    used_mid = my_spot + direction*quote.mid*pip_size
+                    used_mid = my_spot + direction*quote_mid*pip_size
 
                 if outright_date is None:
-                    pass
+                    raise ValueError("Outright date is None!")
+                if used_mid is None or used_mid==float('nan'):
+                    raise ValueError("Invalid used_mid!")
+
                 self.outright_rate[non_usd_ccy][outright_date] = used_mid
         else:
             raise ValueError(quote, ' has an instrument type I can''t handle:', quote.instrument)
