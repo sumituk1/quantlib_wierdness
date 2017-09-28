@@ -281,8 +281,8 @@ function do_start_unhedged {
   cd /code/target/dist/msq-domain-1.0.dev0
   pip install .
   cp mosaicsmartdata/configuration/*.csv  /opt/conda/lib/python3.5/site-packages/mosaicsmartdata/configuration/
-  python ./scripts/start-app-hist-unhedged.py --kafka_broker kafka --loglevel DEBUG --input_topics bond-trades-topic --output_topic output-topic --logfile /code/target/application.log
-	jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
+  python ./scripts/start-app-hist-unhedged.py --persist True --kafka_broker kafka --loglevel INFO --input_topics bond-trades-topic --output_topic output-topic --logfile /code/target/application.log
+  jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
 }
 
 function do_start_debug {
