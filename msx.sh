@@ -288,8 +288,8 @@ function do_start_unhedged {
   cp mosaicsmartdata/configuration/*.csv  /opt/conda/lib/python3.5/site-packages/mosaicsmartdata/configuration/
   pwd
 	echo "Executing ./scripts/start-app-hist-unhedged.py"
-	python ./scripts/start-app-hist-unhedged.py --kafka_broker kafka --loglevel DEBUG --input_topics bond-trades-topic --output_topic output-topic --logfile /code/target/application.log
-  echo "Start jupyter notebook"
+	python ./scripts/start-app-hist-unhedged.py --persist True --kafka_broker kafka --loglevel INFO --input_topics bond-trades-topic --output_topic output-topic --logfile /code/target/application.log
+    echo "Start jupyter notebook"
 	jupyter notebook --no-browser --ip=0.0.0.0 --port=8888
 }
 
