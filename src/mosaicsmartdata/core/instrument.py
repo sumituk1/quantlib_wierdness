@@ -5,7 +5,7 @@ from mosaicsmartdata.common.constants import Country
 from mosaicsmartdata.core.date_calculator import DateCalculator
 from mosaicsmartdata.core.generic_parent import GenericParent
 from mosaicsmartdata.core.instrument_static_singleton import InstrumentStaticSingleton
-from mosaicsmartdata.core.curve_utils import discounting_factor
+from mosaicsmartdata.core.curve_utils import discounting_factor, get_rate
 
 TenorTuple = namedtuple('TenorTuple','tenor today instr')
 SpotRate = namedtuple('SpotRate','ccy1  ccy2 today spot_date mid')
@@ -37,11 +37,11 @@ class PricingContext:
         else:
             raise ValueError('Invalid currency pair ' + str(ccypair) + ' I only know ' + str(self.spot.keys))
 
-    def fair_forward(self, ccypair, date):
+    def fair_forward_extended(self, ccypair, date):
         spot_rate = self.spot_rate(ccypair)
         spot_date = date_calc.spot_date('fx', ccypair, self.today)
         if date == spot_date:
-            return spot_rate
+            return (spot_rate, spot_rate, 1, 1)
 
         d1 = discounting_factor(self.curve[ccypair[0]],
                                 spot_date,
@@ -54,7 +54,19 @@ class PricingContext:
                                 one_pre_spot=True if ccypair[1] == 'USD' else False
                                 )
         fwd = d1*spot_rate / d2
+        return (fwd, spot_rate, d1, d2)
+
+    def fair_forward(self, ccypair, date):
+        fwd, spot_rate, d1, d2 = self.fair_forward_extended(ccypair, date)
         return fwd
+
+    def fair_fwd_points_extended(self, ccypair, start_date, end_date):
+        bundle1 = self.fair_forward_extended(ccypair, end_date)
+        bundle2 = self.fair_forward_extended(ccypair, start_date)
+        if bundle2[2]==bundle2[3]:
+            return bundle1
+        else:
+            return bundle2
 
     def fair_fwd_points(self, ccypair, start_date, end_date):
         pip_size = static.pip_size(ccypair)
@@ -132,11 +144,11 @@ class FXMultiForward(FXInstrument):
         if item in self.legs[0].__dict__:
             return self.legs[0].__dict__[item]
         else:
-            return AttributeError('FXMultiForward doesn''t have attribute ', item)
+            raise AttributeError('FXMultiForward doesn''t have attribute ', item)
 
 # an FX Swap is just a multi-forward with just 2 legs
 class FXSwap(FXInstrument):
-    def __init__(self, legs, **kwargs):
+    def __init__(self, legs = None, **kwargs):
         self.legs = legs
         if len(legs) >2:
             raise ValueError("An FXSwap only has 2 legs")
@@ -159,12 +171,17 @@ class FXSwap(FXInstrument):
         if item in self.legs[0].__dict__:
             return self.legs[0].__dict__[item]
         else:
-            return AttributeError('FXMultiForward doesn''t have attribute ', item)
+            raise AttributeError('FXMultiForward doesn''t have attribute ', item)
 
     def forward_points(self):
         return (self.legs[1].rate() - self.legs[0].rate())/self.pip_size()
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        return state
 
+    def __setstate__(self, state):
+        self.__dict__.update(state)
 
 class FixedIncomeInstrument(Instrument):
     def __init__(self, *args, **kwargs):
@@ -185,11 +202,15 @@ class FixedIncomeInstrument(Instrument):
 class FixedIncomeIRSwap(FixedIncomeInstrument):
     def __init__(self, *args, **kwargs):
         self.float_coupon_frequency = None
-        self.tenor = None
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
 class OIS(FixedIncomeIRSwap):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+    def price(self, pc: PricingContext): # for now, this instrument is USDOIS only
+        return get_rate(pc.curve['USD'], self.spot_settle_date, self.maturity_date)
+
+
 
 class FixedIncomeBondFuture(FixedIncomeInstrument):
     def __init__(self, *args, **kwargs):
