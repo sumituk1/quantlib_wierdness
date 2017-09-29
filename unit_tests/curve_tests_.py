@@ -6,7 +6,7 @@ from mosaicsmartdata.core.curve_utils import construct_OIS_curve, get_rate, disc
 
 class TestCurves(TestCase):
     def test_disc_factor_curve(self):
-        # convert a list of discounting factors into a curve and back
+        #  convert a list of discounting factors into a curve and back
         # spot_date = datetime.date(2017, 9, 4)
         # maturity_dates = [ spot_date + datetime.timedelta(days=7*i) for i in range(1,4)]
         # disc_factors = [ 1 + 0.01 * i for i in range(0.3)]
