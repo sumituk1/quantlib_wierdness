@@ -87,7 +87,7 @@ class sym_to_instrument:
                 else:
                     end_date = date_calc.date_add(spot_date, tenor)
 
-                my_instr = OIS(ccy=pair, spot_settle_date=spot_date, maturity_date=end_date, sym=sym)
+                my_instr = OIS(ccy=pair, spot_settle_date=spot_date, maturity_date=end_date, sym=sym, tenor = tenor)
 
                 self.instr_cache[(sym, today)] = my_instr
 

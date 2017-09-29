@@ -125,12 +125,11 @@ from mosaicsmartdata.common.quantlib.bond.fixed_bond import pydate_to_qldate
 #         #     return usd_ois.usd_3M_c, forward_rate, dates
 
 
-def construct_OIS_curve(usd_ois_quotes, holiday_cities = HolidayCities.USD):
+def construct_OIS_curve(usd_ois_quotes, holiday_cities = HolidayCities.USD, ccy = None):
     '''
     :param usd_ois_quotes: a dict where the key is the tuple (start date, end date) and the value is the quote
     :return: a curve object
     '''
-    # TODO: implement
     # create the OIS curve
     us_calendar = UnitedStates()
     valuation_date = [key for key in usd_ois_quotes][0][0]
@@ -139,10 +138,12 @@ def construct_OIS_curve(usd_ois_quotes, holiday_cities = HolidayCities.USD):
     usd_ois.create_deposit_rates(usd_ois_quotes)
     # ois_rates = usd_ois_quotes
     usd_ois.create_ois_swaps(usd_ois_quotes)
+    usd_ois.source_data = usd_ois_quotes
+    usd_ois.ccy = ccy
     return usd_ois
 
 
-def get_rate(ois_curve, start_date, end_date, daycount = Actual360()):
+def get_rate(ois_curve: USDOIS, start_date, end_date, daycount = Actual360()):
     '''
     :param curve:
     :param start_date:
@@ -151,6 +152,8 @@ def get_rate(ois_curve, start_date, end_date, daycount = Actual360()):
     :return: a double: value of the rate implied by the curve between the two dates
     '''
     # c = ois_curve.ois_curve_c
+    if pydate_to_qldate(start_date) < pydate_to_qldate(ois_curve.valuationDate):
+        raise ValueError('Trying a bad call?')
     return ois_curve.ois_curve_c.forwardRate(pydate_to_qldate(start_date),
                          pydate_to_qldate(end_date),
                          daycount, Simple).rate()*100
@@ -194,7 +197,7 @@ def discounting_factor(ois_curve, date_1, date_2 = None, one_pre_spot = False):
 
     if invert:
         df = 1/df
-
+    #print(dr)
     return df
 
 
@@ -209,7 +212,7 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
         # TODO: guess calendar from currency?
         calendar = UnitedStates()
     rates_list = []
-    for disc_factor, start_date, end_date in disc_factors:
+    for start_date, end_date, disc_factor, tenor in disc_factors:
         if start_date is None or end_date is None:
             pass
         try:
@@ -221,7 +224,7 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
         dt = calendar.businessDaysBetween(fixed_bond.pydate_to_qldate(start_date),
                                           fixed_bond.pydate_to_qldate(end_date)) / 360
         df = -(1 / dt) * np.log(disc_factor)
-        rates_list.append((start_date, end_date, df, ""))
+        rates_list.append((start_date, end_date, df, tenor))
 
     # sort the tenors:
     # ontn = [x for x in rates_list if x[3] == 'ONTN']
@@ -230,13 +233,13 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
     # rest.sort(key = lambda x: x[1])
     # rates_list = ontn + tn + rest
 
-    if ccy is not None:
-        with open(ccy + '_curve.pickle', 'wb') as f:
-            cloudpickle.dump(rates_list, f)
-    print(rates_list)
+    # if ccy is not None:
+    #     with open(ccy + '_curve.pickle', 'wb') as f:
+    #         cloudpickle.dump(rates_list, f)
+    #print(rates_list)
     # TODO: uncomment!
     # curve = None
-    curve = construct_OIS_curve(rates_list)
+    curve = construct_OIS_curve(rates_list, ccy = ccy)
     return curve
 
 if __name__ == "__main__":
