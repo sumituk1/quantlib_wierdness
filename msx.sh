@@ -6,7 +6,13 @@
 
 function do_bitbucket_pyb {
 
+  echo "Installing pybuilder"
+
+  pip install --upgrade pip && pip install pybuilder --ignore-installed
+
 	echo "Running do_bitbucket_pyb"
+
+  cd code
 
 	pyb install_dependencies
 	pyb clean publish --debug
