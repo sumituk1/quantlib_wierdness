@@ -10,8 +10,8 @@ pipelines:
           script:
             - docker login nexus.mosaicsmartdata.com:8083 -u $DOCKER_REPO_USERNAME -p $DOCKER_REPO_PASSWORD
             - export KAFKA_BROKER=localhost
-            - pyb install_dependencies
-            - pyb clean publish
+            - bash msx.sh bitbucket_pyb
+            - bash msx.sh bitbucket_docker_build_push
           services:
             - zookeeper
             - kafka
@@ -21,7 +21,6 @@ pipelines:
           script:
             - docker login nexus.mosaicsmartdata.com:8083 -u $DOCKER_REPO_USERNAME -p $DOCKER_REPO_PASSWORD
             - export KAFKA_BROKER=localhost
-            - pyb install_dependencies
             - bash msx.sh bitbucket_pyb
             - bash msx.sh bitbucket_docker_build_push
           services:
