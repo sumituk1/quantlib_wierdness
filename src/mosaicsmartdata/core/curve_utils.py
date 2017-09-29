@@ -2,8 +2,7 @@ import datetime as dt
 import cloudpickle
 import numpy as np
 from QuantLib import *
-
-
+from mosaicsmartdata.common.constants import HolidayCities
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
 from mosaicsmartdata.common.quantlib.curve.usdois import USDOIS
@@ -126,7 +125,7 @@ from mosaicsmartdata.common.quantlib.bond.fixed_bond import pydate_to_qldate
 #         #     return usd_ois.usd_3M_c, forward_rate, dates
 
 
-def construct_OIS_curve(usd_ois_quotes):
+def construct_OIS_curve(usd_ois_quotes, holiday_cities = HolidayCities.USD):
     '''
     :param usd_ois_quotes: a dict where the key is the tuple (start date, end date) and the value is the quote
     :return: a curve object
@@ -136,9 +135,10 @@ def construct_OIS_curve(usd_ois_quotes):
     us_calendar = UnitedStates()
     valuation_date = [key for key in usd_ois_quotes][0][0]
     usd_ois = USDOIS(pydate_to_qldate(valuation_date),
-                     us_calendar)  # Pass in the Trade date- not the settle_date
-    ois_rates = usd_ois_quotes
-    usd_ois.create_ois_swaps(ois_rates)
+                     us_calendar, holiday_cities)  # Pass in the Trade date- not the settle_date
+    usd_ois.create_deposit_rates(usd_ois_quotes)
+    # ois_rates = usd_ois_quotes
+    usd_ois.create_ois_swaps(usd_ois_quotes)
     return usd_ois
 
 
@@ -209,7 +209,7 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
         # TODO: guess calendar from currency?
         calendar = UnitedStates()
     rates_list = []
-    for disc_factor, start_date, end_date, tenor in disc_factors:
+    for disc_factor, start_date, end_date in disc_factors:
         if start_date is None or end_date is None:
             pass
         try:
@@ -221,7 +221,7 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
         dt = calendar.businessDaysBetween(fixed_bond.pydate_to_qldate(start_date),
                                           fixed_bond.pydate_to_qldate(end_date)) / 360
         df = -(1 / dt) * np.log(disc_factor)
-        rates_list.append((start_date, end_date, df, tenor))
+        rates_list.append((start_date, end_date, df, ""))
 
     # sort the tenors:
     # ontn = [x for x in rates_list if x[3] == 'ONTN']
@@ -235,8 +235,8 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
             cloudpickle.dump(rates_list, f)
     print(rates_list)
     # TODO: uncomment!
-    curve = None
-    #curve = construct_OIS_curve(rates_list)
+    # curve = None
+    curve = construct_OIS_curve(rates_list)
     return curve
 
 if __name__ == "__main__":

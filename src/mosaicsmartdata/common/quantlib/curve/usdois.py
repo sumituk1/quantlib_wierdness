@@ -3,6 +3,7 @@ import datetime as dt
 import numpy as np
 from mosaicsmartdata.common.constants import BootStrapMethod
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
+from mosaicsmartdata.common.constants import HolidayCities
 
 class USDOIS:
     # today = Date_todaysDate()
@@ -12,6 +13,8 @@ class USDOIS:
         self.calendar = UnitedStates()  # calendar class
         self.valuationDate = Date_todaysDate()
         self.ois_curve_c = None  ## Holds the bootstrapped OIS curve
+        self.helpers = None
+        self.holiday_cities = HolidayCities.USD
 
         if len(args) == 0:
             self.valuationDate = Date_todaysDate()
@@ -20,18 +23,37 @@ class USDOIS:
             self.valuationDate = args[0]
             Settings.instance().evaluationDate = self.valuationDate
             calendar = args[1]
+            self.holiday_cities = args[2]
             # self.usd_libor = USDLibor()
 
-    # Finally, we add OIS quotes up to 30 years.
-    def create_ois_swaps(self, ois_swap_rates):
+    def create_deposit_rates(self, depo_rates):
+        # get ONTN
+        depo_rates = [x[0:-1] for x in depo_rates if x[-1] in ["ONTN", "TN"]]
+        if len(depo_rates) > 0:
+            self.helpers = [DepositRateHelper(QuoteHandle(SimpleQuote(rate/100)),
+                            Period(1, Days),
+                            fixed_bond.calculateBusDays(self.holiday_cities,
+                                                        self.valuationDate,
+                                                        fixed_bond.pydate_to_qldate(sd)),
+                            TARGET(), Following, False, Actual360())
+                            for sd, ed, rate in depo_rates]
 
-        helpers = [DatedOISRateHelper(start_date, end_date, QuoteHandle(SimpleQuote(rate / 100)), self.ff_local)
-                   for start_date, end_date, rate in [tuple((fixed_bond.pydate_to_qldate(key[0]),
-                                                             fixed_bond.pydate_to_qldate(key[1]),
-                                                             ois_swap_rates[key])) for key
-                                                      in ois_swap_rates]]
+    # Finally, we add OIS quotes up to 30 years.
+    def create_ois_swaps(self, ois_swap_rates, helpers=None):
+        if self.helpers is None:
+            self.helpers = [DatedOISRateHelper(start_date, end_date, QuoteHandle(SimpleQuote(rate / 100)), self.ff_local)
+                           for start_date, end_date, rate in [tuple((fixed_bond.pydate_to_qldate(sd),
+                                                                     fixed_bond.pydate_to_qldate(ed),
+                                                                     rate)) for sd,ed,rate, label
+                                                              in ois_swap_rates if label not in ['ONTN','TN']]]
+        else:
+            self.helpers += [DatedOISRateHelper(start_date, end_date, QuoteHandle(SimpleQuote(rate / 100)), self.ff_local)
+                           for start_date, end_date, rate in [tuple((fixed_bond.pydate_to_qldate(sd),
+                                                                     fixed_bond.pydate_to_qldate(ed),
+                                                                     rate)) for sd,ed,rate, label
+                                                              in ois_swap_rates if label not in ['ONTN','TN']]]
         # for start_date, end_date, rate in ois_swap_rates]
-        self.ois_curve_c = PiecewiseLogCubicDiscount(0, self.calendar, helpers, Actual365Fixed())
+        self.ois_curve_c = PiecewiseLogCubicDiscount(0, self.calendar, self.helpers, Actual365Fixed())
         self.ois_curve_c.enableExtrapolation()
         # return ois_curve_c
 
@@ -57,9 +79,9 @@ class USDOIS:
                    for rate, tenor in usd_3M_swap_rates]
 
         if bootStrapMethod == BootStrapMethod.PiecewiseLogCubicDiscount:
-            self.usd_3M_c = PiecewiseLogCubicDiscount(0, TARGET(), helpers, Actual365Fixed())
+            self.usd_3M_c = PiecewiseLogCubicDiscount(0, TARGET(), self.helpers, Actual365Fixed())
         elif bootStrapMethod == BootStrapMethod.PiecewiseFlatForward:
-            self.usd_3M_c = PiecewiseFlatForward(0, TARGET(), helpers, Actual365Fixed())
+            self.usd_3M_c = PiecewiseFlatForward(0, TARGET(), self.helpers, Actual365Fixed())
 
         # Also, we enable extrapolation beyond the maturity of the last helper; that is mostly
         # for convenience as we retrieve rates to plot the curve near its far end.

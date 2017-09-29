@@ -13,14 +13,26 @@ class TestCurves(TestCase):
         # inputs = [ (df, spot_date, end) for df, end in zip(maturity_dates,disc_factors)]
 
         spot_date = datetime.date(2017, 9, 21)
-        maturity_dates = [datetime.date(2017, 10, 23), datetime.date(2017, 11, 21), datetime.date(2017, 12, 21)]
+        maturity_dates = [datetime.date(2017, 10, 23),
+                          datetime.date(2017, 11, 21),
+                          datetime.date(2017, 12, 21)]
         ois_rates = [1.1440, 1.1490, 1.162]
-        rate_dict = {}
-        for md, rate in zip(maturity_dates, ois_rates):
-            rate_dict[(spot_date, md)] = rate
+
+        rates_list = [
+            (datetime.date(2017, 9, 21), datetime.date(2017, 10, 23), 1.1440, '1M'),
+            (datetime.date(2017, 9, 21), datetime.date(2017, 11, 21), 1.1490, '2M'),
+            (datetime.date(2017, 9, 21), datetime.date(2017, 12, 21), 1.162, '3M')]
+        #
+        #
+        #
+        #
+        # rate_dict = {}
+        # for md, rate in zip(maturity_dates, ois_rates):
+        #     rate_dict[(spot_date, md)] = rate
+
 
         # 1. Bootstrap the OIS curve from the rates
-        ois_curve = construct_OIS_curve(rate_dict)
+        ois_curve = construct_OIS_curve(rates_list)
 
         # 2. Get the disc factors
         discount_factors = dict() # store the discount factors by end_date
@@ -28,7 +40,7 @@ class TestCurves(TestCase):
             discount_factors[t] = discounting_factor(ois_curve, t)
 
         # 3. Create a curve from discount factors
-        maturity_dates =list( sorted(discount_factors.keys()))
+        maturity_dates = list(sorted(discount_factors.keys()))
         disc_factors = [discount_factors[key] for key in sorted(discount_factors.keys())]
         inputs = [(df, spot_date, end) for df, end in zip(disc_factors, maturity_dates)]
         ois_curve = curve_from_disc_factors(inputs)
@@ -56,8 +68,13 @@ class TestCurves(TestCase):
         for md, rate in zip(maturity_dates, ois_rates):
             rate_dict[(spot_date, md)] = rate
 
+        rates_list = [
+            (datetime.date(2017, 9, 21), datetime.date(2017, 10, 23), 1.1440, '1M'),
+            (datetime.date(2017, 9, 21), datetime.date(2017, 11, 21), 1.1490, '2M'),
+            (datetime.date(2017, 9, 21), datetime.date(2017, 12, 21), 1.162, '3M')]
+
         # 1. Bootstrap the OIS curve from the rates
-        ois_curve = construct_OIS_curve(rate_dict)
+        ois_curve = construct_OIS_curve(rates_list)
 
         # 2. get the OIS rates from the bootstrapped curve
         #    This will be close but not exact to the input rates used for calibration
@@ -65,7 +82,7 @@ class TestCurves(TestCase):
             self.assertAlmostEqual(rate, get_rate(ois_curve, spot_date, md), places=4)
 
     def test_pre_spot_curve(self):
-        rates_list = [\
+        rates_list = [
             (datetime.date(2017, 6, 26), datetime.date(2017, 6, 28), 1, 'ONTN'),
             (datetime.date(2017, 6, 27), datetime.date(2017, 6, 28), 1, 'TN'),
             (datetime.date(2017, 6, 28), datetime.date(2017, 6, 29), 1.13257537723, 'SN'),
@@ -73,20 +90,19 @@ class TestCurves(TestCase):
             (datetime.date(2017, 6, 28), datetime.date(2017, 7, 28),1.12162081528,'1M'),
             (datetime.date(2017, 6, 28), datetime.date(2017, 9, 28), 1.13030866308,'3M'),
             (datetime.date(2017, 6, 28), datetime.date(2017, 12, 28), 1.15646526169, '6M'),
-            (datetime.date(2017, 6, 28), datetime.date(2018, 6, 28), 1.22111758501, '1Y')\
-            ]
+            (datetime.date(2017, 6, 28), datetime.date(2018, 6, 28), 1.22111758501, '1Y')]
 
         a1 = datetime.date(2017, 6, 26)
         a2 = datetime.date(2017, 6, 27)
         b = datetime.date(2017, 6, 28)
 
-        eur_curve =  construct_OIS_curve(rates_list)
+        eur_curve = construct_OIS_curve(rates_list)
 
         df = discounting_factor(eur_curve, a1, b)
-        self.assertEqual(df, rates_list[0][2])
+        self.assertAlmostEqual(df, 0.99446,4)
 
         df = discounting_factor(eur_curve, a2, b)
-        self.assertEqual(df, rates_list[1][2])
+        self.assertAlmostEqual(df, 0.9972, 4)
 
 if __name__ == '__main__':
     #    unittest.main()
