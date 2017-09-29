@@ -65,8 +65,10 @@ class PricingContext:
         bundle2 = self.fair_forward_extended(ccypair, start_date)
         if bundle2[2]==bundle2[3]:
             return bundle1
-        else:
+        elif bundle1[2]==bundle1[3]:
             return bundle2
+        else:
+            return bundle1, bundle2
 
     def fair_fwd_points(self, ccypair, start_date, end_date):
         pip_size = static.pip_size(ccypair)
