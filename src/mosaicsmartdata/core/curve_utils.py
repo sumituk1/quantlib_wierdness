@@ -130,20 +130,21 @@ def construct_OIS_curve(usd_ois_quotes, holiday_cities = HolidayCities.USD, ccy 
     :param usd_ois_quotes: a dict where the key is the tuple (start date, end date) and the value is the quote
     :return: a curve object
     '''
+    rates = usd_ois_quotes
     # create the OIS curve
     us_calendar = UnitedStates()
     valuation_date = [key for key in usd_ois_quotes][0][0]
     usd_ois = USDOIS(pydate_to_qldate(valuation_date),
                      us_calendar, holiday_cities)  # Pass in the Trade date- not the settle_date
-    usd_ois.create_deposit_rates(usd_ois_quotes)
+    usd_ois.create_deposit_rates(rates)
     # ois_rates = usd_ois_quotes
-    usd_ois.create_ois_swaps(usd_ois_quotes)
-    usd_ois.source_data = usd_ois_quotes
+    usd_ois.create_ois_swaps(rates)
+    usd_ois.source_data = rates
     usd_ois.ccy = ccy
     return usd_ois
 
 
-def get_rate(ois_curve: USDOIS, start_date, end_date, daycount = Actual360()):
+def get_rate(ois_curve, start_date, end_date, daycount = Actual360()):
     '''
     :param curve:
     :param start_date:

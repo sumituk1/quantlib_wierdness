@@ -14,6 +14,7 @@ class USDOIS:
         self.valuationDate = Date_todaysDate()
         self.ois_curve_c = None  ## Holds the bootstrapped OIS curve
         self.helpers = None
+        self.source_data = None
         self.holiday_cities = HolidayCities.USD
 
         if len(args) == 0:
@@ -25,6 +26,9 @@ class USDOIS:
             calendar = args[1]
             self.holiday_cities = args[2]
             # self.usd_libor = USDLibor()
+    # @property
+    # def source_data(self):
+    #     return self.source_data
 
     def create_deposit_rates(self, depo_rates):
         # get ONTN

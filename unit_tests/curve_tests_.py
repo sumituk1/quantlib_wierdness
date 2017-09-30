@@ -104,6 +104,31 @@ class TestCurves(TestCase):
         df = discounting_factor(eur_curve, a2, b)
         self.assertAlmostEqual(df, 0.9972, 4)
 
+    def test_wierd_ql_behaviour(self):
+        rates_list = [
+            (datetime.date(2017, 6, 26), datetime.date(2017, 6, 28), 1, 'ONTN'),
+            (datetime.date(2017, 6, 27), datetime.date(2017, 6, 28), 1, 'TN'),
+            (datetime.date(2017, 6, 28), datetime.date(2017, 6, 29), 1.13257537723, 'SN'),
+            (datetime.date(2017, 6, 28), datetime.date(2017, 7, 5), 1.10253256208, 'SW'),
+            (datetime.date(2017, 6, 28), datetime.date(2017, 7, 28), 1.12162081528, '1M'),
+            (datetime.date(2017, 6, 28), datetime.date(2017, 9, 28), 1.13030866308, '3M'),
+            (datetime.date(2017, 6, 28), datetime.date(2017, 12, 28), 1.15646526169, '6M'),
+            (datetime.date(2017, 6, 28), datetime.date(2018, 6, 28), 1.22111758501, '1Y')]
+
+        a1 = datetime.date(2017, 6, 28)
+        a2 = datetime.date(2017, 7, 5)
+        # b = datetime.date(2017, 6, 28)
+        eur_curve = construct_OIS_curve(rates_list)
+        print(get_rate(eur_curve, a1, a2))
+        print(discounting_factor(eur_curve, a1, a2))
+
+        # now create a new eur_curve from the same data
+        eur_curve_2 = construct_OIS_curve(eur_curve.source_data)
+
+        # test that the old curve and the new curve should give exactly the same forward rates & disc rates
+        self.assertEquals(get_rate(eur_curve, a1, a2), get_rate(eur_curve_2, a1, a2))
+        self.assertEquals(discounting_factor(eur_curve, a1, a2), discounting_factor(eur_curve_2, a1, a2))
+
 if __name__ == '__main__':
     #    unittest.main()
     k= TestCurves()
