@@ -42,7 +42,7 @@ class TestCurves(TestCase):
         # 3. Create a curve from discount factors
         maturity_dates = list(sorted(discount_factors.keys()))
         disc_factors = [discount_factors[key] for key in sorted(discount_factors.keys())]
-        inputs = [(df, spot_date, end) for df, end in zip(disc_factors, maturity_dates)]
+        inputs = [(spot_date, end, df, "") for df, end in zip(disc_factors, maturity_dates)]
         ois_curve = curve_from_disc_factors(inputs)
 
         for md, rate in zip(maturity_dates, ois_rates):

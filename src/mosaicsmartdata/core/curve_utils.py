@@ -125,26 +125,26 @@ from mosaicsmartdata.common.quantlib.bond.fixed_bond import pydate_to_qldate
 #         #     return usd_ois.usd_3M_c, forward_rate, dates
 
 
-def construct_OIS_curve(usd_ois_quotes, holiday_cities = HolidayCities.USD, ccy = None):
+def construct_OIS_curve(usd_ois_quotes_, holiday_cities = HolidayCities.USD, ccy = None):
     '''
     :param usd_ois_quotes: a dict where the key is the tuple (start date, end date) and the value is the quote
     :return: a curve object
     '''
-    rates = usd_ois_quotes
     # create the OIS curve
+    usd_ois_quotes = [(q[0],q[1],q[2],q[3]) for q in usd_ois_quotes_]
     us_calendar = UnitedStates()
     valuation_date = [key for key in usd_ois_quotes][0][0]
     usd_ois = USDOIS(pydate_to_qldate(valuation_date),
                      us_calendar, holiday_cities)  # Pass in the Trade date- not the settle_date
-    usd_ois.create_deposit_rates(rates)
+    usd_ois.create_deposit_rates(usd_ois_quotes)
     # ois_rates = usd_ois_quotes
-    usd_ois.create_ois_swaps(rates)
-    usd_ois.source_data = rates
+    usd_ois.create_ois_swaps(usd_ois_quotes)
+    usd_ois.source_data = usd_ois_quotes_ # for later inspection
     usd_ois.ccy = ccy
     return usd_ois
 
 
-def get_rate(ois_curve, start_date, end_date, daycount = Actual360()):
+def get_rate(ois_curve: USDOIS, start_date, end_date, daycount = Actual360()):
     '''
     :param curve:
     :param start_date:
@@ -224,8 +224,8 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
             pass
         dt = calendar.businessDaysBetween(fixed_bond.pydate_to_qldate(start_date),
                                           fixed_bond.pydate_to_qldate(end_date)) / 360
-        df = -(1 / dt) * np.log(disc_factor)
-        rates_list.append((start_date, end_date, df, tenor))
+        dr = -(1 / dt) * np.log(disc_factor)
+        rates_list.append((start_date, end_date, dr, tenor, disc_factor))
 
     # sort the tenors:
     # ontn = [x for x in rates_list if x[3] == 'ONTN']
