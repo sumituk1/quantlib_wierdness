@@ -6,13 +6,12 @@ This file contains Python codes.
 """
 
 """ Get yield-to-maturity of a bond """
-import datetime as dt
-import QuantLib as ql
 import scipy.optimize as optimize
-from mosaicsmartdata.common import schedule
 from mosaicsmartdata.common.constants import *
 from mosaicsmartdata.common.quantlib.bond import fixed_bond as bond
 from mosaicsmartdata.common.quantlib.bond.bond_price import *
+
+
 # from mosaicsmartdata.common.quantlib.bond.bond_mod_duration import govbond_pvbp
 
 
@@ -27,7 +26,9 @@ def bond_ytm(price, par, yrs_maturity, coupon, settle_date, dcf, freq, calculate
     # calculate the front stub if passed in
     if calculateStub:
         dcf_stub = (
-                   nextCouponDate - settle_date).days / 365.  # TODO: make this configurable as per ACT/ACT, ACT/360 etc.
+                   nextCouponDate - settle_date).days / 365.
+    else:
+        dcf_stub = 0.0 # TODO: make this configurable as per ACT/ACT, ACT/360 etc.
 
     dt = [(i + 1) * dcf for i in range(round(periods))]
     # ytm_func = lambda y: sum([coupon / (1 + y / freq) ** (freq * t) for t in dt]) \
@@ -70,6 +71,47 @@ def govbond_ytm(price, settle_date, next_coupon_date, maturity_date, coupon, fre
 
     return ytm
 
+def govbond_ytm_2(price, settle_date, next_coupon_date, maturity_date, coupon, frequency, day_count):
+    sch = schedule.CSchedule()
+    calculateStub = False
+    # sd = datetime.strptime(sDate, '%Y-%m-%d')
+    # ed = datetime.strptime(maturity, '%Y-%m-%d')
+    # nextCouponDate = datetime.strptime(nextCouponDate, '%Y-%m-%d')
+
+    # convert frequency
+    freq = Frequency.convertFrequencyStr(frequency,coupon)
+
+    if isinstance(next_coupon_date, dt.date):
+        # convert daycount
+        day_count = DayCountConv.convertDayCountStr(day_count)
+        next_coupon_date = dt.datetime.combine(next_coupon_date, dt.datetime.min.time())
+        dcf = sch.days_factor_2(next_coupon_date, maturity_date, day_count, freq)
+        if settle_date != next_coupon_date:
+            calculateStub = True
+        yrs_maturity = sch.days_between_actual(next_coupon_date, maturity_date) / float(day_count.split("/")[-1])
+    else:
+        ## either no next_coupon_date passed in or type is wrong
+        if freq == Frequency.SEMI:
+            dcf = 6 / 12
+        elif freq == Frequency.QUARTERLY:
+            dcf = 3 / 12
+        elif freq == Frequency.MONTHLY:
+            dcf = 1 / 12
+        else:
+            dcf = 1
+        yrs_maturity = sch.days_between_actual(settle_date, maturity_date) / float(day_count.split("/")[-1])
+
+    ytm = bond_ytm(price=price,
+                   par=100,
+                   yrs_maturity=yrs_maturity,
+                   coupon=coupon,
+                   settle_date=settle_date,
+                   dcf=dcf,
+                   freq=freq,
+                   calculateStub=calculateStub,
+                   nextCouponDate=next_coupon_date)
+
+    return ytm
 
 if __name__ == "__main__":
     # ytm = bond_ytm(95.0428, 100, 1.5, 5.75, 2)

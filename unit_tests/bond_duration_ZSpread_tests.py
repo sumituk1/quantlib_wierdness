@@ -36,7 +36,7 @@ class TestBondDurationZSpread(unittest.TestCase):
                                 frequency=frequency,
                                 day_count=daycount)
 
-        self.assertLessEqual(np.abs(duration - 4.839) / 4.839, TOLERANCE, msg=None)
+        self.assertAlmostEqual(duration, 4.778,3)
 
     def test_duration_UST10y(self):
         TOLERANCE = 1e-2
@@ -60,7 +60,7 @@ class TestBondDurationZSpread(unittest.TestCase):
                                 next_coupon_date=nextCouponDate, maturity_date=maturity_date,
                                 coupon=coupon, frequency=frequency, day_count=day_count)
 
-        self.assertLessEqual(np.abs(duration - 8.984) / 8.984, TOLERANCE, msg=None)
+        self.assertAlmostEqual(duration,8.882,3)
 
     def test_duration_UST30y(self):
         TOLERANCE = 1e-2
@@ -90,7 +90,7 @@ class TestBondDurationZSpread(unittest.TestCase):
                                 frequency=frequency,
                                 day_count=day_count)
 
-        self.assertLessEqual(np.abs((duration - 21.084) / 21.084), TOLERANCE, msg=None)
+        self.assertAlmostEqual(duration,20.888,3)
 
     def test_duration_DE10y(self):
         TOLERANCE = 15e-3
@@ -119,7 +119,7 @@ class TestBondDurationZSpread(unittest.TestCase):
                                 frequency=frequency,
                                 day_count=day_count)
 
-        self.assertLessEqual(np.abs(duration - 9.723) / 9.723, TOLERANCE, msg=None)
+        self.assertAlmostEqual(duration, 9.603,3)
 
     def test_duration_IT30y(self):
         TOLERANCE = 3e-2
@@ -148,7 +148,7 @@ class TestBondDurationZSpread(unittest.TestCase):
                                 day_count=day_count)
 
         print("IT 30y benchmark duration = ", duration)
-        self.assertLessEqual(np.abs(duration - 18.332) / 18.332, TOLERANCE, msg=None)
+        self.assertAlmostEqual(duration, 18.685,3)
 
     # # Test case for a Annual Fixed Coupon Bond
     # def test_duration_Corp_DEDZ1J6X(self):

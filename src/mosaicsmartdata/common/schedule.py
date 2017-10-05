@@ -4,6 +4,7 @@ from dateutil.relativedelta import relativedelta
 from dateutil.parser import parse
 from datetime import datetime
 import calendar
+from mosaicsmartdata.common import schedule
 from mosaicsmartdata.common.constants import *
 
 
@@ -114,7 +115,7 @@ class CSchedule:
         factor = 0.5
         if day_count_conv == DayCountConv.ACT_ACT:
             num = self.days_between(nextCouponDate, maturity)
-            dem = self.days_between(nextCouponDate, maturity) * self.get_frequency_factor(frequency)
+            dem = self.days_between(nextCouponDate, maturity)# * self.get_frequency_factor(frequency)
             factor = num / dem
         elif day_count_conv == DayCountConv.ACT_360:
             num = self.days_between(nextCouponDate, maturity)
@@ -195,12 +196,14 @@ class CSchedule:
 
     def get_frequency_factor(self, freq):
         """ To do: Calculate Leap Year """
-        inst_freq = Frequency()
+        inst_freq = Frequency(freq)
         freq_factor = None
-        if freq[-1:] == Frequency.MONTHLY:
+        sch = schedule.CSchedule()
+
+        if freq == Frequency.MONTHLY:
             months = int(freq[:-2])
             freq_factor = 12 / months
-        if freq[-1:] == Frequency.QUARTERLY:
+        if freq == Frequency.QUARTERLY:
             months = int(freq[:-2])
             freq_factor = 3 / months
         elif freq[-1:] == Frequency.DAILY:

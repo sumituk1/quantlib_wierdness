@@ -42,7 +42,6 @@ def bond_convexity(price,
                                         ytm=ytm_minus,
                                         dcf=dcf,
                                         coupon=coupon, settle_date=settle_date,
-                                        calculateStub=calculateStub,
                                         next_coupon_date=next_coupon_date)
 
     ytm_plus = ytm + dy
@@ -52,7 +51,6 @@ def bond_convexity(price,
                                        dcf=dcf,
                                        coupon=coupon,
                                        settle_date=settle_date,
-                                       calculateStub=calculateStub,
                                        next_coupon_date=next_coupon_date)
 
     convexity = (price_minus + price_plus - 2 * price) / (price * (dy * dy)) / 100

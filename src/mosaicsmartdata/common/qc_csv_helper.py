@@ -119,9 +119,10 @@ def file_to_trade_list(fname):
                                   holidayCities=x[21],
                                   coupon_frequency=Frequency.convertFrequencyStr(x[22]),
                                   day_count=DayCountConv.convertDayCountStr(x[24]),
-                                  issue_date=dt.datetime.strptime(x[25], "%Y.%m.%d"),
+                                  issue_date=dt.datetime.strptime(x[25], "%Y.%m.%d") if x[25] != "" else None,
                                   duration=float(x[9]),
-                                  country_of_risk=x[27])
+                                  country_of_risk=x[27],
+                                  price_type=PriceType.convert_price_type(x[30]) if x[30] != "" else None)
         trade_list.append(tr)
     return trade_list
 
@@ -159,7 +160,8 @@ def file_to_swaps_trade_list(fname):
                                    country_of_risk=x[27],
                                    orig_package_size=float(x[28]),
                                    leg_no=float(x[29]),
-                                   price_type=PriceType.convert_price_type(x[30]) if x[30] != "" else None
+                                   price_type=PriceType.convert_price_type(x[30]) if x[30] != "" else None,
+                                   rfqdeal_upfront_fee=float(x[31]) if len(my_list[0]) > 31 and x[31] != "" else 0.0
                                    )
         trade_list.append(tr)
     return trade_list

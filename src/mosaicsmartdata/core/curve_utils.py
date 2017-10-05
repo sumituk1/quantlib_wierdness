@@ -225,7 +225,7 @@ def curve_from_disc_factors(disc_factors, calendar = None, ccy = None):
         dt = calendar.businessDaysBetween(fixed_bond.pydate_to_qldate(start_date),
                                           fixed_bond.pydate_to_qldate(end_date)) / 360
         dr = -(1 / dt) * np.log(disc_factor)
-        rates_list.append((start_date, end_date, dr, tenor, disc_factor))
+        rates_list.append((start_date, end_date, dr, tenor))# disc_factor))
 
     # sort the tenors:
     # ontn = [x for x in rates_list if x[3] == 'ONTN']

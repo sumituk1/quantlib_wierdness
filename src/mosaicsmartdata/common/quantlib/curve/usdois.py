@@ -31,6 +31,10 @@ class USDOIS:
     #     return self.source_data
 
     def create_deposit_rates(self, depo_rates):
+        '''Creates a deposit rate helpers from incoming rates
+        Input:
+        depo_rates: list of tuples comprising of (start_date, end_date, rate, label)
+        '''
         # get ONTN
         depo_rates = [x[0:-1] for x in depo_rates if x[-1] in ["ONTN", "TN"]]
         if len(depo_rates) > 0:
@@ -44,6 +48,10 @@ class USDOIS:
 
     # Finally, we add OIS quotes up to 30 years.
     def create_ois_swaps(self, ois_swap_rates, helpers=None):
+        ''' Creates a OIS rate helper from incoming OIS rates
+            Input:
+            ois_swap_rates: list of tuples comprising of (start_date, end_date, rate, label)
+        '''
         if self.helpers is None:
             self.helpers = [DatedOISRateHelper(start_date, end_date, QuoteHandle(SimpleQuote(rate / 100)), self.ff_local)
                            for start_date, end_date, rate in [tuple((fixed_bond.pydate_to_qldate(sd),

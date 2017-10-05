@@ -800,6 +800,46 @@ class TestMarkouts(TestCase):
 
         run(graph_2)
         self.assertEqual(len(output_list),0)
+
+    ## test for yield quoted bonds
+    ## Also tests for Zero coupon Bond
+    def test_case_11(self):
+        tolerance = 5 * 1e-2
+        thisfiledir = os.path.dirname(os.path.abspath(inspect.stack()[0][1]))
+        os.chdir(thisfiledir)
+
+        # Load the configuration file
+        configurator = Configurator('config.csv')
+        # try:
+        if True:
+            with ExceptionLoggingContext():
+                # load the trade and quote data and merge
+                quote_trade_list = self.read_and_merge_quotes_trade(datapath="../resources/unhedged_markout_tests/",
+                                                                    quote_file_list=["IT0005278335_RR_quotes.csv"],
+                                                                    trade_file="trades_yield_quoted.csv")
+                # run the graph
+                output_list = self.run_graph(quote_trade_list)
+
+                # do assertions
+                # do assertions
+                self.assertEquals(len(output_list), 8, msg=None)
+                for mk_msg in output_list:
+                    if mk_msg.trade_id == "DWSP_20170927_3824" and mk_msg.dt == '0':
+                        self.assertAlmostEqual(mk_msg.bps_markout, -0.6894, 4)
+                    elif mk_msg.trade_id == "DWSP_20170927_3824" and mk_msg.dt == '-900':
+                        self.assertAlmostEqual(mk_msg.bps_markout,-0.7905,4)
+                    elif mk_msg.trade_id == "DWSP_20170927_3824" and mk_msg.dt == '-60':
+                        self.assertAlmostEqual(mk_msg.bps_markout, -0.6894, 4)
+                    elif mk_msg.trade_id == "DWSP_20170927_3824" and mk_msg.dt == '60':
+                        self.assertAlmostEqual(mk_msg.bps_markout, -0.6894, 4)
+                    elif mk_msg.trade_id == "DWSP_20170927_3824" and mk_msg.dt == '300':
+                        self.assertAlmostEqual(mk_msg.bps_markout, -0.7905, 4)
+                    elif mk_msg.trade_id == "DWSP_20170927_3824" and mk_msg.dt == '3600':
+                        self.assertAlmostEqual(mk_msg.bps_markout, -1.3973, 4)
+                    elif mk_msg.trade_id == "DWSP_20170927_3824" and mk_msg.dt == 'COB0':
+                        self.assertAlmostEqual(mk_msg.bps_markout, -1.5996, 4)
+                    elif mk_msg.trade_id == "DWSP_20170927_3824" and mk_msg.dt == 'COB1':
+                        self.assertAlmostEqual(mk_msg.bps_markout, -1.5996, 4)
 if __name__ == '__main__':
     #    unittest.main()
     k= TestMarkouts()

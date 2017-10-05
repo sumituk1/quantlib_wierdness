@@ -1,5 +1,6 @@
 # This has the list of day counts and the related convention
 # from workalendar.usa import *
+import QuantLib as ql
 from QuantLib import *
 from enum import Enum
 
@@ -460,30 +461,39 @@ class TradeSide:
     Ask = "A"
 
 
-class Frequency:
+class Frequency(Enum):
     MONTHLY = "M"
     DAILY = "D"
     WEEKLY = "W"
     SEMI = "S"
     QUARTERLY = "Q"
     ANNUAL = "A"
+    ZERO = "Z"
 
     @staticmethod
-    def convertFrequencyStr(freqStr):
-        freq = Frequency.SEMI
-        if freqStr == "M" or freqStr == "MONTHLY":
+    def convertFrequencyStr(freqStr, coupon=None):
+        freq = None
+
+        if freqStr == "M" or freqStr == "MONTHLY"or freqStr == b'Monthly':
             freq = Frequency.MONTHLY
-        elif freqStr == "D"or freqStr == "DAILY":
+        elif freqStr == "Z" or freqStr == "ZERO"or freqStr == b'enlist"N"':
+            freq = Frequency.ZERO
+        elif freqStr == "D"or freqStr == "DAILY"or freqStr == b'Daily':
             freq = Frequency.DAILY
-        elif freqStr == "W"or freqStr == "WEEKLY":
+        elif freqStr == "W"or freqStr == "WEEKLY" or freqStr == b'Weekly':
             freq = Frequency.WEEKLY
-        elif freqStr == "S"or freqStr == "SEMI":
+        elif freqStr == "S"or freqStr == "SEMI" or freqStr == b'Semiannual':
             freq = Frequency.SEMI
-        elif freqStr == "Q" or freqStr == "QUARTERLY":
+        elif freqStr == "Q" or freqStr == "QUARTERLY"or freqStr == b'Quarterly':
             freq = Frequency.QUARTERLY
         elif freqStr == "A" or freqStr == "ANNUAL":
             freq = Frequency.ANNUAL
-        return freq
+
+        if freq is None and coupon == 0:
+            freq = Frequency.ZERO
+        else:
+            freq = Frequency.SEMI ## default to SEMI
+        return freq.name
 
     @staticmethod
     def getFrequencyNumber(freqStr):
@@ -542,12 +552,13 @@ class ProductClass(Enum):
 -Spread (typically on the package leg)
 -Discount ( typically the Bond leg of a Swap spread) - Will be excluded from Swap calculator
 '''
-class PriceType:
+class PriceType(Enum):
     Upfront = 1
     Basis = 2
     Price = 3
     Spread = 4
     Discount = 5
+    Yield = 6
 
     @staticmethod
     def convert_price_type(price_type_str):
@@ -556,6 +567,8 @@ class PriceType:
             return PriceType.Upfront
         elif str.upper(price_type_str) == "BASIS":
             return PriceType.Basis
+        elif str.upper(price_type_str) == "YIELD":
+            return PriceType.Yield
         elif str.upper(price_type_str) == "PRICE":
             return PriceType.Price
         elif str.upper(price_type_str) == "SPREAD":

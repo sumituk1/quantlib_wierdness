@@ -110,8 +110,21 @@ class MarkoutCalculatorPre:
                 cutoff_timestamp = mkmsg.next_timestamp + dt.timedelta(0,-24*60*60)
                 final_price_context = self.buffer.get_last_price_before(mkmsg.next_timestamp,cutoff_timestamp)
                 mkmsg.final_price = mkmsg.trade.valuation_price(final_price_context)
-                mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)*mkmsg.trade.side_mult()
+                mkmsg.price_markout = mkmsg.trade.price_diff(mkmsg)
 
+                # TODO: rewrite this!!!
+                # if 'price_type' in mkmsg.trade.__dict__ and mkmsg.trade.price_type == PriceType.Upfront and mkmsg.dt == "0":
+                #     # Handle upfront_fee at point of trade
+                #     mkmsg.price_markout = (mkmsg.final_price + mkmsg.initial_price)
+                #
+                #     # Reset the traded_px to be the current NPV of the swap for later markouts
+                #     for y in self.pending:
+                #         if y not in completed:
+                #             y.initial_price = mkmsg.final_price
+                # else:
+                #     mkmsg.price_markout = (mkmsg.final_price - mkmsg.initial_price)
+                #
+                # mkmsg.price_markout*= mkmsg.trade.side_mult()
                 if mkmsg.final_price is np.NaN:
                     logging.getLogger(__name__).warning('Saw a NaN final price in pre-markouts')
 
@@ -189,7 +202,7 @@ class MarkoutCalculatorPost:
             self.COB_time_utc = COB_time_utc
             self.generate_markout_requests(msg)
         elif is_quote(msg):
-            for x in self.pending:# update the pending markout_messages with the new timestamp
+            for x in self.pending: # update the pending markout_messages with the new timestamp
                 x.timestamp = msg.timestamp
         else: # if not isinstance(msg, Quote):
             error_string = 'Markout calculator only wants trades or price data, instead it got ' + str(msg)
@@ -203,19 +216,21 @@ class MarkoutCalculatorPost:
 
         for x in completed:
             x.final_price = x.trade.valuation_price(self.last_price)
-            # TODO: rewrite this!!!
-            if 'price_type' in x.trade.__dict__ and x.trade.price_type == PriceType.Upfront and x.dt == "0":
-                # Handle upfront_fee at point of trade
-                x.price_markout = (x.final_price + x.initial_price)
+            x.price_markout = x.trade.price_diff(x)
+            # TODO: rewrite this!!!. Refactored to price_diff()
 
-                # Reset the traded_px to be the current NPV of the swap for later markouts
-                for y in self.pending:
-                    if y not in completed:
-                        y.initial_price = x.final_price
-            else:
-                x.price_markout = (x.final_price - x.initial_price)
-
-            x.price_markout *= x.trade.side_mult()
+            # if 'price_type' in x.trade.__dict__ and x.trade.price_type == PriceType.Upfront and x.dt == "0":
+            #     # Handle upfront_fee at point of trade
+            #     x.price_markout = (x.final_price + x.initial_price)
+            #
+            #     # Reset the traded_px to be the current NPV of the swap for later markouts
+            #     for y in self.pending:
+            #         if y not in completed:
+            #             y.initial_price = x.final_price
+            # else:
+            #     x.price_markout = (x.final_price - x.initial_price)
+            #
+            # x.price_markout *= x.trade.side_mult()
 
         if is_quote(msg):
             try: # if it's a vanilla quote

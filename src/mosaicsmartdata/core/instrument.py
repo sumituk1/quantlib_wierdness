@@ -195,7 +195,7 @@ class FixedIncomeInstrument(Instrument):
         self.coupon = None
         self.coupon_frequency = None
         self.day_count = None
-        self.price_type = None
+        # self.price_type = None
         self.country_of_risk = Country.US  # default to US
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 

@@ -13,8 +13,8 @@ from mosaicsmartdata.common.quantlib.bond.bond_ytm import govbond_ytm
 from mosaicsmartdata.common.schedule import CSchedule
 
 
-def bond_mod_duration(price, par,yrs_maturity, maturity_date, coupon, settle_date, day_count, frequency,
-                      calculateStub, next_coupon_date, dy=0.0001):
+def bond_mod_duration(price, par, maturity_date, coupon, settle_date, day_count, frequency,
+                      next_coupon_date, dy=0.0001):
     # calibrate a flat ytm based on close price
 
     ytm = govbond_ytm(price=price, coupon=coupon, settle_date=settle_date, maturity_date=maturity_date,
@@ -22,12 +22,24 @@ def bond_mod_duration(price, par,yrs_maturity, maturity_date, coupon, settle_dat
 
     # print(ytm)
     ytm_minus = ytm - dy
-    price_minus = bond_price(par, yrs_maturity, ytm_minus, coupon, settle_date,
-                             day_count, calculateStub, next_coupon_date)
+    price_minus = bond_price(par=par,
+                             next_coupon_date=next_coupon_date,
+                             ytm=ytm_minus*100,
+                             coupon=coupon,
+                             maturity_date=maturity_date,
+                             settle_date=settle_date,
+                             frequency=frequency,
+                             day_count=day_count)
 
     ytm_plus = ytm + dy
-    price_plus = bond_price(par, yrs_maturity, ytm_plus, coupon, settle_date,
-                            day_count, calculateStub, next_coupon_date)
+    price_plus = bond_price(par=par,
+                            next_coupon_date=next_coupon_date,
+                            ytm=ytm_plus*100,
+                            coupon=coupon,
+                            maturity_date=maturity_date,
+                            settle_date=settle_date,
+                            frequency=frequency,
+                            day_count=day_count)
     # bond_price(par, T, y, coup, sDate, dcf, freq=2, calculateStub=False, nextCouponDate=None):
 
     mod_duration = (price_minus - price_plus) / (2. * price * dy)
@@ -57,17 +69,14 @@ def govbond_pvbp(price,
         if isinstance(next_coupon_date, dt.date):
             next_coupon_date = dt.datetime.combine(next_coupon_date, dt.datetime.min.time())
 
-    yrs_maturity = sch.days_between_actual(next_coupon_date, maturity_date) / 365
     dcf = sch.days_factor_2(next_coupon_date, maturity_date, dc, freq)
 
     if settle_date != next_coupon_date:
         calculate_stub = True
 
-    duration = bond_mod_duration(price=price, par=100, yrs_maturity= yrs_maturity,
-                                 maturity_date=maturity_date,
+    duration = bond_mod_duration(price=price, par=100, maturity_date=maturity_date,
                                  settle_date= settle_date,
-                                 day_count=dcf, frequency=freq, calculateStub=calculate_stub,
-                                 next_coupon_date= next_coupon_date, dy= dy, coupon=coupon)
+                                 day_count=dcf, frequency=freq, next_coupon_date= next_coupon_date, dy= dy, coupon=coupon)
 
     return duration
 
