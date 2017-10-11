@@ -183,7 +183,7 @@ class HolidayCities(Enum):
             holiday_cities = HolidayCities.NYC_LON
         return holiday_cities
 
-class Currency:
+class Currency(Enum):
     EUR = "EUR"
     USD = "USD"
     CAD = "CAD"
@@ -204,7 +204,7 @@ class Currency:
     THB = "THB"
 
 
-class Country:
+class Country(Enum):
     AF = 1,
     AX = 2,
     AL = 3,

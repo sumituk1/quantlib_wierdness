@@ -281,11 +281,11 @@ class MarkoutCalculator:
         if isinstance(msg, Trade) and self.cob and self.COB_time_utc is None:
             # set the utc cob time as per traded ccy
             # first get the UTC time for COB per ccy of risk (only possible at trade level)
-            if msg.ccy == Currency.EUR:
+            if msg.ccy == Currency.EUR.value:
                 self.COB_time_utc = self.COB_time_utc_eur
-            elif msg.ccy == Currency.USD:
+            elif msg.ccy == Currency.USD.value:
                 self.COB_time_utc = self.COB_time_utc_ust
-            elif msg.ccy == Currency.GBP:
+            elif msg.ccy == Currency.GBP.value:
                 self.COB_time_utc = self.COB_time_utc_gbp
             # now convert the str_time to time object
             self.COB_time_utc = dt.datetime.strptime(self.COB_time_utc, "%H:%M:%S").time()
