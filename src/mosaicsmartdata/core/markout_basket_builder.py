@@ -134,33 +134,28 @@ def aggregate_multi_leg_markouts(pkg):
     mkmsg.nonpaper_legs_count = legs_count
 
     # # Set up the DISLPAY_DV01
-    # if legs_count == 1 and hedge_legs_count > 0:
-    #     # for single leg Swaps, include the hedged markouts
-    #     mkmsg = aggregate_markouts(pkg)
-    #     mkmsg.nonpaper_legs_count = legs_count
-    #     # get the delta from the non-paper trade leg
-    #     mkmsg.display_DV01 = [x.trade.delta for x in mkt_msgs if not x.trade.paper_trade]
-    # elif legs_count == 2 and hedge_legs_count == 0:
-    #     # this is a multi-leg. Could be a 2 package rollover where factor risk doesn't work
-    #     # OR a perfect paper hedge using cash
-    #
-    #     # get the long leg
-    #     # Assumes sorted in order of maturity asc
-    #     mkmsg.display_DV01 = np.abs(mkt_msgs[1].trade.duration - mkt_msgs[0].trade.duration) * \
-    #                          mkt_msgs[1].trade.notional * 0.0001
-    #
-    #     if np.abs(mkt_msgs[0].trade.tenor - mkt_msgs[1].trade.tenor) < tenor_tol:
-    #         # here factor risk wont work as this is a rollover over a short duration.
-    #         # just take the display_DV01 and reset the total_factor_risk
-    #         mkmsg.trade.factor_risk.total_factor_risk = mkmsg.display_DV01
-    #
-    # elif legs_count == 3 and hedge_legs_count == 0:
-    #     # this is a multi-leg 3 legs.
-    #     # set the display_DV01
-    #
-    #     # get the belly leg
-    #     mkmsg.display_DV01 = np.abs(2 * mkt_msgs[1].trade.duration - mkt_msgs[0].trade.duration -
-    #                                 mkt_msgs[2].trade.duration) * mkt_msgs[1].trade.notional * 0.0001
+    if legs_count == 1 and hedge_legs_count > 0:
+        # for single leg Swaps, include the hedged markouts
+        mkmsg = aggregate_markouts(pkg)
+        mkmsg.nonpaper_legs_count = legs_count
+        # get the delta from the non-paper trade leg
+        mkmsg.display_DV01 = [x.trade.delta for x in mkt_msgs if not x.trade.paper_trade]
+    elif legs_count == 2 and hedge_legs_count == 0:
+        # this is a multi-leg. Could be a 2 package rollover where factor risk doesn't work
+        # OR a perfect paper hedge using cash
+
+        # get the long leg
+        # Assumes sorted in order of maturity asc
+        mkmsg.display_DV01 = np.abs(mkt_msgs[1].trade.duration - mkt_msgs[0].trade.duration) * \
+                             mkt_msgs[1].trade.notional * 0.0001
+
+    elif legs_count == 3 and hedge_legs_count == 0:
+        # this is a multi-leg 3 legs.
+        # set the display_DV01
+
+        # get the belly leg
+        mkmsg.display_DV01 = np.abs(2 * mkt_msgs[1].trade.duration - mkt_msgs[0].trade.duration -
+                                    mkt_msgs[2].trade.duration) * mkt_msgs[1].trade.notional * 0.0001
 
     # else:
     #     # todo: handle higher order hedges!!
