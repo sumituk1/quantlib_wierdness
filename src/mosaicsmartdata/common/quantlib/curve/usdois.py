@@ -5,6 +5,7 @@ from mosaicsmartdata.common.constants import BootStrapMethod
 from mosaicsmartdata.common.quantlib.bond import fixed_bond
 from mosaicsmartdata.common.constants import HolidayCities
 
+
 class USDOIS:
     # today = Date_todaysDate()
 
@@ -26,6 +27,7 @@ class USDOIS:
             calendar = args[1]
             self.holiday_cities = args[2]
             # self.usd_libor = USDLibor()
+
     # @property
     # def source_data(self):
     #     return self.source_data
@@ -38,12 +40,12 @@ class USDOIS:
         # get ONTN
         depo_rates = [x[0:-1] for x in depo_rates if x[-1] in ["ONTN", "TN","DUMMY"]]
         if len(depo_rates) > 0:
-            self.helpers = [DepositRateHelper(QuoteHandle(SimpleQuote(rate/100)),
-                            Period(1, Days),
-                            fixed_bond.calculateBusDays(self.holiday_cities,
-                                                        self.valuationDate,
-                                                        fixed_bond.pydate_to_qldate(sd)),
-                            TARGET(), Following, False, Actual360())
+            self.helpers = [DepositRateHelper(QuoteHandle(SimpleQuote(rate / 100)),
+                                              Period(1, Days),
+                                              fixed_bond.calculateBusDays(self.holiday_cities,
+                                                                          self.valuationDate,
+                                                                          fixed_bond.pydate_to_qldate(sd)),
+                                              TARGET(), Following, False, Actual360())
                             for sd, ed, rate in depo_rates]
 
     # Finally, we add OIS quotes up to 30 years.
@@ -53,17 +55,20 @@ class USDOIS:
             ois_swap_rates: list of tuples comprising of (start_date, end_date, rate, label)
         '''
         if self.helpers is None:
-            self.helpers = [DatedOISRateHelper(start_date, end_date, QuoteHandle(SimpleQuote(rate / 100)), self.ff_local)
-                           for start_date, end_date, rate in [tuple((fixed_bond.pydate_to_qldate(sd),
-                                                                     fixed_bond.pydate_to_qldate(ed),
-                                                                     rate)) for sd,ed,rate, label
-                                                              in ois_swap_rates if label not in ['ONTN','TN']]]
+            self.helpers = [
+                DatedOISRateHelper(start_date, end_date, QuoteHandle(SimpleQuote(rate / 100)), self.ff_local)
+                for start_date, end_date, rate in [tuple((fixed_bond.pydate_to_qldate(sd),
+                                                          fixed_bond.pydate_to_qldate(ed),
+                                                          rate)) for sd, ed, rate, label
+                                                   in ois_swap_rates if label not in ['ONTN', 'TN']]]
         else:
-            self.helpers += [DatedOISRateHelper(start_date, end_date, QuoteHandle(SimpleQuote(rate / 100)), self.ff_local)
-                           for start_date, end_date, rate in [tuple((fixed_bond.pydate_to_qldate(sd),
-                                                                     fixed_bond.pydate_to_qldate(ed),
-                                                                     rate)) for sd,ed,rate, label
-                                                              in ois_swap_rates if label not in ['ONTN','TN']]]
+            self.helpers += [DatedOISRateHelper(start_date,
+                                                end_date,
+                                                QuoteHandle(SimpleQuote(rate / 100)), self.ff_local)
+                             for start_date, end_date, rate in [tuple((fixed_bond.pydate_to_qldate(sd),
+                                                                       fixed_bond.pydate_to_qldate(ed),
+                                                                       rate)) for sd, ed, rate, label
+                                                                in ois_swap_rates if label not in ['ONTN', 'TN']]]
         # for start_date, end_date, rate in ois_swap_rates]
         self.ois_curve_c = PiecewiseLogCubicDiscount(0, self.calendar, self.helpers, Actual365Fixed())
         self.ois_curve_c.enableExtrapolation()
@@ -78,17 +83,18 @@ class USDOIS:
 
         discount_curve = RelinkableYieldTermStructureHandle()
         discount_curve.linkTo(discountCurve)
-        helpers = [SwapRateHelper(QuoteHandle(SimpleQuote(rate / 100)),
-                                  Period(tenor, Years),
-                                  TARGET(),
-                                  Semiannual,
-                                  Unadjusted,
-                                  Thirty360(Thirty360.BondBasis),
-                                  Euribor3M(),
-                                  QuoteHandle(),
-                                  Period(0, Days),
-                                  discount_curve)
-                   for rate, tenor in usd_3M_swap_rates]
+        self.helpers += [SwapRateHelper(QuoteHandle(SimpleQuote(rate / 100)),
+                                        Period(int(label[:-1]), Years),
+                                        TARGET(),
+                                        Semiannual,
+                                        Unadjusted,
+                                        Thirty360(Thirty360.BondBasis),
+                                        Euribor3M(),
+                                        QuoteHandle(),
+                                        Period(0, Days),
+                                        discount_curve)
+                         for sd, ed, rate, label in usd_3M_swap_rates if label not in ['ONTN', 'TN']]
+        # for rate, tenor in usd_3M_swap_rates]
 
         if bootStrapMethod == BootStrapMethod.PiecewiseLogCubicDiscount:
             self.usd_3M_c = PiecewiseLogCubicDiscount(0, TARGET(), self.helpers, Actual365Fixed())

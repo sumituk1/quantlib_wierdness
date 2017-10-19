@@ -143,33 +143,33 @@ class TestHedgeMarkouts(TestCase):
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
                 for mk_msg in output_list:
-                    if mk_msg.trade_id == 456 and mk_msg.dt == '-900':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance, msg=None)
-                    if mk_msg.trade_id == 456 and mk_msg.dt == '-60':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance, msg=None)
-                    if mk_msg.trade_id == 456 and mk_msg.dt == '0':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance, msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == '60':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance, msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == '300':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.09277) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 1.10313) / mk_msg.hedged_cents), tolerance, msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == '3600':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.01609) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 5.4) / mk_msg.hedged_cents), tolerance, msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB0':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.19828)) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 41.3375) / mk_msg.hedged_cents), tolerance, msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB1':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.49894)) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 46.4156) / mk_msg.hedged_cents), tolerance, msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB2':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.42919)) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 37.8219) / mk_msg.hedged_cents), tolerance, msg=None)
+                    if mk_msg.trade_id == '456' and mk_msg.dt == '-900':
+                        self.assertAlmostEqual(mk_msg.hedged_bps,0.030,3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -0.459,3)
+                    if mk_msg.trade_id == '456' and mk_msg.dt == '-60':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.030, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -0.459, 3)
+                    if mk_msg.trade_id == '456' and mk_msg.dt == '0':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.030, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -0.459, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == '60':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.030, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -0.459, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == '300':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.094, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -0.069, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == '3600':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.000, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -5.928, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB0':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.115, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -52.803, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB1':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.382, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -63.350, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB2':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.301, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -52.412, 3)
 
                 print("Time taken: %s"%(time.time() - t0))
                 # plot figure
@@ -214,51 +214,33 @@ class TestHedgeMarkouts(TestCase):
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
                 for mk_msg in output_list:
-                    if mk_msg.trade_id == 456 and mk_msg.dt == '-900':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    if mk_msg.trade_id == 456 and mk_msg.dt == '-60':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    if mk_msg.trade_id == 456 and mk_msg.dt == '0':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == '60':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == '300':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.09277) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 1.10313) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == '3600':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.01609) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 5.4) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB0':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.19828)) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 41.3375) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB1':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.49894)) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 46.4156) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB2':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.42919)) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 37.8219) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
+                    if mk_msg.trade_id == '456' and mk_msg.dt == '-900':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.030, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -0.459, 3)
+                    if mk_msg.trade_id == '456' and mk_msg.dt == '-60':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.030, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -0.459, 3)
+                    if mk_msg.trade_id == '456' and mk_msg.dt == '0':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.030, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -0.459, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == '60':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.030, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -0.459, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == '300':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.094, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -0.069, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == '3600':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.000, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -5.928, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB0':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.115, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -52.803, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB1':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.382, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -63.350, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB2':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.301, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -52.412, 3)
 
         except ValueError:  # Exception:
             raise Exception
@@ -289,51 +271,33 @@ class TestHedgeMarkouts(TestCase):
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
                 for mk_msg in output_list:
-                    if mk_msg.trade_id == 456 and mk_msg.dt == '-900':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.25344)) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-2.4125)) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    if mk_msg.trade_id == 456 and mk_msg.dt == '-60':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.26105)) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-3.1937)) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    if mk_msg.trade_id == 456 and mk_msg.dt == '0':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.26105)) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-3.1937)) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == '60':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.2648)) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-3.584)) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == '300':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.0771)) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-2.021)) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == '3600':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.6263)) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-9.834)) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB0':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-6.7429)) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-76.631)) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB1':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 4.0339) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-11.787)) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB2':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 8.359) / mk_msg.hedged_bps), tolerance,
-                                             msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 22.196) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
+                    if mk_msg.trade_id == '456' and mk_msg.dt == '-900':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.253, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -2.412, 3)
+                    if mk_msg.trade_id == '456' and mk_msg.dt == '-60':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.261, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -3.194, 3)
+                    if mk_msg.trade_id == '456' and mk_msg.dt == '0':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.261, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -3.194, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == '60':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.265, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -3.584, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == '300':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.0771, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -2.022, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == '3600':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.626, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -9.834, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB0':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -6.743, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -76.631, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB1':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 4.034, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, -11.787, 3)
+                    elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB2':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 8.359, 3)
+                        self.assertAlmostEquals(mk_msg.hedged_cents, 22.197, 3)
 
                 print("Time elapsed=%s"%(time.time()-t0))
                 # plot figure
@@ -517,41 +481,33 @@ class TestHedgeMarkouts(TestCase):
                 # do assertions
                 self.assertEquals(len(output_list), 9, msg=None)
                 for mk_msg in output_list:
-                    if mk_msg.trade_id == 123 and mk_msg.dt == '-900':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.869) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 6.981) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    if mk_msg.trade_id == 123 and mk_msg.dt == '-60':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.2522) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 1.85625) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    if mk_msg.trade_id == 123 and mk_msg.dt == '0':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.01837) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.1437)) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 123 and mk_msg.dt == '60':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.01837)) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.1437)) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 123 and mk_msg.dt == '300':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.2901) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 2.4187) / mk_msg.hedged_cents), tolerance, msg=None)
-                    elif mk_msg.trade_id == 123 and mk_msg.dt == '3600':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - -0.01837) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - (-0.1437)) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 123 and mk_msg.dt == 'COB0':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 3.3260) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 24.29374) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 123 and mk_msg.dt == 'COB1':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 8.429) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 61.7312) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
-                    elif mk_msg.trade_id == 123 and mk_msg.dt == 'COB2':
-                        self.assertLessEqual(np.abs((mk_msg.hedged_bps - 12.9047) / mk_msg.hedged_bps), tolerance, msg=None)
-                        self.assertLessEqual(np.abs((mk_msg.hedged_cents - 97.9187) / mk_msg.hedged_cents), tolerance,
-                                             msg=None)
+                    if mk_msg.trade_id == '123' and mk_msg.dt == '-900':
+                        self.assertAlmostEqual(mk_msg.hedged_bps,0.283,3)
+                        self.assertAlmostEqual(mk_msg.hedged_cents, 2.299,3)
+                    if mk_msg.trade_id == '123' and mk_msg.dt == '-60':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.064, 3)
+                        self.assertAlmostEqual(mk_msg.hedged_cents, -0.825, 3)
+                    if mk_msg.trade_id == '123' and mk_msg.dt == '0':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.064, 3)
+                        self.assertAlmostEqual(mk_msg.hedged_cents, -0.825, 3)
+                    elif mk_msg.trade_id == '123' and mk_msg.dt == '60':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.064, 3)
+                        self.assertAlmostEqual(mk_msg.hedged_cents, -0.825, 3)
+                    elif mk_msg.trade_id == '123' and mk_msg.dt == '300':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.168, 3)
+                        self.assertAlmostEqual(mk_msg.hedged_cents, 1.519, 3)
+                    elif mk_msg.trade_id == '123' and mk_msg.dt == '3600':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.290, 3)
+                        self.assertAlmostEqual(mk_msg.hedged_cents, 3.862, 3)
+                    elif mk_msg.trade_id == '123' and mk_msg.dt == 'COB0':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -0.001, 3)
+                        self.assertAlmostEqual(mk_msg.hedged_cents, 0.737, 3)
+                    elif mk_msg.trade_id == '123' and mk_msg.dt == 'COB1':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, -1.472, 3)
+                        self.assertAlmostEqual(mk_msg.hedged_cents, -18.013, 3)
+                    elif mk_msg.trade_id == '123' and mk_msg.dt == 'COB2':
+                        self.assertAlmostEqual(mk_msg.hedged_bps, 0.905, 3)
+                        self.assertAlmostEqual(mk_msg.hedged_cents, 5.425, 3)
                 # plot figure
                 if plotFigure:
                     fig, ax = plt.subplots()
@@ -868,51 +824,33 @@ class TestHedgeMarkouts(TestCase):
         # do assertions
         self.assertEquals(len(output_list), 8, msg=None)
         for mk_msg in output_list:
-            if mk_msg.trade_id == 456 and mk_msg.dt == '-900':
-                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
-                                     msg=None)
-                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
-                                     tolerance, msg=None)
-            if mk_msg.trade_id == 456 and mk_msg.dt == '-60':
-                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
-                                     msg=None)
-                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
-                                     tolerance, msg=None)
-            if mk_msg.trade_id == 456 and mk_msg.dt == '0':
-                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
-                                     msg=None)
-                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
-                                     tolerance, msg=None)
-            elif mk_msg.trade_id == 456 and mk_msg.dt == '60':
-                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.02394) / mk_msg.hedged_bps), tolerance,
-                                     msg=None)
-                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 0.7125) / mk_msg.hedged_cents),
-                                     tolerance, msg=None)
-            elif mk_msg.trade_id == 456 and mk_msg.dt == '300':
-                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.09277) / mk_msg.hedged_bps), tolerance,
-                                     msg=None)
-                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 1.10313) / mk_msg.hedged_cents),
-                                     tolerance, msg=None)
-            elif mk_msg.trade_id == 456 and mk_msg.dt == '3600':
-                self.assertLessEqual(np.abs((mk_msg.hedged_bps - 0.01609) / mk_msg.hedged_bps), tolerance,
-                                     msg=None)
-                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 5.4) / mk_msg.hedged_cents), tolerance,
-                                     msg=None)
-            elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB0':
-                self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.19828)) / mk_msg.hedged_bps),
-                                     tolerance, msg=None)
-                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 41.3375) / mk_msg.hedged_cents),
-                                     tolerance, msg=None)
-            elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB1':
-                self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.49894)) / mk_msg.hedged_bps),
-                                     tolerance, msg=None)
-                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 46.4156) / mk_msg.hedged_cents),
-                                     tolerance, msg=None)
-            elif mk_msg.trade_id == 456 and mk_msg.dt == 'COB2':
-                self.assertLessEqual(np.abs((mk_msg.hedged_bps - (-0.42919)) / mk_msg.hedged_bps),
-                                     tolerance, msg=None)
-                self.assertLessEqual(np.abs((mk_msg.hedged_cents - 37.8219) / mk_msg.hedged_cents),
-                                     tolerance, msg=None)
+            # if mk_msg.trade_id == '456' and mk_msg.dt == '-900':
+            #     self.assertEqual(mk_msg.hedged_bps, np.nan)
+            #     self.assertEqual(mk_msg.hedged_cents, np.nan)
+            if mk_msg.trade_id == '456' and mk_msg.dt == '-60':
+                self.assertAlmostEqual(mk_msg.hedged_bps, 0.114,3)
+                self.assertAlmostEquals(mk_msg.hedged_cents, 0.692,3)
+            if mk_msg.trade_id == '456' and mk_msg.dt == '0':
+                self.assertAlmostEqual(mk_msg.hedged_bps, 0.114, 3)
+                self.assertAlmostEquals(mk_msg.hedged_cents, 0.692, 3)
+            elif mk_msg.trade_id == '456' and mk_msg.dt == '60':
+                self.assertAlmostEqual(mk_msg.hedged_bps, 0.114, 3)
+                self.assertAlmostEquals(mk_msg.hedged_cents, 0.692, 3)
+            elif mk_msg.trade_id == '456' and mk_msg.dt == '300':
+                self.assertAlmostEqual(mk_msg.hedged_bps, 0.114, 3)
+                self.assertAlmostEquals(mk_msg.hedged_cents, 0.692, 3)
+            elif mk_msg.trade_id == '456' and mk_msg.dt == '3600':
+                self.assertAlmostEqual(mk_msg.hedged_bps, 0.177, 3)
+                self.assertAlmostEquals(mk_msg.hedged_cents, 1.083, 3)
+            elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB0':
+                self.assertAlmostEqual(mk_msg.hedged_bps, -0.031, 3)
+                self.assertAlmostEquals(mk_msg.hedged_cents, -51.651, 3)
+            elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB1':
+                self.assertAlmostEqual(mk_msg.hedged_bps, -0.298, 3)
+                self.assertAlmostEquals(mk_msg.hedged_cents, -62.198, 3)
+            # elif mk_msg.trade_id == '456' and mk_msg.dt == 'COB2':
+            #     self.assertAlmostEqual(mk_msg.hedged_bps, 0.114, 3)
+            #     self.assertAlmostEquals(mk_msg.hedged_cents, 0.692, 3)
 
         print("Time taken: %s" % (time.time() - t0))
         # plot figure

@@ -132,7 +132,8 @@ def aggregate_multi_leg_markouts(pkg):
         if x.trade.paper_trade:
             hedge_legs_count += 1
     mkmsg.nonpaper_legs_count = legs_count
-    # Set up the DISLPAY_DV01
+
+    # # Set up the DISLPAY_DV01
     if legs_count == 1 and hedge_legs_count > 0:
         # for single leg Swaps, include the hedged markouts
         mkmsg = aggregate_markouts(pkg)
@@ -148,11 +149,6 @@ def aggregate_multi_leg_markouts(pkg):
         mkmsg.display_DV01 = np.abs(mkt_msgs[1].trade.duration - mkt_msgs[0].trade.duration) * \
                              mkt_msgs[1].trade.notional * 0.0001
 
-        if np.abs(mkt_msgs[0].trade.tenor - mkt_msgs[1].trade.tenor) < tenor_tol:
-            # here factor risk wont work as this is a rollover over a short duration.
-            # just take the display_DV01 and reset the total_factor_risk
-            mkmsg.trade.factor_risk.total_factor_risk = mkmsg.display_DV01
-
     elif legs_count == 3 and hedge_legs_count == 0:
         # this is a multi-leg 3 legs.
         # set the display_DV01
@@ -161,8 +157,8 @@ def aggregate_multi_leg_markouts(pkg):
         mkmsg.display_DV01 = np.abs(2 * mkt_msgs[1].trade.duration - mkt_msgs[0].trade.duration -
                                     mkt_msgs[2].trade.duration) * mkt_msgs[1].trade.notional * 0.0001
 
-    else:
-        # todo: handle higher order hedges!!
-        mkmsg
+    # else:
+    #     # todo: handle higher order hedges!!
+    #     mkmsg
 
     return mkmsg

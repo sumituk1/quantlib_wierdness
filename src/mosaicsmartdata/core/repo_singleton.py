@@ -36,7 +36,7 @@ class RepoSingleton(Borg):
         df_dict['GBP'] = out_data_gbp.sort_values(by=out_data_gbp.columns[0], ascending=False)
         # now keep applying filter
 
-        out_data_ccy_filt = df_dict[kwargs["ccy"]] # <- a dataframe for a ccy
+        out_data_ccy_filt = df_dict[kwargs["ccy"].value] # <- a dataframe for a ccy
         out_data = out_data_ccy_filt[out_data_ccy_filt.iloc[:, 0] <= kwargs["date"]]
         if len(out_data) == 0:
             # input date is before the min date in the stored data
