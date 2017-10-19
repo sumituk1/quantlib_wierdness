@@ -6,8 +6,9 @@ from mosaicsmartdata.core.instrument_static_singleton import InstrumentStaticSin
 from mosaicsmartdata.core.quote import Quote
 
 
-def implied_discounting_curve(spot_mid, outrights, usd_curve, spot_date, ccy):#, valuation_date = None):
+def implied_discounting_curve(spot_mid, outrights, usd_curve, spot_date, ccy, test_all = False):#, valuation_date = None):
     disc_factors = []
+    all_disc_factors =[]
     for fwd_date, tmp in outrights.items():
         fwd_mid, tenor = tmp
         if fwd_date is None or spot_date is None:
@@ -18,10 +19,30 @@ def implied_discounting_curve(spot_mid, outrights, usd_curve, spot_date, ccy):#,
         usd_df = discounting_factor(usd_curve, spot_date, fwd_date, one_pre_spot= True)
         implied_df = usd_df * spot_mid/ fwd_mid# d2 = d1*S/F
         disc_factors.append((spot_date, fwd_date, implied_df, tenor))
+        if test_all:
+            all_disc_factors.append((spot_date, fwd_date, implied_df, usd_df, tenor))
 
     disc_factors.sort(key=lambda x: x[1])
     # TODO: where do we get daycount conventions etc?
     curve = curve_from_disc_factors(disc_factors, ccy=ccy)
+
+    if test_all:
+        for spot_date, fwd_date, implied_df, usd_df, tenor in all_disc_factors:
+            calc_df = discounting_factor(curve, spot_date, fwd_date)
+            calc_usd_df = discounting_factor(usd_curve, spot_date, fwd_date, one_pre_spot=True)
+            if abs(calc_df - implied_df) > 1e-8:
+                raise ArithmeticError("can't reproduce discounting factor from constructed curve")
+            if abs(usd_df - calc_usd_df) > 1e-10:
+                raise ArithmeticError("can't reproduce USD discounting factor")
+
+        for fwd_date, tmp, in outrights.items():
+            fwd_mid, tenor = tmp
+            if fwd_date is None or spot_date is None:
+                raise ValueError('fwd date and spot date must be valid!')
+            usd_df = discounting_factor(usd_curve, spot_date, fwd_date, one_pre_spot=True)
+            calc_fwd_mid = usd_df * spot_mid / implied_df  # d2 = d1*S/F
+            if abs(calc_fwd_mid - fwd_mid) > 1e-10:
+                raise ArithmeticError("can't reproduce forward rate from constructed curve")
     return curve
 
 
@@ -40,8 +61,9 @@ class FXPricingContextGenerator:
         self.quotes_pending_spot = {}
         self.quotes_on_pending_tn = {}
         self.quotes_tn_latest = {}
+        self.all_quotes = {}
 
-    def __call__(self, quote: Quote):
+    def __call__(self, quote: Quote, test_all = False): # TODO: change default to false
         today = quote.timestamp.date()
         if today != self.today: # purge all caches
             # TODO: factor out this init
@@ -52,6 +74,12 @@ class FXPricingContextGenerator:
             self.curves = {}
             self.today = today
             self.quotes_pending_spot = {}
+            self.quotes_on_pending_tn = {}
+            self.quotes_tn_latest = {}
+            self.all_quotes = {}
+
+        if test_all:
+            self.all_quotes[quote.sym] = (quote.instrument, quote.mid)
 
         # insert the latest quote into the correct storage
         quote_is_fx_spot = False
@@ -156,7 +184,7 @@ class FXPricingContextGenerator:
         #         or not self.curves[non_usd_ccy]:
             if len(self.usd_ois)>=2: # want at least 2 points for OIS curve
                 self.usd_ois.sort(key = lambda x: x[1]) # only get post-spot quotes here, so can sort by end date
-                self.curves['USD'] = construct_OIS_curve(self.usd_ois, ccy = 'USD')
+                self.curves['USD'] = construct_OIS_curve(self.usd_ois, today, ccy = 'USD')
                 curves_updated = True # at least one curve was re-generated
                 for ccy in self.spot_rate:
                     if ccy in self.outright_rate and len(self.outright_rate[ccy])>=2:
@@ -164,7 +192,7 @@ class FXPricingContextGenerator:
                                                                 self.outright_rate[ccy],
                                                                 self.curves['USD'],
                                                                 self.spot_date[ccy],
-                                                                ccy = ccy)#,
+                                                                ccy, test_all = test_all)#,
                                                                 #valuation_date=today)
                         self.curves[ccy] = tmp
 
@@ -172,6 +200,18 @@ class FXPricingContextGenerator:
 
         if curves_updated or (quote_is_fx_spot and 'USD' in self.curves):
             context = PricingContext(self.curves, self.spot_rate, quote.timestamp, extra = self.outright_rate)
+            if test_all:
+                for sym, data in self.all_quotes.items():
+                    instr, mid = data
+                    try:
+                        est_mid = context.price(instr)
+                        err =abs(mid - est_mid)
+                        if err > 1e-6:
+                            raise ArithmeticError('can''t reprice instrument ' + sym)
+                        elif 'N' in instr.sym:
+                            print(instr.sym, est_mid, err)
+                    except: # if can't price that instrument yet, that's fine
+                        pass
             return [context]
         else:
             return []

@@ -36,7 +36,7 @@ class USDOIS:
         depo_rates: list of tuples comprising of (start_date, end_date, rate, label)
         '''
         # get ONTN
-        depo_rates = [x[0:-1] for x in depo_rates if x[-1] in ["ONTN", "TN"]]
+        depo_rates = [x[0:-1] for x in depo_rates if x[-1] in ["ONTN", "TN","DUMMY"]]
         if len(depo_rates) > 0:
             self.helpers = [DepositRateHelper(QuoteHandle(SimpleQuote(rate/100)),
                             Period(1, Days),

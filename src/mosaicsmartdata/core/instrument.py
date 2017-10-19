@@ -75,6 +75,9 @@ class PricingContext:
         fwd_diff = self.fair_forward(ccypair, end_date) - self.fair_forward(ccypair, start_date)
         return fwd_diff / pip_size
 
+    def price(self, instr):
+        return instr.price(self)
+
 class Instrument(GenericParent):
     def __init__(self, *args, **kwargs):
         self.sym = None
@@ -200,7 +203,6 @@ class FixedIncomeInstrument(Instrument):
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
 
 
-
 class FixedIncomeIRSwap(FixedIncomeInstrument):
     def __init__(self, *args, **kwargs):
         self.float_coupon_frequency = None
@@ -209,6 +211,7 @@ class FixedIncomeIRSwap(FixedIncomeInstrument):
 class OIS(FixedIncomeIRSwap):
     def __init__(self, *args, **kwargs):
         super().__init__(**(self.apply_kwargs(self.__dict__, kwargs)))
+
     def price(self, pc: PricingContext): # for now, this instrument is USDOIS only
         return get_rate(pc.curve['USD'], self.spot_settle_date, self.maturity_date)
 
