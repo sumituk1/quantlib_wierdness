@@ -14,6 +14,7 @@ class Package:
         '''
         self.legs = []
         self.package_id = None
+        self.package_leg = None
         self.append(legs)
         if timestamp:
             self.timestamp = timestamp
@@ -40,7 +41,11 @@ class Package:
                 trade.package_id = self.package_id
 
             trade.package = self
-            self.legs.append(trade)
+
+            if 'leg_num' in trade.__dict__ and trade.leg_num == -1:
+                self.package_leg = trade
+            else:
+                self.legs.append(trade)
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
