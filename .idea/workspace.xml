@@ -1,0 +1,764 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="fc3fbffc-8c02-435c-a93b-54dd6de32193" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.gitattributes" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.gitignore" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/Dockerfile" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/README.md" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/__setup.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/bitbucket-pipelines.yml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/broker_helpers/bond-trades.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/broker_helpers/configure_and_start_broker.sh" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/broker_helpers/load_bond_trades.sh" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/broker_helpers/start-app.sh" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/broker_helpers/wait-for-it.sh" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/build.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/docker-compose-debug.yml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/docker-compose-prod-example.yml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/docker-compose.yml" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/msx.sh" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/Docker_kafka_monitor.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/Docker_kafka_monitor_sumit.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/FX games - Quantlib weirdness.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/FX games.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/Hedge.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/Json.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/MarkoutMessageTest.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/MarkoutMessageTest.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/Run_notebooks_example.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/Singleton.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/Test_run_result.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/notebooks/Untitled.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/912810QE1_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/912810RB6_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/912828T91_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/DE10YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/Data extractor.xlsx" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.10.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.11.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2016.12.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2017.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2017.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2017.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2017.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2017.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2017.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2017.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2017.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_PC_ret__2017.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.10.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.11.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2016.12.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2017.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2017.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2017.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2017.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2017.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2017.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2017.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2017.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_value__2017.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.10.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.11.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2016.12.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2017.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2017.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2017.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2017.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2017.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2017.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2017.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2017.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/EUR_eig_vec__2017.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.10.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.11.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2016.12.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2017.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2017.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2017.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2017.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2017.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2017.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2017.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2017.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_PC_ret__2017.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.10.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.11.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2016.12.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2017.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2017.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2017.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2017.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2017.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2017.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2017.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2017.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_value__2017.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.10.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.11.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2016.12.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2017.01.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2017.02.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2017.03.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2017.04.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2017.05.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2017.06.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2017.07.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2017.08.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/PCA/USD_eig_vec__2017.09.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/US10YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/US30YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/US30YT_RR_quotes_1.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/US5YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/fx/data.pickle" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/fx/pricing_context" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/912828T91_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/FBTPc1_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/FVc1_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/IT15YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/IT30YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/IT488903_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/TUc1_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/TYc1_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/US10YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/US30YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/US5YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/USc1_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/trades_hedge_test.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/trades_hedge_test_2.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/hedged_markout_tests/trades_hedge_test_filter.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/quote_message.json" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/testing_futures_hedge.xlsx" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/trade_message.json" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/trades.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/trades_NaN_test.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/trades_hedge_test.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/trades_hedge_test_COB.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/912810QE1_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/912810RB6_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/912828T91_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/DE10YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/IT0005278335_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/US10YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/US30YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/US30YT_RR_quotes_1.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/US5YT_RR_quotes.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/instrument_static.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/quote_message.json" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/trade_message.json" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/trades.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/trades_NaN_test.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/trades_filter.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/trades_hedge_test.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/trades_non_std.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/resources/unhedged_markout_tests/trades_yield_quoted.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/start-app-hedged.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/start-app-hist-unhedged.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/scripts/start-app-unhedged.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/isda_daycounters/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/isda_daycounters/actual360.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/isda_daycounters/actual365.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/isda_daycounters/actualactual.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/isda_daycounters/thirty360.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/isda_daycounters/unit_tests/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/isda_daycounters/unit_tests/daycounter_tests.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/json_convertor.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/qc_csv_helper.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/QuantlibTesting.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/bond/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/bond/bond_convexity.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/bond/bond_forward_price.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/bond/bond_mod_duration.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/bond/bond_price.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/bond/bond_ytm.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/bond/frn.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/cds/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/cds/cds.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/cds/models.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/curve/eonia.py_" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/curve/euribor_1m.py_" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/curve/euribor_3m.py_" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/curve/euribor_6m.py_" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/irswap/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/irswap/irswap_pricing.py_" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/irswap/pricing_swaps.py_" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/term-structures.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/read_config.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/schedule.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/test_utils.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/configuration/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/configuration/beta.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/configuration/config.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/configuration/config_hedge_test_case_5" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/configuration/eig_value__20140531_20170515.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/configuration/eig_vec__20140531_20170515.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/configuration/instrument_static.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/configuration/repo.csv" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/discounting_service.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/fx.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/hedge.py_" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/hedger.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/historical_markouts.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/instrument.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/instrument_static_singleton.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/instrument_utils.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/markout.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/markout_basket_builder.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/markout_filter.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/markout_msg.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/pca_risk.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/quote.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/repo_singleton.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/trade.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/ts_filter.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/wrappers/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/wrappers/markout_pipeline.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/Test_run.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/Test_run_result.ipynb" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/__init__.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/bond_duration_ZSpread_tests.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/bond_forward_price_tests.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/command_line_wrapper_tests.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/configurator_tests.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/curve_tests_.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/date_calc_tests_.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/domain_object_tests.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/fx_tests_.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/hedge_markout_tests.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/json_convertor_tests.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/kafka_in_out_tests.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/markout_tests.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/quantlib_weirdness.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/run_notebooks_tests_.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/unit_tests/singleton_tests.py" afterPath="" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/bond/fixed_bond.py" afterPath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/fixed_bond.py" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/unit_tests/quantlib_weirdness_2.py" afterPath="$PROJECT_DIR$/unit_tests/weirdness.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/constants.py" afterPath="$PROJECT_DIR$/src/mosaicsmartdata/common/constants.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/curve/usdois.py" afterPath="$PROJECT_DIR$/src/mosaicsmartdata/common/quantlib/curve/usdois.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/curve_utils.py" afterPath="$PROJECT_DIR$/src/mosaicsmartdata/core/curve_utils.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/date_calculator.py" afterPath="$PROJECT_DIR$/src/mosaicsmartdata/core/date_calculator.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/mosaicsmartdata/core/generic_parent.py" afterPath="$PROJECT_DIR$/src/mosaicsmartdata/core/generic_parent.py" />
+    </list>
+    <ignored path="msq-domain-minimal.iws" />
+    <ignored path=".idea/workspace.xml" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
+  <component name="FavoritesManager">
+    <favorites_list name="msq-domain-minimal" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file leaf-file-name="weirdness.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/unit_tests/weirdness.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="136">
+              <caret line="10" column="26" selection-start-line="10" selection-start-column="26" selection-end-line="10" selection-end-column="26" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="constants.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/mosaicsmartdata/common/constants.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="153">
+              <caret line="131" column="0" selection-start-line="131" selection-start-column="0" selection-end-line="131" selection-end-column="0" />
+              <folding>
+                <element signature="e#325#5060#0" expanded="false" />
+                <element signature="e#1069#5060#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="date_helper.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/mosaicsmartdata/common/date_helper.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="0">
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding>
+                <element signature="e#0#19#0" expanded="true" />
+                <element signature="e#121#227#0" expanded="false" />
+                <element signature="e#266#585#0" expanded="false" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/mosaicsmartdata/common/constants.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1370" />
+    <option name="height" value="744" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="false">
+    <OptionsSetting value="true" id="Add" />
+    <OptionsSetting value="true" id="Remove" />
+    <OptionsSetting value="true" id="Checkout" />
+    <OptionsSetting value="true" id="Update" />
+    <OptionsSetting value="true" id="Status" />
+    <OptionsSetting value="true" id="Edit" />
+    <ConfirmationsSetting value="0" id="Add" />
+    <ConfirmationsSetting value="0" id="Remove" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="unit_tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="mosaicsmartdata" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="mosaicsmartdata" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="core" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="mosaicsmartdata" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="common" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="msq-domain-minimal" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+      <pane id="Scratches" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PythonContentEntriesConfigurable" />
+    <property name="settings.editor.splitter.proportion" value="0.2" />
+  </component>
+  <component name="RunManager" selected="Python.weirdness">
+    <configuration default="false" name="weirdness" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/unit_tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="msq-domain-minimal" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/unit_tests/weirdness.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="BashConfigurationType" factoryName="Bash">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="INTERPRETER_PATH" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <module name="" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="msq-domain-minimal" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="Tox" factoryName="Tox">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="msq-domain-minimal" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Attests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="msq-domain-minimal" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Doctests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="msq-domain-minimal" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Nosetests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="msq-domain-minimal" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="Unittests">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="msq-domain-minimal" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="PUREUNITTEST" value="true" />
+      <option name="PARAMS" value="" />
+      <option name="USE_PARAM" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="tests" factoryName="py.test">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="msq-domain-minimal" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="CLASS_NAME" value="" />
+      <option name="METHOD_NAME" value="" />
+      <option name="FOLDER_NAME" value="" />
+      <option name="TEST_TYPE" value="TEST_SCRIPT" />
+      <option name="PATTERN" value="" />
+      <option name="USE_PATTERN" value="false" />
+      <option name="testToRun" value="" />
+      <option name="keywords" value="" />
+      <option name="params" value="" />
+      <option name="USE_PARAM" value="false" />
+      <option name="USE_KEYWORD" value="false" />
+      <method />
+    </configuration>
+    <list size="1">
+      <item index="0" class="java.lang.String" itemvalue="Python.weirdness" />
+    </list>
+    <recent_temporary>
+      <list size="1">
+        <item index="0" class="java.lang.String" itemvalue="Python.weirdness" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fc3fbffc-8c02-435c-a93b-54dd6de32193" name="Default" comment="" />
+      <created>1509380385313</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1509380385313</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1370" height="744" extended-state="0" />
+    <editor active="false" />
+    <layout>
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32843137" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="true" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager />
+    <watches-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/unit_tests/weirdness.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="10" column="26" selection-start-line="10" selection-start-column="26" selection-end-line="10" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mosaicsmartdata/common/constants.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="153">
+          <caret line="131" column="0" selection-start-line="131" selection-start-column="0" selection-end-line="131" selection-end-column="0" />
+          <folding>
+            <element signature="e#325#5060#0" expanded="false" />
+            <element signature="e#1069#5060#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/mosaicsmartdata/common/date_helper.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+            <element signature="e#121#227#0" expanded="false" />
+            <element signature="e#266#585#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

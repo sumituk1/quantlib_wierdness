@@ -1,5 +1,0 @@
-date,sym,last_trading_day,product_class,coupon,frequency,maturity,day_count,issue_date,contract_size,ctd_bond,conversion_factor,duration
-2017.03.30,FGBLc1,,BondFutures,0.06,,2017.06.12,,,100000,DE110239=,0.636,8.99
-2017.03.31,FGBLc1,,BondFutures,0.06,,2017.06.12,,,100000,DE110239=,0.636,8.943
-2017.03.31,US5YT=RR,,GovtBond,0.01875,Semi,2027.03.31,,2017.03.31,,,,
-2017.03.31,FR10YT=RR,,GovtBond,0.0025,Annually,2027.03.31,ACT/ACT,2017.03.31,1,,,9.483

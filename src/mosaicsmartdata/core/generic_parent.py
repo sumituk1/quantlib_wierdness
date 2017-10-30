@@ -1,13 +1,6 @@
 if False:
-    import datetime as dt
-    import numpy as np
-    from mosaicsmartdata.common import read_config
-    from mosaicsmartdata.core.repo_singleton import *
-    from mosaicsmartdata.common.quantlib.bond.bond_forward_price import *
-    from mosaicsmartdata.common.quantlib.bond.bond_price import *
-    import mosaicsmartdata.common.quantlib.bond.fixed_bond as bond
-    from mosaicsmartdata.common.constants import *
-import cloudpickle
+    pass
+
 
 class GenericParent:
     def __init__(self, *args, **kwargs):

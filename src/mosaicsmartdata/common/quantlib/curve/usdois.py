@@ -2,7 +2,7 @@ from QuantLib import *
 import datetime as dt
 import numpy as np
 from mosaicsmartdata.common.constants import BootStrapMethod
-from mosaicsmartdata.common.quantlib.bond import fixed_bond
+from mosaicsmartdata.common.quantlib import fixed_bond
 from mosaicsmartdata.common.constants import HolidayCities
 
 

@@ -4,16 +4,17 @@
 3. get the forward rate between start & end_date - get_rate()
 4. read the Data Extractor.xlsx to get the swap rates and OIS rates -  read_usd_libor_data()'''
 import datetime as dt
+
 import numpy as np
 import pandas as pd
 from QuantLib import *
+
+from mosaicsmartdata.common.constants import BootStrapMethod
 from mosaicsmartdata.common.constants import Currency
 from mosaicsmartdata.common.constants import HolidayCities
-from mosaicsmartdata.common.constants import BootStrapMethod
-from mosaicsmartdata.common.quantlib.bond import fixed_bond
-from mosaicsmartdata.common.quantlib.bond import fixed_bond
+from mosaicsmartdata.common.quantlib import fixed_bond
 from mosaicsmartdata.common.quantlib.curve.usdois import USDOIS
-from mosaicsmartdata.common.quantlib.bond.fixed_bond import pydate_to_qldate
+from mosaicsmartdata.common.quantlib.fixed_bond import pydate_to_qldate
 
 
 # class CacheBorg:
